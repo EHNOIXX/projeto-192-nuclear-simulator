@@ -11,3 +11,17 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 .stagehead{background:#0b121d}
 .stagefoot{background:#0b121d}
 @media(min-width:1500px){#viewport{height:650px}.stage{min-height:725px}}
+
+/* EGAS 0.2 — ferramentas de exploração */
+.toolbar,.cameraPresets{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:9px 12px;background:#0b121d;border-bottom:1px solid var(--line)}
+.toolbtn,.cameraPresets button{background:#142235;border:1px solid #30445d;color:#b8c9dc;border-radius:4px;padding:8px 9px;font:8px var(--mono);cursor:pointer;transition:.18s}
+.toolbtn:hover,.cameraPresets button:hover,.toolbtn[aria-pressed="true"]{border-color:var(--cyan);color:var(--cyan);background:#173044}
+.cameraPresets{border:0;border-bottom:1px solid var(--line);padding-top:7px;padding-bottom:7px}
+.cameraPresets>span{font:8px var(--mono);color:var(--muted);margin-right:3px}
+.sectionRange{display:flex;align-items:center;gap:8px;margin-left:auto;color:var(--muted);font:8px var(--mono)}
+.sectionRange input{width:95px;accent-color:var(--amber)}
+.sectionRange output{color:var(--amber);min-width:28px}
+.viewportBadge{position:absolute;top:12px;left:14px;z-index:2;pointer-events:none;color:#8da5bc;font:8px var(--mono);letter-spacing:.8px;background:#07101bc9;padding:7px 9px;border:1px solid #263b50;border-radius:3px}
+.viewportBadge span{color:var(--cyan);margin-left:10px}
+#viewport{overflow:hidden}
+@media(max-width:720px){.toolbar{gap:5px}.toolbtn{font-size:7px;padding:8px 6px}.cameraPresets{gap:5px}.sectionRange{width:100%;margin:6px 0 0}.sectionRange input{flex:1}}
