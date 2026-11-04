@@ -79,4 +79,84 @@ const ray=new THREE.Raycaster(),mouse=new THREE.Vector2();renderer.domElement.ad
 $('length').oninput=e=>{length=+e.target.value;$('lengthOut').value=length+' m';root.scale.x=length/24};$('diameter').oninput=e=>{diam=+e.target.value;$('diamOut').value=diam+' m';root.scale.y=diam/8;root.scale.z=diam/8};$('alpha').oninput=e=>{alpha=+e.target.value;$('alphaOut').value=alpha+'%';objects.outerShell.material.opacity=alpha/100;objects.outerShell.material.transparent=alpha<100;objects.outerShell.material.needsUpdate=true};
 $('homeView').onclick=()=>{camera.position.set(17,10,18);controls.target.set(0,0,0);controls.update()};
 $('reset').onclick=()=>{$('length').value=24;$('diameter').value=8;$('alpha').value=100;$('material').value='titanium';$('partSelect').value='outerShell';length=24;diam=8;root.scale.set(1,1,1);$('lengthOut').value='24 m';$('diamOut').value='8 m';$('alphaOut').value='100%';objects.outerShell.material.opacity=1;material='titanium';selected='outerShell';document.querySelectorAll('[data-layer]').forEach(el=>{el.checked=true;groups[el.dataset.layer].visible=true});applyMaterial();refresh();highlight()};
-function animate(){requestAnimationFrame(animate);controls.update();composer.render()}refresh();highlight();animate();
+
+/* EGAS 0.2: ferramentas de exploração visual — parâmetros não físicos. */
+const layerOffsets={structure:new THREE.Vector3(0,0,0),core:new THREE.Vector3(0,0,0),field:new THREE.Vector3(0,0,0),plasma:new THREE.Vector3(0,0,0),nova:new THREE.Vector3(0,0,0),control:new THREE.Vector3(0,0,0)};
+let exploded=false,sectionEnabled=false;
+const cutPlane=new THREE.Plane(new THREE.Vector3(1,0,0),0);
+renderer.localClippingEnabled=true;
+function applyCut(){
+  Object.values(objects).forEach(o=>{
+    const m=o.material;
+    if(m && !Array.isArray(m)){m.clippingPlanes=sectionEnabled?[cutPlane]:[];m.clipShadows=sectionEnabled;m.needsUpdate=true;}
+  });
+}
+function setExploded(on){
+  exploded=on;
+  const offsets={structure:[0,0,0],core:[0,0,0],field:[0,0,0],plasma:[0,0,0],nova:[0,0,0],control:[0,0,0]};
+  if(on){offsets.structure=[0,0,0];offsets.core=[0,0,0];offsets.field=[0,2.3,0];offsets.plasma=[0,-2.1,0];offsets.nova=[0,0,2.4];offsets.control=[0,0,-2.5];}
+  Object.entries(groups).forEach(([k,g])=>g.position.set(...offsets[k]));
+  $('explodeBtn').setAttribute('aria-pressed',String(on));
+  $('explodeBtn').textContent=on?'VISTA MONTADA':'VISTA EXPLODIDA';
+}
+$('explodeBtn').addEventListener('click',()=>setExploded(!exploded));
+$('sectionBtn').addEventListener('click',()=>{
+  sectionEnabled=!sectionEnabled;applyCut();
+  $('sectionBtn').setAttribute('aria-pressed',String(sectionEnabled));
+  $('sectionBtn').textContent=sectionEnabled?'DESATIVAR CORTE':'CORTE TRANSVERSAL';
+  $('sectionRange').disabled=!sectionEnabled;
+});
+$('sectionRange').addEventListener('input',e=>{
+  cutPlane.constant=Number(e.target.value);
+  $('sectionOut').value=Number(e.target.value).toFixed(1);
+  if(sectionEnabled)applyCut();
+});
+$('rotateBtn').addEventListener('click',()=>{
+  controls.autoRotate=!controls.autoRotate;
+  controls.autoRotateSpeed=1.15;
+  $('rotateBtn').setAttribute('aria-pressed',String(controls.autoRotate));
+  $('rotateBtn').textContent=controls.autoRotate?'PARAR ÓRBITA':'ÓRBITA AUTOMÁTICA';
+});
+const views={front:[0,2,22],side:[22,2,0],top:[0,22,.01],iso:[17,10,18]};
+document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>{
+  const v=views[btn.dataset.view];camera.position.set(...v);controls.target.set(0,0,0);controls.update();controls.autoRotate=false;
+  $('rotateBtn').setAttribute('aria-pressed','false');$('rotateBtn').textContent='ÓRBITA AUTOMÁTICA';
+}));
+$('shotBtn').addEventListener('click',()=>{
+  composer.render();
+  const a=document.createElement('a');a.download='EGAS-visualizacao-conceitual.png';a.href=renderer.domElement.toDataURL('image/png');a.click();
+});
+$('fullBtn').addEventListener('click',()=>{
+  const target=$('viewport').parentElement;
+  if(!document.fullscreenElement)target.requestFullscreen?.();else document.exitFullscreen?.();
+});
+function configData(){return {version:'0.2',selected,material,length:Number($('length').value),diameter:Number($('diameter').value),alpha:Number($('alpha').value),layers:Object.fromEntries(layerKeys.map(k=>[k,groups[k].visible])),exploded,sectionEnabled,sectionPosition:cutPlane.constant};}
+$('saveBtn').addEventListener('click',()=>{
+  try{localStorage.setItem('egas-lab-config',JSON.stringify(configData()));$('saveBtn').textContent='CONFIGURAÇÃO SALVA';}
+  catch(e){$('saveBtn').textContent='NÃO FOI POSSÍVEL SALVAR';}
+  setTimeout(()=>$('saveBtn').textContent='SALVAR CONFIG.',1800);
+});
+$('exportBtn').addEventListener('click',()=>{
+  const data={projeto:'S.P.E.C.T.R.A. / EGAS',natureza:'modelo conceitual educacional; não validado',aviso:'Elemento 192 não descoberto. Valores e geometrias não são especificações de engenharia.',configuracao:configData(),componentes:partList.map(p=>({id:p[0],nome:p[1],camada:p[2]})),materiais:materialData};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='EGAS-ficha-conceitual.json';a.click();URL.revokeObjectURL(url);
+});
+function restoreSaved(){
+  try{
+    const raw=localStorage.getItem('egas-lab-config');if(!raw)return;
+    const d=JSON.parse(raw);if(d.version!=='0.2')return;
+    if(d.material && materialData[d.material]){$('material').value=d.material;material=d.material;}
+    if(partList.some(p=>p[0]===d.selected)){$('partSelect').value=d.selected;selected=d.selected;}
+    $('length').value=d.length??24;$('diameter').value=d.diameter??8;$('alpha').value=d.alpha??100;
+    $('length').dispatchEvent(new Event('input'));$('diameter').dispatchEvent(new Event('input'));$('alpha').dispatchEvent(new Event('input'));
+    layerKeys.forEach(k=>{const el=document.querySelector('[data-layer="'+k+'"]');if(el){el.checked=d.layers?.[k]??true;groups[k].visible=el.checked;}});
+    setExploded(Boolean(d.exploded));sectionEnabled=Boolean(d.sectionEnabled);cutPlane.constant=Number(d.sectionPosition)||0;
+    $('sectionRange').value=cutPlane.constant;$('sectionOut').value=cutPlane.constant.toFixed(1);$('sectionBtn').setAttribute('aria-pressed',String(sectionEnabled));$('sectionBtn').textContent=sectionEnabled?'DESATIVAR CORTE':'CORTE TRANSVERSAL';$('sectionRange').disabled=!sectionEnabled;applyCut();
+    refresh();highlight();applyMaterial();
+  }catch(e){console.warn('Configuração salva não pôde ser carregada.',e);}
+}
+restoreSaved();
+let lastFrame=performance.now(),frames=0;
+function updateRenderReadout(now){frames++;if(now-lastFrame>=1000){$('fpsReadout').textContent=frames+' FPS';frames=0;lastFrame=now;}}
+
+function animate(now=performance.now()){requestAnimationFrame(animate);controls.update();composer.render();updateRenderReadout(now)}refresh();highlight();animate();
