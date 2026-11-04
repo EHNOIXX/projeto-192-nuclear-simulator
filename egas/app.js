@@ -16,7 +16,7 @@ const composer=new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene,camera));
 const bloom=new UnrealBloomPass(new THREE.Vector2(900,600),.48,.65,.78);
 composer.addPass(bloom);composer.addPass(new OutputPass());
-const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.target.set(0,0,0);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.minDistance=5;controls.maxDistance=42;controls.target.set(0,0,0);
 scene.add(new THREE.HemisphereLight(0xc6dcff,0x111927,1.65));
 const key=new THREE.DirectionalLight(0xd9eaff,3.2);key.position.set(7,10,8);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-16;key.shadow.camera.right=16;key.shadow.camera.top=12;key.shadow.camera.bottom=-12;scene.add(key);
 const fill=new THREE.PointLight(0x69dce5,85,35);fill.position.set(-5,2,6);scene.add(fill);
@@ -35,7 +35,7 @@ cyan:new THREE.MeshPhysicalMaterial({color:0x69e4e1,emissive:0x167d91,emissiveIn
 amber:new THREE.MeshPhysicalMaterial({color:0xd9a45d,emissive:0x79421a,emissiveIntensity:.75,metalness:.78,roughness:.22}),
 glass:new THREE.MeshPhysicalMaterial({color:0x4aa9c9,transparent:true,opacity:.12,roughness:.04,metalness:.05,transmission:.72,thickness:.18,ior:1.45,side:THREE.DoubleSide,depthWrite:false})
 };
-const objects={};function add(id,label,layer,geometry,material,pos,scale){const m=new THREE.Mesh(geometry,material);m.name=id;m.userData={id,label,layer};m.position.set(...pos);if(scale)m.scale.set(...scale);groups[layer].add(m);objects[id]=m;return m}
+const objects={};function add(id,label,layer,geometry,material,pos,scale){const m=new THREE.Mesh(geometry,material);m.name=id;m.userData={id,label,layer};m.position.set(...pos);if(scale)m.scale.set(...scale);m.castShadow=true;m.receiveShadow=true;groups[layer].add(m);objects[id]=m;return m}
 function cyl(r1,r2,h,mat,pos,rad=64){return add('part'+Object.keys(objects).length,'', 'structure',new THREE.CylinderGeometry(r1,r2,h,rad,1,true),mat,pos)}
 // Central longitudinal axis is X.
 const shell=add('outerShell','Revestimento externo','structure',new THREE.CylinderGeometry(2.05,2.05,14,128,1,true),mats.structure,[0,0,0],[1,1,.78]);shell.rotation.z=Math.PI/2;shell.castShadow=true;shell.receiveShadow=true;
@@ -49,7 +49,17 @@ for(let x of [-3.4,3.4]){let coil=add('coil'+x,'Bobina eletromagnética ilustrat
 for(let x of [-5.2,5.2]){let p=add('plasma'+x,'Câmara conceitual de plasma','plasma',new THREE.CylinderGeometry(.9,.9,1.5,48,1,true),mats.glass,[x,0,0]);p.rotation.z=Math.PI/2;let inner=add('plasmaGlow'+x,'Volume luminoso ilustrativo','plasma',new THREE.SphereGeometry(.68,24,18),new THREE.MeshBasicMaterial({color:0x3b9fff,transparent:true,opacity:.14}),[x,0,0],[1,1,1.7])}
 add('nova','Módulo N.O.V.A. (conceitual)','nova',new THREE.TorusKnotGeometry(.8,.13,100,12),mats.cyan,[2.1,0,0]);
 add('vector','Anel de controle vetorial','control',new THREE.TorusGeometry(1.75,.12,14,80),mats.dark,[6.2,0,0]).rotation.y=Math.PI/2;
-add('nozzle','Bocal cenográfico','structure',new THREE.CylinderGeometry(1.0,1.8,2.2,64,1,true),mats.dark,[8,0,0],[1,1,.85]).rotation.z=Math.PI/2;
+
+add('nozzle','Bocal cenográfico','structure',new THREE.CylinderGeometry(1.0,1.8,2.2,96,1,true),mats.dark,[8,0,0],[1,1,.85]).rotation.z=Math.PI/2;
+// Fine visual detailing: segmented armor bands, fasteners and service panels.
+for(const x of [-6.45,-5.9,-1.8,1.8,5.9,6.45]){
+ const band=add('armorBand'+x,'Faixa de acabamento','structure',new THREE.TorusGeometry(2.055,.045,10,96),mats.amber,[x,0,0],[1,1,.78]);band.rotation.y=Math.PI/2;
+}
+for(const x of [-5.7,-3.8,3.8,5.7]){
+ for(let j=0;j<16;j++){const a=j*Math.PI/8;add('bolt'+x+'_'+j,'Fixador cenográfico','structure',new THREE.SphereGeometry(.055,12,8),mats.dark,[x,2.08*Math.cos(a),1.62*Math.sin(a)]);}
+}
+for(let j=0;j<8;j++){const a=j*Math.PI/4;const panel=add('panel'+j,'Painel externo de serviço','structure',new THREE.BoxGeometry(1.25,.055,.32),mats.dark,[-.8,2.075*Math.cos(a),1.62*Math.sin(a)]);panel.rotation.x=a;}
+
 const names={structure:'Estrutura externa',core:'Núcleo E-192',field:'Sistema eletromagnético',plasma:'Câmaras conceituais de plasma',nova:'Módulo N.O.V.A.',control:'Controle vetorial'};
 const descriptions={outerShell:'Carcaça cenográfica para organizar a visualização dos módulos. Não define espessura estrutural real.',frontRing:'Anel de referência visual da estrutura frontal.',rearRing:'Anel de referência visual da estrutura traseira.',core:'Representação artística de um núcleo com Z=192. Sua existência e propriedades são desconhecidas.',coreGlow:'Efeito gráfico sem correspondência com emissão física medida.','coil-3.4':'Bobina ilustrativa para discutir eletromagnetismo; não é especificação de bobina real.','coil3.4':'Bobina ilustrativa para discutir eletromagnetismo; não é especificação de bobina real.',plasma:'Volume visual para representar uma região de estudo de plasma, sem parâmetros operacionais.',nova:'Módulo conceitual que agrupa temas de energia e propulsão especulativa.',vector:'Representação de um módulo de orientação e controle, não de um sistema construído.',nozzle:'Bocal cenográfico; não implica existência de fluxo ou empuxo.'};
 const layerKeys=Object.keys(groups);$('layers').innerHTML=layerKeys.map(k=>'<label class="check"><input type="checkbox" data-layer="'+k+'" checked> '+names[k]+'</label>').join('');
