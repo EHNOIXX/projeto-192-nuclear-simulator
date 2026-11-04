@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SPECTRA | E-192 Nuclear Lab</title>
+<style>
+:root{color-scheme:dark;--bg:#07111d;--panel:#101f30;--line:#294158;--txt:#e8f1fa;--muted:#a9bdcf;--accent:#62d6c5}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(140deg,#07111d,#0c1b2b);color:var(--txt);font:15px system-ui,Arial,sans-serif}
+main{max-width:1100px;margin:auto;padding:28px 18px 50px}header{margin-bottom:22px}h1{font-size:clamp(25px,4vw,38px);margin:0 0 8px}p{color:var(--muted);line-height:1.55}.tag{color:var(--accent);font-weight:700;letter-spacing:.12em;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}.panel{background:#101f30eF;border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}
+label{display:block;color:var(--muted);margin:10px 0 6px}input[type=range]{width:100%;accent-color:var(--accent)}.value{font-size:25px;font-weight:700}.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.metric{background:#0a1725;border:1px solid var(--line);border-radius:10px;padding:13px}.metric small{display:block;color:var(--muted);margin-bottom:6px}.metric strong{font-size:21px}.note{border-left:3px solid #d9a441;padding:10px 13px;background:#241f16;color:#f1dfb9;border-radius:5px}canvas{width:100%;height:230px;background:#091725;border:1px solid var(--line);border-radius:10px}.actions{display:flex;gap:10px;flex-wrap:wrap}button{background:#17374a;color:var(--txt);border:1px solid #37657b;padding:10px 14px;border-radius:8px;cursor:pointer}button:hover{background:#20506a}footer{color:var(--muted);font-size:12px;margin-top:22px}
+</style>
+</head>
+<body><main>
+<header><div class="tag">S.P.E.C.T.R.A. · N.O.V.A.</div><h1>E-192 Nuclear Lab</h1><p>Laboratório computacional educativo para explorar estimativas macroscópicas de núcleos hipotéticos com 192 prótons. Todos os cálculos são executados nesta página, no navegador.</p></header>
+<div class="grid">
+<section class="panel"><h2>Configuração nuclear</h2><label for="mass">Número de massa (A)</label><div class="value" id="massText">360</div><input id="mass" type="range" min="280" max="700" value="360"><p>Prótons (Z): <b>192</b> · Nêutrons (N): <b id="neutrons">168</b></p><div class="actions"><button id="scan">Executar varredura A = 280–700</button><button id="reset">Restaurar A = 360</button></div></section>
+<section class="panel"><h2>Resultados estimados</h2><div class="metrics">
+<div class="metric"><small>Energia de ligação / núcleon</small><strong id="ba">—</strong><small>MeV por núcleon</small></div>
+<div class="metric"><small>Energia de ligação total</small><strong id="b">—</strong><small>MeV</small></div>
+<div class="metric"><small>Indicador de fissilidade</small><strong id="fiss">—</strong><small>modelo simplificado</small></div>
+<div class="metric"><small>Classificação indicativa</small><strong id="class">—</strong><small>não é diagnóstico de estabilidade</small></div>
+</div></section></div>
+<section class="panel"><h2>Energia de ligação por núcleon</h2><canvas id="chart1" width="1000" height="260"></canvas></section>
+<section class="panel"><h2>Indicador simplificado de fissilidade</h2><canvas id="chart2" width="1000" height="260"></canvas></section>
+<section class="panel"><h2>Como interpretar</h2><div class="note"><b>Limitação essencial:</b> esta página usa a fórmula semiempírica de massa (gota líquida), que não incorpora adequadamente efeitos de camadas, deformações nucleares ou barreiras reais de fissão em Z = 192. Um valor positivo de energia de ligação não prova que o núcleo exista ou seja estável.</div><p>O indicador x é uma aproximação macroscópica. Valores acima de 1 sugerem que a gota nuclear idealizada é vulnerável à deformação de fissão; efeitos quânticos podem alterar a conclusão. Não interprete o maior valor de B/A como descoberta de um isótopo estável.</p></section>
+<footer>SPECTRA · E-192 Nuclear Lab · Modelo exploratório, não experimental. Nenhum material radioativo é necessário.</footer>
+</main>
+<script>
+const Z=192, av=15.75, as=17.8, ac=.711, aa=23.7;
+function calc(A){const N=A-Z;let d=0;if(Z%2===0&&N%2===0)d=34*Math.pow(A,-.75);else if(Z%2===1&&N%2===1)d=-34*Math.pow(A,-.75);const B=av*A-as*Math.pow(A,2/3)-ac*Z*(Z-1)*Math.pow(A,-1/3)-aa*Math.pow(A-2*Z,2)/A+d;return {A,N,B,ba:B/A,x:ac*Z*(Z-1)/(2*as*A)}}
+function fmt(v){return Number(v).toFixed(3)}
+function draw(canvasId,key,title){const c=document.getElementById(canvasId),ctx=c.getContext('2d'),w=c.width,h=c.height,p=48;const pts=[];for(let A=280;A<=700;A++)pts.push(calc(A));let min=Math.min(...pts.map(o=>o[key])),max=Math.max(...pts.map(o=>o[key]));if(min===max)max=min+1;ctx.clearRect(0,0,w,h);ctx.strokeStyle='#294158';ctx.fillStyle='#a9bdcf';ctx.font='15px system-ui';for(let i=0;i<=4;i++){let y=p+(h-2*p)*i/4;ctx.beginPath();ctx.moveTo(p,y);ctx.lineTo(w-p,y);ctx.stroke();let val=max-(max-min)*i/4;ctx.fillText(val.toFixed(2),5,y+5)}ctx.fillText('A = 280',p,h-12);ctx.fillText('A = 700',w-p-75,h-12);ctx.strokeStyle='#62d6c5';ctx.lineWidth=3;ctx.beginPath();pts.forEach((o,i)=>{let x=p+(w-2*p)*i/(pts.length-1),y=h-p-(o[key]-min)/(max-min)*(h-2*p);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();const A=Number(document.getElementById('mass').value),idx=A-280,o=pts[idx],x=p+(w-2*p)*idx/(pts.length-1),y=h-p-(o[key]-min)/(max-min)*(h-2*p);ctx.fillStyle='#f0c674';ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#e8f1fa';ctx.fillText(title,p,25)}
+function update(){const A=+document.getElementById('mass').value,o=calc(A);document.getElementById('massText').textContent=A;document.getElementById('neutrons').textContent=o.N;document.getElementById('ba').textContent=fmt(o.ba);document.getElementById('b').textContent=fmt(o.B);document.getElementById('fiss').textContent=fmt(o.x);document.getElementById('class').textContent=o.x>1?'x > 1':'x ≤ 1';draw('chart1','ba','MeV/núcleon');draw('chart2','x','x')}
+document.getElementById('mass').addEventListener('input',update);document.getElementById('reset').addEventListener('click',()=>{document.getElementById('mass').value=360;update()});document.getElementById('scan').addEventListener('click',()=>{let best=calc(280);for(let A=281;A<=700;A++){let o=calc(A);if(o.ba>best.ba)best=o}alert('Varredura concluída: maior B/A nesta faixa em A='+best.A+', N='+best.N+', B/A='+fmt(best.ba)+' MeV. Isso não identifica estabilidade nuclear.')});update();
+</script></body></html>
