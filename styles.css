@@ -66,3 +66,10 @@ footer{background:#070a10}
 #zoomReset{min-width:54px;font-size:9px}
 @media(max-width:850px){.viewer{min-height:440px}#atomView{height:320px;flex-basis:320px;min-height:320px}.particle-legend{gap:12px;flex-wrap:wrap}.particle-legend .legend-note{margin-left:0}}
 @media(max-width:520px){#atomView{height:280px;flex-basis:280px;min-height:280px}.viewer-meta{font-size:9px}.particle-legend{font-size:8px;gap:10px}.viewer-foot{flex-wrap:wrap;font-size:8px}.zoom-controls{margin-left:auto}}
+
+/* 0.4.0 — mais definição visual para os núcleons */
+#atomView{height:370px;flex-basis:370px;min-height:370px}
+.viewer{min-height:490px}
+.viewer-head{background:linear-gradient(90deg,#142237aa,transparent)}
+@media(max-width:850px){#atomView{height:335px;flex-basis:335px;min-height:335px}}
+@media(max-width:520px){#atomView{height:290px;flex-basis:290px;min-height:290px}}
