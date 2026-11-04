@@ -56,7 +56,7 @@ ground.rotation.x=-Math.PI/2; ground.position.y=-4.43; ground.receiveShadow=true
 
 const root = new THREE.Group(); scene.add(root);
 const groups = {
- structure:new THREE.Group(), core:new THREE.Group(), field:new THREE.Group(),
+ structure:new THREE.Group(), core:new THREE.Group(), radiation:new THREE.Group(), field:new THREE.Group(),
  plasma:new THREE.Group(), nova:new THREE.Group(), control:new THREE.Group()
 };
 Object.values(groups).forEach(g=>root.add(g));
@@ -70,7 +70,10 @@ const mat = {
  cyan:new THREE.MeshStandardMaterial({color:0x4aa6b4,metalness:.72,roughness:.24,emissive:0x123c46,emissiveIntensity:.45}),
  violet:new THREE.MeshStandardMaterial({color:0x9874d9,metalness:.35,roughness:.22,emissive:0x46227d,emissiveIntensity:1.15}),
  glass:new THREE.MeshPhysicalMaterial({color:0x4d9eb4,metalness:.05,roughness:.12,transparent:true,opacity:.13,transmission:.35,thickness:.2,side:THREE.DoubleSide,depthWrite:false}),
- glow:new THREE.MeshBasicMaterial({color:0x9c76ff})
+ glow:new THREE.MeshBasicMaterial({color:0x9c76ff}),
+ shield:new THREE.MeshPhysicalMaterial({color:0x8eb7c5,metalness:.55,roughness:.28,transparent:true,opacity:.22,side:THREE.DoubleSide,depthWrite:false}),
+ solar:new THREE.MeshStandardMaterial({color:0x315b82,metalness:.48,roughness:.3,emissive:0x102b49,emissiveIntensity:.45}),
+ electron:new THREE.MeshBasicMaterial({color:0x70e9ff})
 };
 const objects={};
 function add(id,label,layer,geometry,material,position=[0,0,0],rotation=[0,0,0]){
@@ -130,6 +133,24 @@ for(let i=0;i<6;i++){
  rod('coreBrace'+i,'Suporte radial do núcleo','core',[0,.85*Math.cos(a),.85*Math.sin(a)],[0,1.65*Math.cos(a),1.65*Math.sin(a)],.055,mat.steel);
 }
 
+// Blindagem radiológica conceitual em camadas concêntricas.
+for(let i=0;i<3;i++){
+ const shell=add('radiationShield'+i,'Camada de blindagem radiológica ilustrativa','radiation',new THREE.SphereGeometry(1.55+i*.22,48,32),mat.shield,[0,0,0]);
+ shell.material=mat.shield.clone();shell.material.opacity=.22-i*.035;
+}
+for(let i=0;i<12;i++){
+ const a=i*Math.PI/6;
+ const plate=add('energyPlate'+i,'Coletor de energia radiativa hipotético','radiation',new THREE.BoxGeometry(.14,.72,.46),mat.solar,[0,2.45*Math.cos(a),2.45*Math.sin(a)],[a,0,0]);
+ add('plateCell'+i,'Células conversoras ilustrativas','radiation',new THREE.BoxGeometry(.035,.58,.34),mat.cyan,[.09,2.45*Math.cos(a),2.45*Math.sin(a)],[a,0,0]);
+}
+for(let i=0;i<3;i++){
+ const orbit=add('electronOrbit'+i,'Trajetória eletrônica hipotética','radiation',new THREE.TorusGeometry(1.15+i*.18,.018,8,120),mat.electron,[0,0,0],[i*.72,0,i*.48]);
+}
+for(let i=0;i<9;i++){
+ const a=i*2*Math.PI/9;
+ add('electron'+i,'Partícula eletrônica ilustrativa','radiation',new THREE.SphereGeometry(.065,16,12),mat.electron,[1.15*Math.cos(a),.78*Math.sin(a),.35*Math.sin(a*2)]);
+}
+
 // Bobinas distribuídas simetricamente no eixo.
 for(let side of [-1,1]){
  const x=side*3.35;
@@ -164,17 +185,21 @@ for(let j=0;j<10;j++){
 cylinder('nozzle','Bocal externo cenográfico','structure',1.65,.95,1.7,mat.dark,8.65,0,0,64);
 torus('nozzleLip','Borda do bocal','structure',9.5,1.0,.13,mat.steel);
 
-const names={structure:'Estrutura externa',core:'Núcleo E-192',field:'Sistema eletromagnético',plasma:'Câmaras conceituais de plasma',nova:'Módulo N.O.V.A.',control:'Controle vetorial'};
+const names={structure:'Estrutura externa',core:'Núcleo E-192',radiation:'Blindagem e recuperação energética',field:'Sistema eletromagnético',plasma:'Câmaras conceituais de plasma',nova:'Módulo N.O.V.A.',control:'Controle vetorial'};
 const descriptions={
  outerShell:'A estrutura agora é uma armação aberta de anéis, longarinas e painéis independentes.',
- core:'Representação artística de um núcleo com Z=192. Sua existência e propriedades são desconhecidas.',
+ core:'Posição hipotética do E-192. Elemento 192 não foi descoberto; propriedades e capacidade de alterar o espaço-tempo são desconhecidas.',
+ radiationShield:'Camadas cenográficas de blindagem radiológica ao redor do núcleo. Não representam materiais, espessuras ou proteção calculados.',
+ energyCollector:'Placas conversoras hipotéticas que representam recuperação de parte da energia radiativa absorvida. Não equivalem a painéis fotovoltaicos comuns validados para essa função.',
+ electronFlow:'Órbitas e partículas eletrônicas estilizadas para ilustrar a hipótese especulativa de interação com o espaço-tempo; não são uma descrição orbital real.',
  coilLeft:'Bobinas cenográficas com enrolamentos de cobre e suportes mecânicos.',
  plasmaLeft:'Câmara transparente ilustrativa; não representa parâmetros operacionais.',
  nova:'Módulo conceitual para organizar temas de energia e física especulativa.',
  vectorRing:'Conjunto cenográfico de orientação e controle, sem validação funcional.'
 };
 const partList=[
- ['outerShell','Chassi e blindagem','structure'],['core','Núcleo E-192 hipotético','core'],
+ ['outerShell','Chassi estrutural','structure'],['core','Núcleo E-192 hipotético','core'],
+ ['radiationShield','Filtros de radiação intensa','radiation'],['energyCollector','Placas de recuperação energética','radiation'],['electronFlow','Região eletrônica hipotética','radiation'],
  ['coilLeft','Bobina eletromagnética esquerda','field'],['coilRight','Bobina eletromagnética direita','field'],
  ['plasmaLeft','Câmara de plasma esquerda','plasma'],['plasmaRight','Câmara de plasma direita','plasma'],
  ['nova','Módulo N.O.V.A.','nova'],['vectorRing','Controle vetorial','control'],['nozzle','Bocal cenográfico','structure']
@@ -197,7 +222,7 @@ const materialData={
  ceramic:{name:'Cerâmica técnica',density:'Pode oferecer estabilidade térmica e dureza.',fit:70,caution:'Fragilidade e choque térmico precisam ser considerados.'},
  niobium:{name:'Nióbio',density:'Metal empregado em certas ligas e materiais supercondutores.',fit:64,caution:'Supercondutividade depende de composição e condições específicas.'}
 };
-function scoreFor(id){if(id==='core'||id==='nova')return null;const base={outerShell:80,coilLeft:74,coilRight:74,plasmaLeft:62,plasmaRight:62,vectorRing:67,nozzle:55}[id]??70;const delta={titanium:4,aluminum:-3,copper:-8,graphite:-1,ceramic:-4,niobium:-6}[material];return Math.max(0,Math.min(100,base+delta));}
+function scoreFor(id){if(id==='core'||id==='nova'||id==='radiationShield'||id==='energyCollector'||id==='electronFlow')return null;const base={outerShell:80,coilLeft:74,coilRight:74,plasmaLeft:62,plasmaRight:62,vectorRing:67,nozzle:55}[id]??70;const delta={titanium:4,aluminum:-3,copper:-8,graphite:-1,ceramic:-4,niobium:-6}[material];return Math.max(0,Math.min(100,base+delta));}
 function refresh(){
  const p=partList.find(x=>x[0]===selected)||partList[0],sc=scoreFor(selected),md=materialData[material];
  $('partInfo').innerHTML='<b>'+p[1]+'</b><br>'+(descriptions[selected]||'Componente visual do modelo.')+'<br><br><span>Camada: '+names[p[2]]+'</span>';
@@ -231,7 +256,7 @@ renderer.domElement.addEventListener('click',e=>{
  const hits=ray.intersectObjects(Object.values(groups).flatMap(g=>g.children),false);
  const hit=hits.find(h=>h.object.userData.layer);if(!hit)return;
  const layer=hit.object.userData.layer;
- const map={structure:'outerShell',core:'core',field:hit.object.name.includes('1')?'coilRight':'coilLeft',plasma:hit.object.name.includes('1')?'plasmaRight':'plasmaLeft',nova:'nova',control:'vectorRing'};
+ const map={structure:'outerShell',core:'core',radiation:hit.object.name.startsWith('energyPlate')||hit.object.name.startsWith('plateCell')?'energyCollector':hit.object.name.startsWith('electron')?'electronFlow':'radiationShield',field:hit.object.name.includes('1')?'coilRight':'coilLeft',plasma:hit.object.name.includes('1')?'plasmaRight':'plasmaLeft',nova:'nova',control:'vectorRing'};
  selected=map[layer]||'outerShell';$('partSelect').value=selected;refresh();highlight();
 });
 $('length').oninput=e=>{length=+e.target.value;$('lengthOut').value=length+' m';root.scale.x=length/24;};
@@ -253,7 +278,7 @@ renderer.localClippingEnabled=true;
 function applyCut(){Object.values(groups).forEach(g=>g.children.forEach(o=>{if(o.material&&!Array.isArray(o.material)){o.material.clippingPlanes=sectionEnabled?[cutPlane]:[];o.material.needsUpdate=true;}}));}
 function setExploded(on){
  exploded=on;
- const off={structure:[0,0,0],core:[0,0,0],field:[0,0,0],plasma:[0,0,0],nova:[0,0,0],control:[0,0,0]};
+ const off={structure:[0,0,0],core:[0,0,0],field:[0,0,0],plasma:[0,0,0],nova:[0,0,0],control:[0,0,0],radiation:[0,0,0]};
  if(on){off.core=[0,0,0];off.field=[0,2.8,0];off.plasma=[0,-2.6,0];off.nova=[0,0,2.6];off.control=[2.0,0,-2.4];}
  Object.entries(groups).forEach(([k,g])=>g.position.set(...off[k]));
  $('explodeBtn').setAttribute('aria-pressed',String(on));$('explodeBtn').textContent=on?'VISTA MONTADA':'VISTA EXPLODIDA';
@@ -266,7 +291,7 @@ const views={front:[0,2,25],side:[25,2,0],top:[0,25,.01],iso:[19,11,20]};
 document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>{const v=views[btn.dataset.view];camera.position.set(...v);controls.target.set(0,0,0);controls.update();controls.autoRotate=false;$('rotateBtn').setAttribute('aria-pressed','false');$('rotateBtn').textContent='ÓRBITA AUTOMÁTICA';}));
 $('shotBtn').addEventListener('click',()=>{composer.render();const a=document.createElement('a');a.download='EGAS-industrial-conceitual.png';a.href=renderer.domElement.toDataURL('image/png');a.click();});
 $('fullBtn').addEventListener('click',()=>{const t=$('viewport').parentElement;if(!document.fullscreenElement)t.requestFullscreen?.();else document.exitFullscreen?.();});
-function configData(){return {version:'0.3',selected,material,length:Number($('length').value),diameter:Number($('diameter').value),alpha:Number($('alpha').value),layers:Object.fromEntries(Object.keys(groups).map(k=>[k,groups[k].visible])),exploded,sectionEnabled,sectionPosition:cutPlane.constant};}
+function configData(){return {version:'0.4',selected,material,length:Number($('length').value),diameter:Number($('diameter').value),alpha:Number($('alpha').value),layers:Object.fromEntries(Object.keys(groups).map(k=>[k,groups[k].visible])),exploded,sectionEnabled,sectionPosition:cutPlane.constant};}
 $('saveBtn').addEventListener('click',()=>{try{localStorage.setItem('egas-lab-config',JSON.stringify(configData()));$('saveBtn').textContent='CONFIGURAÇÃO SALVA';}catch(e){$('saveBtn').textContent='FALHA AO SALVAR';}setTimeout(()=>$('saveBtn').textContent='SALVAR CONFIG.',1800);});
 $('exportBtn').addEventListener('click',()=>{const data={projeto:'S.P.E.C.T.R.A. / EGAS',natureza:'modelo conceitual educacional; não validado',aviso:'Elemento 192 não descoberto. Geometrias e valores são ilustrativos.',configuracao:configData(),componentes:partList.map(p=>({id:p[0],nome:p[1],camada:p[2]})),materiais:materialData};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='EGAS-ficha-conceitual.json';a.click();URL.revokeObjectURL(url);});
 function restoreSaved(){
