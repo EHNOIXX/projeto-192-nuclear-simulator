@@ -1,9 +1,232 @@
 import * as THREE from 'three';
-const $=id=>document.getElementById(id),z=$('z'),n=$('n');
-const C={ac:.711,as:17.8,u:1.66053906660e-27,G:6.67430e-11,c:299792458};
-let scene,camera,renderer,nucleus,cloud,view='nucleus';
-function setup(){const host=$('atomView');scene=new THREE.Scene();scene.background=new THREE.Color('#0c121d');camera=new THREE.PerspectiveCamera(42,host.clientWidth/host.clientHeight,.1,100);camera.position.z=8;renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);scene.add(new THREE.AmbientLight(0xaac8df,1.5));const light=new THREE.PointLight(0x68e0df,35);light.position.set(4,5,6);scene.add(light);nucleus=new THREE.Group();cloud=new THREE.Group();scene.add(nucleus,cloud);const stars=[];for(let i=0;i<350;i++)stars.push((Math.random()-.5)*22,(Math.random()-.5)*14,(Math.random()-.5)*10);const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(stars,3));scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0x34445f,size:.018})));let drag=false,lx=0,ly=0;renderer.domElement.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX;ly=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});renderer.domElement.addEventListener('pointerup',()=>drag=false);renderer.domElement.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-lx,dy=e.clientY-ly;nucleus.rotation.y+=dx*.008;nucleus.rotation.x+=dy*.008;cloud.rotation.y+=dx*.008;cloud.rotation.x+=dy*.008;lx=e.clientX;ly=e.clientY});renderer.domElement.addEventListener('wheel',e=>camera.position.z=Math.max(4,Math.min(14,camera.position.z+e.deltaY*.008)),{passive:true});window.addEventListener('resize',()=>{const w=host.clientWidth,h=host.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)});draw();animate()}
-function animate(){requestAnimationFrame(animate);if(nucleus)nucleus.rotation.y+=.0012;renderer.render(scene,camera)}
-function draw(){if(!nucleus)return;nucleus.clear();cloud.clear();const Z=+z.value,N=+n.value,A=Z+N,count=Math.min(A,500),R=1.12*Math.cbrt(Math.max(1,A)/442),pg=new THREE.SphereGeometry(.055,9,9),ng=new THREE.SphereGeometry(.052,9,9),pm=new THREE.MeshStandardMaterial({color:0x65dfe0,roughness:.45}),nm=new THREE.MeshStandardMaterial({color:0x9185ef,roughness:.45});for(let i=0;i<count;i++){const p=i<Math.min(Z,count),phi=Math.acos(1-2*(i+.5)/count),theta=Math.PI*(1+Math.sqrt(5))*i,r=R*Math.cbrt((i+.5)/count),m=new THREE.Mesh(p?pg:ng,p?pm:nm);m.position.set(r*Math.sin(phi)*Math.cos(theta),r*Math.sin(phi)*Math.sin(theta),r*Math.cos(phi));nucleus.add(m)}cloud.add(new THREE.Mesh(new THREE.SphereGeometry(2.25,32,24),new THREE.MeshBasicMaterial({color:0x68e0df,wireframe:true,transparent:true,opacity:.08})));nucleus.visible=view==='nucleus';cloud.visible=view==='cloud'}
-function calc(){const Z=+z.value,N=+n.value,A=Z+N,x=C.ac*Z*Z/(2*C.as*A),mass=A*C.u,rs=2*C.G*mass/C.c**2,r=1.2e-15*Math.cbrt(A),g=C.G*mass/(r*r);$('zv').value=Z;$('nv').value=N;$('av').textContent=A;$('xv').textContent=x.toFixed(3);$('xs').textContent=x<1?'x < 1: gota ideal resiste à deformação infinitesimal':'x ≥ 1: gota ideal instável a deformações infinitesimais';$('mv').textContent=mass.toExponential(3)+' kg';$('rsv').textContent=rs.toExponential(2)+' m';$('gv').textContent=g.toExponential(2)+' m/s²';draw()}
-z.addEventListener('input',calc);n.addEventListener('input',calc);$('reset').addEventListener('click',()=>{z.value=192;n.value=250;calc()});document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-view]').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');view=b.dataset.view;$('viewname').textContent=view==='nucleus'?'NUCLEUS VIEW':'CLOUD VIEW';draw()}));setup();calc();
+
+const $ = id => document.getElementById(id);
+const z = $('z');
+const n = $('n');
+const C = {
+  ac: 0.711,
+  as: 17.8,
+  u: 1.66053906660e-27,
+  G: 6.67430e-11,
+  c: 299792458
+};
+
+let scene, camera, renderer, nucleus, cloud, shell;
+let view = 'nucleus';
+let targetZoom = 7.5;
+const MIN_ZOOM = 2.4;
+const MAX_ZOOM = 18;
+
+function makeParticle(material, radius) {
+  return new THREE.Mesh(new THREE.SphereGeometry(radius, 14, 12), material);
+}
+
+function setup() {
+  const host = $('atomView');
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color('#080e19');
+
+  camera = new THREE.PerspectiveCamera(40, host.clientWidth / host.clientHeight, 0.1, 100);
+  camera.position.set(0, 0, targetZoom);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(host.clientWidth, host.clientHeight);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  host.appendChild(renderer.domElement);
+  renderer.domElement.setAttribute('aria-label', 'Núcleo atômico 3D esquemático. Arraste para girar e use a roda ou os botões para aproximar.');
+
+  scene.add(new THREE.AmbientLight(0xb7d8ef, 1.8));
+  const keyLight = new THREE.PointLight(0x72e8e5, 42, 30);
+  keyLight.position.set(4, 5, 7);
+  scene.add(keyLight);
+  const fillLight = new THREE.PointLight(0x8e7dff, 18, 24);
+  fillLight.position.set(-5, -2, 3);
+  scene.add(fillLight);
+
+  nucleus = new THREE.Group();
+  cloud = new THREE.Group();
+  scene.add(nucleus, cloud);
+
+  const stars = [];
+  for (let i = 0; i < 500; i++) {
+    stars.push((Math.random() - 0.5) * 24, (Math.random() - 0.5) * 15, (Math.random() - 0.5) * 12);
+  }
+  const starGeometry = new THREE.BufferGeometry();
+  starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(stars, 3));
+  scene.add(new THREE.Points(starGeometry, new THREE.PointsMaterial({ color: 0x526783, size: 0.022, transparent: true, opacity: 0.65 })));
+
+  let dragging = false;
+  let lastX = 0;
+  let lastY = 0;
+  renderer.domElement.addEventListener('pointerdown', event => {
+    if (event.button !== 0) return;
+    dragging = true;
+    lastX = event.clientX;
+    lastY = event.clientY;
+    renderer.domElement.setPointerCapture(event.pointerId);
+  });
+  renderer.domElement.addEventListener('pointerup', () => { dragging = false; });
+  renderer.domElement.addEventListener('pointercancel', () => { dragging = false; });
+  renderer.domElement.addEventListener('pointermove', event => {
+    if (!dragging) return;
+    const dx = event.clientX - lastX;
+    const dy = event.clientY - lastY;
+    nucleus.rotation.y += dx * 0.009;
+    nucleus.rotation.x += dy * 0.009;
+    cloud.rotation.y += dx * 0.006;
+    cloud.rotation.x += dy * 0.006;
+    lastX = event.clientX;
+    lastY = event.clientY;
+  });
+
+  renderer.domElement.addEventListener('wheel', event => {
+    event.preventDefault();
+    targetZoom = THREE.MathUtils.clamp(targetZoom * Math.exp(event.deltaY * 0.0014), MIN_ZOOM, MAX_ZOOM);
+  }, { passive: false });
+
+  $('zoomIn')?.addEventListener('click', () => { targetZoom = Math.max(MIN_ZOOM, targetZoom * 0.78); });
+  $('zoomOut')?.addEventListener('click', () => { targetZoom = Math.min(MAX_ZOOM, targetZoom * 1.28); });
+  $('zoomReset')?.addEventListener('click', () => { targetZoom = 7.5; });
+
+  window.addEventListener('resize', () => {
+    const width = Math.max(1, host.clientWidth);
+    const height = Math.max(1, host.clientHeight);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+  });
+
+  draw();
+  animate();
+}
+
+function draw() {
+  if (!nucleus) return;
+  nucleus.clear();
+  cloud.clear();
+
+  const Z = Number(z.value);
+  const N = Number(n.value);
+  const A = Z + N;
+  const count = Math.min(A, 750);
+  const radius = 1.15 * Math.cbrt(Math.max(1, A) / 442);
+  const protonMaterial = new THREE.MeshStandardMaterial({
+    color: 0x55e0e5, emissive: 0x0b555d, emissiveIntensity: 0.35, roughness: 0.34, metalness: 0.12
+  });
+  const neutronMaterial = new THREE.MeshStandardMaterial({
+    color: 0x9b8cff, emissive: 0x34266f, emissiveIntensity: 0.3, roughness: 0.38, metalness: 0.08
+  });
+
+  // Distribuição de pontos ilustrativa; não representa posições nucleares calculadas.
+  for (let i = 0; i < count; i++) {
+    const isProton = i < Z;
+    const phi = Math.acos(1 - 2 * (i + 0.5) / count);
+    const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+    const r = radius * Math.cbrt((i + 0.5) / count);
+    const particle = makeParticle(isProton ? protonMaterial : neutronMaterial, isProton ? 0.052 : 0.049);
+    particle.position.set(
+      r * Math.sin(phi) * Math.cos(theta),
+      r * Math.sin(phi) * Math.sin(theta),
+      r * Math.cos(phi)
+    );
+    nucleus.add(particle);
+  }
+
+  const outerGlow = new THREE.Mesh(
+    new THREE.SphereGeometry(radius * 1.08, 40, 32),
+    new THREE.MeshBasicMaterial({ color: 0x54dce2, wireframe: true, transparent: true, opacity: 0.055 })
+  );
+  nucleus.add(outerGlow);
+
+  const halo = new THREE.Mesh(
+    new THREE.SphereGeometry(radius * 1.22, 40, 32),
+    new THREE.MeshBasicMaterial({ color: 0x6b83c9, wireframe: true, transparent: true, opacity: 0.035 })
+  );
+  nucleus.add(halo);
+
+  // Nuvem de probabilidade meramente ilustrativa: não é uma orbital calculada.
+  const cloudPositions = [];
+  for (let i = 0; i < 1100; i++) {
+    const u = Math.random();
+    const v = Math.random();
+    const theta = 2 * Math.PI * u;
+    const phi = Math.acos(2 * v - 1);
+    const r = 1.8 + Math.random() * 0.75;
+    cloudPositions.push(
+      r * Math.sin(phi) * Math.cos(theta),
+      r * Math.sin(phi) * Math.sin(theta),
+      r * Math.cos(phi)
+    );
+  }
+  const cloudGeometry = new THREE.BufferGeometry();
+  cloudGeometry.setAttribute('position', new THREE.Float32BufferAttribute(cloudPositions, 3));
+  cloud.add(new THREE.Points(cloudGeometry, new THREE.PointsMaterial({
+    color: 0x6fe7e2, size: 0.026, transparent: true, opacity: 0.22, sizeAttenuation: true
+  })));
+  const cloudSphere = new THREE.Mesh(
+    new THREE.SphereGeometry(2.15, 32, 24),
+    new THREE.MeshBasicMaterial({ color: 0x68e0df, wireframe: true, transparent: true, opacity: 0.045 })
+  );
+  cloud.add(cloudSphere);
+
+  nucleus.visible = view === 'nucleus';
+  cloud.visible = view === 'cloud';
+  const particleCount = $('particleCount');
+  if (particleCount) particleCount.textContent = count.toLocaleString('pt-BR') + ' partículas exibidas';
+  const nucleusScale = $('nucleusScale');
+  if (nucleusScale) nucleusScale.textContent = 'A = ' + A;
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  if (camera) {
+    camera.position.z += (targetZoom - camera.position.z) * 0.14;
+  }
+  if (view === 'nucleus' && nucleus) nucleus.rotation.y += 0.0011;
+  if (view === 'cloud' && cloud) cloud.rotation.y += 0.0008;
+  renderer.render(scene, camera);
+}
+
+function calc() {
+  const Z = Number(z.value);
+  const N = Number(n.value);
+  const A = Z + N;
+  const x = C.ac * Z * Z / (2 * C.as * A);
+  const mass = A * C.u;
+  const schwarzschild = 2 * C.G * mass / (C.c * C.c);
+  const nuclearRadius = 1.2e-15 * Math.cbrt(A);
+  const gravity = C.G * mass / (nuclearRadius * nuclearRadius);
+
+  $('zv').value = Z;
+  $('nv').value = N;
+  $('av').textContent = A;
+  $('xv').textContent = x.toFixed(3);
+  $('xs').textContent = x < 1
+    ? 'x < 1: o indicador da gota líquida fica abaixo do limiar x = 1.'
+    : 'x ≥ 1: o indicador da gota líquida ultrapassa o limiar x = 1.';
+  $('mv').textContent = mass.toExponential(3) + ' kg';
+  $('rsv').textContent = schwarzschild.toExponential(2) + ' m';
+  $('gv').textContent = gravity.toExponential(2) + ' m/s²';
+  draw();
+}
+
+z.addEventListener('input', calc);
+n.addEventListener('input', calc);
+$('reset').addEventListener('click', () => {
+  z.value = 192;
+  n.value = 250;
+  calc();
+});
+document.querySelectorAll('[data-view]').forEach(button => {
+  button.addEventListener('click', () => {
+    document.querySelectorAll('[data-view]').forEach(item => item.classList.remove('selected'));
+    button.classList.add('selected');
+    view = button.dataset.view;
+    $('viewname').textContent = view === 'nucleus' ? 'NUCLEUS VIEW' : 'PROBABILITY CLOUD';
+    draw();
+  });
+});
+
+setup();
+calc();
