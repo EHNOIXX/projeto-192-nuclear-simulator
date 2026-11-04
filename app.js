@@ -13,12 +13,12 @@ const C = {
 
 let scene, camera, renderer, nucleus, cloud, shell;
 let view = 'nucleus';
-let targetZoom = 4.8;
+let targetZoom = 4.0;
 const MIN_ZOOM = 2.4;
 const MAX_ZOOM = 18;
 
 function makeParticle(material, radius) {
-  return new THREE.Mesh(new THREE.SphereGeometry(radius, 14, 12), material);
+  return new THREE.Mesh(new THREE.SphereGeometry(radius, 24, 20), material);
 }
 
 function setup() {
@@ -87,7 +87,7 @@ function setup() {
 
   $('zoomIn')?.addEventListener('click', () => { targetZoom = Math.max(MIN_ZOOM, targetZoom * 0.78); });
   $('zoomOut')?.addEventListener('click', () => { targetZoom = Math.min(MAX_ZOOM, targetZoom * 1.28); });
-  $('zoomReset')?.addEventListener('click', () => { targetZoom = 4.8; });
+  $('zoomReset')?.addEventListener('click', () => { targetZoom = 4.0; });
 
   window.addEventListener('resize', () => {
     const width = Math.max(1, host.clientWidth);
@@ -110,12 +110,12 @@ function draw() {
   const N = Number(n.value);
   const A = Z + N;
   const count = Math.min(A, 750);
-  const radius = 1.55 * Math.cbrt(Math.max(1, A) / 442);
+  const radius = 1.72 * Math.cbrt(Math.max(1, A) / 442);
   const protonMaterial = new THREE.MeshStandardMaterial({
-    color: 0x55e0e5, emissive: 0x0b555d, emissiveIntensity: 0.35, roughness: 0.34, metalness: 0.12
+    color: 0x55e0e5, emissive: 0x0b555d, emissiveIntensity: 0.35, roughness: 0.24, metalness: 0.18
   });
   const neutronMaterial = new THREE.MeshStandardMaterial({
-    color: 0x9b8cff, emissive: 0x34266f, emissiveIntensity: 0.3, roughness: 0.38, metalness: 0.08
+    color: 0x9b8cff, emissive: 0x34266f, emissiveIntensity: 0.3, roughness: 0.27, metalness: 0.14
   });
 
   // Distribuição de pontos ilustrativa; não representa posições nucleares calculadas.
@@ -124,12 +124,14 @@ function draw() {
     const phi = Math.acos(1 - 2 * (i + 0.5) / count);
     const theta = Math.PI * (1 + Math.sqrt(5)) * i;
     const r = radius * Math.cbrt((i + 0.5) / count);
-    const particle = makeParticle(isProton ? protonMaterial : neutronMaterial, isProton ? 0.064 : 0.060);
+    const particle = makeParticle(isProton ? protonMaterial : neutronMaterial, isProton ? 0.073 : 0.069);
     particle.position.set(
       r * Math.sin(phi) * Math.cos(theta),
       r * Math.sin(phi) * Math.sin(theta),
       r * Math.cos(phi)
     );
+    const sizeVariation = 0.94 + 0.12 * (0.5 + 0.5 * Math.sin(i * 12.9898));
+    particle.scale.setScalar(sizeVariation);
     nucleus.add(particle);
   }
 
@@ -144,6 +146,19 @@ function draw() {
     new THREE.MeshBasicMaterial({ color: 0x6b83c9, wireframe: true, transparent: true, opacity: 0.035 })
   );
   nucleus.add(halo);
+
+  // Contornos decorativos para evidenciar o volume; não são camadas nucleares reais.
+  const contourMaterial = new THREE.MeshBasicMaterial({
+    color: 0x8cebea, wireframe: true, transparent: true, opacity: 0.075
+  });
+  [0.48, 0.72, 0.94].forEach((fraction, index) => {
+    const contour = new THREE.Mesh(
+      new THREE.SphereGeometry(radius * fraction, 28, 20),
+      contourMaterial
+    );
+    contour.rotation.set(index * 0.31, index * 0.47, index * 0.19);
+    nucleus.add(contour);
+  });
 
   // Nuvem de probabilidade meramente ilustrativa: não é uma orbital calculada.
   const cloudPositions = [];
