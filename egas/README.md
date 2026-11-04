@@ -8,9 +8,11 @@ Com GitHub Pages habilitado para a branch `main` e a pasta `/(root)`, o endereç
 
 https://ehnoixx.github.io/projeto-192-nuclear-simulator/egas/
 
-## Recursos da versão 0.2
+## Recursos da versão 0.3
 
-- Modelo 3D com materiais físicos de renderização, iluminação, sombras, ambiente e pós-processamento.
+- Modelo reconstruído com chassi aberto, anéis estruturais, longarinas, painéis, fixadores e módulos internos separados.
+- Núcleo central mais visível, bobinas com enrolamentos detalhados, câmaras transparentes e conjunto traseiro cenográfico.
+- Materiais metálicos, iluminação de estúdio, sombras e pós-processamento moderado.
 - Câmera orbital com zoom, presets frontal, lateral, superior e isométrico.
 - Seleção de componentes por clique e pela lista.
 - Visibilidade independente das camadas.
