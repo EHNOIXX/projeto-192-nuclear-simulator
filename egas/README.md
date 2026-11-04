@@ -8,9 +8,11 @@ Com GitHub Pages habilitado para a branch `main` e a pasta `/(root)`, o endereç
 
 https://ehnoixx.github.io/projeto-192-nuclear-simulator/egas/
 
-## Recursos da versão 0.4
+## Recursos da versão 0.5
 
-- Modelo reconstruído com chassi aberto, anéis estruturais, longarinas, painéis, fixadores e módulos internos separados.
+- Chassi industrial com anéis estruturais, longarinas, painéis, fixadores e módulos internos separados.
+- Vaso central de contenção conceitual com flanges, juntas ilustrativas, bocais de instrumentação, fixadores e suportes radiais.
+- Blindagem segmentada, tubulações de serviço, canaletas de cabos, sensores, indicadores e distribuidores externos.
 - Núcleo central mais visível, bobinas com enrolamentos detalhados, câmaras transparentes e conjunto traseiro cenográfico.
 - Materiais metálicos, iluminação de estúdio, sombras e pós-processamento moderado.
 - Câmera orbital com zoom, presets frontal, lateral, superior e isométrico.
@@ -50,3 +52,7 @@ Three.js 0.160.0, OrbitControls e módulos de pós-processamento carregados via 
 - Placas coletoras que representam uma tecnologia especulativa de conversão da energia radiativa absorvida.
 - Região eletrônica estilizada para ilustrar a hipótese de deformação do espaço-tempo.
 - Esses elementos não constituem projeto de proteção radiológica, sistema energético demonstrado ou mecanismo físico comprovado. O elemento 192 não foi descoberto e não há evidência de que possa curvar o espaço-tempo.
+
+
+### Atualização visual 0.5
+A região central agora é uma montagem visual em camadas, com vaso, interfaces mecânicas, blindagem segmentada e instrumentação. O conjunto é inspirado em convenções visuais de equipamentos industriais e instalações experimentais. Nenhum componente representa especificação de engenharia, solução de contenção radiológica ou sistema energético demonstrado.
