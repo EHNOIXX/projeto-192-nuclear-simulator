@@ -181,9 +181,9 @@ const partList=[
 ];
 // Alias de seleção para peças compostas.
 objects.outerShell=objects.frameRing0;
-objects.coilLeft=objects.coilHousing-1;
+objects.coilLeft=objects['coilHousing-1'];
 objects.coilRight=objects.coilHousing1;
-objects.plasmaLeft=objects.plasmaChamber-1;
+objects.plasmaLeft=objects['plasmaChamber-1'];
 objects.plasmaRight=objects.plasmaChamber1;
 
 $('layers').innerHTML=Object.keys(groups).map(k=>'<label class="check"><input type="checkbox" data-layer="'+k+'" checked> '+names[k]+'</label>').join('');
