@@ -49,3 +49,20 @@
 footer{background:#070a10}
 @media(max-width:850px){#atomView{height:320px}.viewer-foot{flex-wrap:wrap}.particle-legend{gap:12px;flex-wrap:wrap}}
 @media(max-width:520px){#atomView{height:280px}.viewer-meta{font-size:8px}.particle-legend{gap:10px;font-size:8px}.particle-legend .legend-note{width:100%;margin-left:0}.viewer-foot{font-size:8px}.zoom-controls{margin-left:auto}.hero{padding-top:42px}}
+
+
+/* 0.3.0 — correção de layout do painel 3D e legibilidade */
+.viewer{min-height:470px;display:flex;flex-direction:column}
+#atomView{height:350px;flex:0 0 350px;min-height:350px;position:relative;overflow:hidden}
+#atomView canvas{display:block;width:100%!important;height:100%!important}
+.viewer-meta{min-height:34px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 18px;color:#aab8ca;font:10px var(--mono);letter-spacing:.35px}
+.particle-legend{min-height:38px;display:flex;align-items:center;gap:20px;padding:9px 18px;color:#d3deed;font:10px var(--mono);border-top:1px solid #263449;border-bottom:1px solid #263449}
+.particle-legend>span{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.particle-legend .legend-note{margin-left:auto;color:#8190a5;font-size:9px}
+.viewer-foot{min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 18px}
+.zoom-controls{display:flex;gap:6px;align-items:center}
+.zoom-controls button{height:30px;min-width:34px;padding:0 10px;background:#142338;color:#e5f4ff;border:1px solid #38516d;border-radius:5px;font:11px var(--mono);cursor:pointer}
+.zoom-controls button:hover{background:#1d3a50;border-color:var(--cyan);color:var(--cyan)}
+#zoomReset{min-width:54px;font-size:9px}
+@media(max-width:850px){.viewer{min-height:440px}#atomView{height:320px;flex-basis:320px;min-height:320px}.particle-legend{gap:12px;flex-wrap:wrap}.particle-legend .legend-note{margin-left:0}}
+@media(max-width:520px){#atomView{height:280px;flex-basis:280px;min-height:280px}.viewer-meta{font-size:9px}.particle-legend{font-size:8px;gap:10px}.viewer-foot{flex-wrap:wrap;font-size:8px}.zoom-controls{margin-left:auto}}
