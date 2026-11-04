@@ -57,7 +57,7 @@ ground.rotation.x=-Math.PI/2; ground.position.y=-4.43; ground.receiveShadow=true
 const root = new THREE.Group(); scene.add(root);
 const groups = {
  structure:new THREE.Group(), core:new THREE.Group(), radiation:new THREE.Group(), field:new THREE.Group(),
- plasma:new THREE.Group(), nova:new THREE.Group(), control:new THREE.Group()
+ plasma:new THREE.Group(), nova:new THREE.Group(), control:new THREE.Group(), instrumentation:new THREE.Group()
 };
 Object.values(groups).forEach(g=>root.add(g));
 
@@ -185,7 +185,55 @@ for(let j=0;j<10;j++){
 cylinder('nozzle','Bocal externo cenográfico','structure',1.65,.95,1.7,mat.dark,8.65,0,0,64);
 torus('nozzleLip','Borda do bocal','structure',9.5,1.0,.13,mat.steel);
 
-const names={structure:'Estrutura externa',core:'Núcleo E-192',radiation:'Blindagem e recuperação energética',field:'Sistema eletromagnético',plasma:'Câmaras conceituais de plasma',nova:'Módulo N.O.V.A.',control:'Controle vetorial'};
+
+// Módulo central de contenção: vaso cilíndrico, flanges, portas e instrumentação.
+// A geometria é uma representação de arquitetura, não um projeto de blindagem.
+cylinder('containmentVessel','Vaso central de contenção conceitual','core',2.05,2.05,3.35,mat.dark,0,0,0,96);
+for(const x of [-1.72,1.72]){
+ torus('vesselFlange'+x,'Flange usinada do vaso','core',x,2.04,.16,mat.steel);
+ torus('vesselSeal'+x,'Junta de vedação ilustrativa','core',x*1.015,1.91,.045,mat.ceramic);
+ for(let j=0;j<24;j++){
+  const a=j*Math.PI/12;
+  add('vesselBolt'+x+'_'+j,'Parafuso de flange do vaso','core',new THREE.CylinderGeometry(.055,.055,.09,12),mat.copper,[x,2.04*Math.cos(a),2.04*Math.sin(a)],[0,0,Math.PI/2]);
+ }
+}
+for(let j=0;j<8;j++){
+ const a=j*Math.PI/4, y=2.02*Math.cos(a), z=2.02*Math.sin(a);
+ cylinder('vesselPort'+j,'Bocal de instrumentação do vaso','core',.19,.19,.42,mat.steel,j%2?1.05:-1.05,y,z,24);
+ add('vesselPortCap'+j,'Tampa do bocal','core',new THREE.SphereGeometry(.2,20,12),mat.cyan,[j%2?1.28:-1.28,y,z]);
+}
+// Blindagem externa segmentada e suportes mecânicos independentes.
+for(let j=0;j<16;j++){
+ const a=j*Math.PI/8;
+ const p=add('shieldSegment'+j,'Segmento externo de blindagem ilustrativa','radiation',new THREE.BoxGeometry(1.1,.16,.58),j%2?mat.ceramic:mat.titanium,[0,2.28*Math.cos(a),2.28*Math.sin(a)],[a,0,0]);
+}
+for(let j=0;j<8;j++){
+ const a=j*Math.PI/4;
+ rod('containmentSupport'+j,'Pé estrutural do vaso','structure',[-2.0,2.0*Math.cos(a),2.0*Math.sin(a)],[-2.0,2.85*Math.cos(a),2.85*Math.sin(a)],.09,mat.steel);
+ rod('containmentSupportB'+j,'Pé estrutural do vaso','structure',[2.0,2.0*Math.cos(a),2.0*Math.sin(a)],[2.0,2.85*Math.cos(a),2.85*Math.sin(a)],.09,mat.steel);
+}
+// Circuitos externos de serviço, tubulações e caixas de diagnóstico (elementos cenográficos).
+for(let j=0;j<6;j++){
+ const a=j*Math.PI/3, y=2.85*Math.cos(a), z=2.85*Math.sin(a);
+ rod('servicePipe'+j,'Linha externa de serviço','instrumentation',[-2.6,y,z],[2.6,y,z],.045,j%2?mat.cyan:mat.copper);
+ for(const x of [-2.4,2.4]){
+  add('sensorBox'+j+'_'+x,'Caixa de sensor e diagnóstico','instrumentation',new THREE.BoxGeometry(.42,.32,.28),mat.dark,[x,y*1.04,z*1.04]);
+  add('sensorLamp'+j+'_'+x,'Indicador de estado','instrumentation',new THREE.SphereGeometry(.07,12,8),mat.electron,[x,y*1.04,z*1.04+.17]);
+ }
+}
+for(let j=0;j<10;j++){
+ const a=j*Math.PI/5, y=3.25*Math.cos(a), z=3.25*Math.sin(a);
+ rod('cableRun'+j,'Canaleta de cabos e sensores','instrumentation',[-5.8,y,z],[5.8,y,z],.035,j%2?mat.cyan:mat.dark);
+}
+for(let x of [-5.9,5.9]){
+ add('serviceManifold'+x,'Distribuidor de serviços','instrumentation',new THREE.BoxGeometry(.72,1.0,1.1),mat.dark,[x,0,0]);
+ for(let j=0;j<6;j++){
+  const a=j*Math.PI/3;
+  add('manifoldPort'+x+'_'+j,'Conector do distribuidor','instrumentation',new THREE.CylinderGeometry(.09,.09,.12,16),mat.copper,[x,Math.cos(a)*.42,Math.sin(a)*.42],[0,0,Math.PI/2]);
+ }
+}
+
+const names={structure:'Estrutura externa',core:'Núcleo E-192',radiation:'Blindagem e recuperação energética',field:'Sistema eletromagnético',plasma:'Câmaras conceituais de plasma',nova:'Módulo N.O.V.A.',control:'Controle vetorial',instrumentation:'Instrumentação e serviços'};
 const descriptions={
  outerShell:'A estrutura agora é uma armação aberta de anéis, longarinas e painéis independentes.',
  core:'Posição hipotética do E-192. Elemento 192 não foi descoberto; propriedades e capacidade de alterar o espaço-tempo são desconhecidas.',
@@ -195,14 +243,14 @@ const descriptions={
  coilLeft:'Bobinas cenográficas com enrolamentos de cobre e suportes mecânicos.',
  plasmaLeft:'Câmara transparente ilustrativa; não representa parâmetros operacionais.',
  nova:'Módulo conceitual para organizar temas de energia e física especulativa.',
- vectorRing:'Conjunto cenográfico de orientação e controle, sem validação funcional.'
+ vectorRing:'Conjunto cenográfico de orientação e controle, sem validação funcional.', containmentVessel:'Vaso central ilustrativo com flanges, bocais e suportes. Não define pressão, vácuo, espessura ou proteção radiológica.', instrumentation:'Tubulações, canaletas, sensores e distribuidores representados para dar contexto de manutenção e monitoramento; não possuem especificações funcionais.'
 };
 const partList=[
  ['outerShell','Chassi estrutural','structure'],['core','Núcleo E-192 hipotético','core'],
  ['radiationShield','Filtros de radiação intensa','radiation'],['energyCollector','Placas de recuperação energética','radiation'],['electronFlow','Região eletrônica hipotética','radiation'],
  ['coilLeft','Bobina eletromagnética esquerda','field'],['coilRight','Bobina eletromagnética direita','field'],
  ['plasmaLeft','Câmara de plasma esquerda','plasma'],['plasmaRight','Câmara de plasma direita','plasma'],
- ['nova','Módulo N.O.V.A.','nova'],['vectorRing','Controle vetorial','control'],['nozzle','Bocal cenográfico','structure']
+ ['nova','Módulo N.O.V.A.','nova'],['vectorRing','Controle vetorial','control'],['nozzle','Bocal cenográfico','structure'],['containmentVessel','Vaso central de contenção','core'],['instrumentation','Instrumentação e serviços','instrumentation']
 ];
 // Alias de seleção para peças compostas.
 objects.outerShell=objects.frameRing0;
@@ -256,7 +304,7 @@ renderer.domElement.addEventListener('click',e=>{
  const hits=ray.intersectObjects(Object.values(groups).flatMap(g=>g.children),false);
  const hit=hits.find(h=>h.object.userData.layer);if(!hit)return;
  const layer=hit.object.userData.layer;
- const map={structure:'outerShell',core:'core',radiation:hit.object.name.startsWith('energyPlate')||hit.object.name.startsWith('plateCell')?'energyCollector':hit.object.name.startsWith('electron')?'electronFlow':'radiationShield',field:hit.object.name.includes('1')?'coilRight':'coilLeft',plasma:hit.object.name.includes('1')?'plasmaRight':'plasmaLeft',nova:'nova',control:'vectorRing'};
+ const map={structure:'outerShell',core:hit.object.name==='containmentVessel'?'containmentVessel':'core',instrumentation:'instrumentation',radiation:hit.object.name.startsWith('energyPlate')||hit.object.name.startsWith('plateCell')?'energyCollector':hit.object.name.startsWith('electron')?'electronFlow':'radiationShield',field:hit.object.name.includes('1')?'coilRight':'coilLeft',plasma:hit.object.name.includes('1')?'plasmaRight':'plasmaLeft',nova:'nova',control:'vectorRing'};
  selected=map[layer]||'outerShell';$('partSelect').value=selected;refresh();highlight();
 });
 $('length').oninput=e=>{length=+e.target.value;$('lengthOut').value=length+' m';root.scale.x=length/24;};
@@ -278,8 +326,8 @@ renderer.localClippingEnabled=true;
 function applyCut(){Object.values(groups).forEach(g=>g.children.forEach(o=>{if(o.material&&!Array.isArray(o.material)){o.material.clippingPlanes=sectionEnabled?[cutPlane]:[];o.material.needsUpdate=true;}}));}
 function setExploded(on){
  exploded=on;
- const off={structure:[0,0,0],core:[0,0,0],field:[0,0,0],plasma:[0,0,0],nova:[0,0,0],control:[0,0,0],radiation:[0,0,0]};
- if(on){off.core=[0,0,0];off.field=[0,2.8,0];off.plasma=[0,-2.6,0];off.nova=[0,0,2.6];off.control=[2.0,0,-2.4];}
+ const off={structure:[0,0,0],core:[0,0,0],field:[0,0,0],plasma:[0,0,0],nova:[0,0,0],control:[0,0,0],radiation:[0,0,0],instrumentation:[0,0,0]};
+ if(on){off.core=[0,0,0];off.field=[0,2.8,0];off.plasma=[0,-2.6,0];off.nova=[0,0,2.6];off.control=[2.0,0,-2.4];off.instrumentation=[0,0,3.4];}
  Object.entries(groups).forEach(([k,g])=>g.position.set(...off[k]));
  $('explodeBtn').setAttribute('aria-pressed',String(on));$('explodeBtn').textContent=on?'VISTA MONTADA':'VISTA EXPLODIDA';
 }
@@ -291,7 +339,7 @@ const views={front:[0,2,25],side:[25,2,0],top:[0,25,.01],iso:[19,11,20]};
 document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>{const v=views[btn.dataset.view];camera.position.set(...v);controls.target.set(0,0,0);controls.update();controls.autoRotate=false;$('rotateBtn').setAttribute('aria-pressed','false');$('rotateBtn').textContent='ÓRBITA AUTOMÁTICA';}));
 $('shotBtn').addEventListener('click',()=>{composer.render();const a=document.createElement('a');a.download='EGAS-industrial-conceitual.png';a.href=renderer.domElement.toDataURL('image/png');a.click();});
 $('fullBtn').addEventListener('click',()=>{const t=$('viewport').parentElement;if(!document.fullscreenElement)t.requestFullscreen?.();else document.exitFullscreen?.();});
-function configData(){return {version:'0.4',selected,material,length:Number($('length').value),diameter:Number($('diameter').value),alpha:Number($('alpha').value),layers:Object.fromEntries(Object.keys(groups).map(k=>[k,groups[k].visible])),exploded,sectionEnabled,sectionPosition:cutPlane.constant};}
+function configData(){return {version:'0.5',selected,material,length:Number($('length').value),diameter:Number($('diameter').value),alpha:Number($('alpha').value),layers:Object.fromEntries(Object.keys(groups).map(k=>[k,groups[k].visible])),exploded,sectionEnabled,sectionPosition:cutPlane.constant};}
 $('saveBtn').addEventListener('click',()=>{try{localStorage.setItem('egas-lab-config',JSON.stringify(configData()));$('saveBtn').textContent='CONFIGURAÇÃO SALVA';}catch(e){$('saveBtn').textContent='FALHA AO SALVAR';}setTimeout(()=>$('saveBtn').textContent='SALVAR CONFIG.',1800);});
 $('exportBtn').addEventListener('click',()=>{const data={projeto:'S.P.E.C.T.R.A. / EGAS',natureza:'modelo conceitual educacional; não validado',aviso:'Elemento 192 não descoberto. Geometrias e valores são ilustrativos.',configuracao:configData(),componentes:partList.map(p=>({id:p[0],nome:p[1],camada:p[2]})),materiais:materialData};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='EGAS-ficha-conceitual.json';a.click();URL.revokeObjectURL(url);});
 function restoreSaved(){
@@ -303,5 +351,5 @@ function restoreSaved(){
 }
 restoreSaved();
 let lastFrame=performance.now(),frames=0;
-function animate(now=performance.now()){requestAnimationFrame(animate);controls.update();composer.render();frames++;if(now-lastFrame>=1000){$('fpsReadout').textContent=frames+' FPS';frames=0;lastFrame=now;}}
+function animate(now=performance.now()){requestAnimationFrame(animate);controls.update();const pulse=0.8+0.2*Math.sin(now*0.0018);if(objects.coreInner?.material)objects.coreInner.material.opacity=pulse;for(let i=0;i<9;i++){const e=objects['electron'+i];if(e){const a=now*.00035+i*2*Math.PI/9;e.position.set(1.15*Math.cos(a),.78*Math.sin(a),.35*Math.sin(a*2));}}composer.render();frames++;if(now-lastFrame>=1000){$('fpsReadout').textContent=frames+' FPS';frames=0;lastFrame=now;}}
 refresh();highlight();animate();
