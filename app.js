@@ -13,7 +13,7 @@ const C = {
 
 let scene, camera, renderer, nucleus, cloud, shell;
 let view = 'nucleus';
-let targetZoom = 7.5;
+let targetZoom = 4.8;
 const MIN_ZOOM = 2.4;
 const MAX_ZOOM = 18;
 
@@ -87,7 +87,7 @@ function setup() {
 
   $('zoomIn')?.addEventListener('click', () => { targetZoom = Math.max(MIN_ZOOM, targetZoom * 0.78); });
   $('zoomOut')?.addEventListener('click', () => { targetZoom = Math.min(MAX_ZOOM, targetZoom * 1.28); });
-  $('zoomReset')?.addEventListener('click', () => { targetZoom = 7.5; });
+  $('zoomReset')?.addEventListener('click', () => { targetZoom = 4.8; });
 
   window.addEventListener('resize', () => {
     const width = Math.max(1, host.clientWidth);
@@ -110,7 +110,7 @@ function draw() {
   const N = Number(n.value);
   const A = Z + N;
   const count = Math.min(A, 750);
-  const radius = 1.15 * Math.cbrt(Math.max(1, A) / 442);
+  const radius = 1.55 * Math.cbrt(Math.max(1, A) / 442);
   const protonMaterial = new THREE.MeshStandardMaterial({
     color: 0x55e0e5, emissive: 0x0b555d, emissiveIntensity: 0.35, roughness: 0.34, metalness: 0.12
   });
@@ -124,7 +124,7 @@ function draw() {
     const phi = Math.acos(1 - 2 * (i + 0.5) / count);
     const theta = Math.PI * (1 + Math.sqrt(5)) * i;
     const r = radius * Math.cbrt((i + 0.5) / count);
-    const particle = makeParticle(isProton ? protonMaterial : neutronMaterial, isProton ? 0.052 : 0.049);
+    const particle = makeParticle(isProton ? protonMaterial : neutronMaterial, isProton ? 0.064 : 0.060);
     particle.position.set(
       r * Math.sin(phi) * Math.cos(theta),
       r * Math.sin(phi) * Math.sin(theta),
