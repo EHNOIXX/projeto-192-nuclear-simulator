@@ -8,8 +8,9 @@ Laboratório web educacional para explorar estimativas teóricas relacionadas a 
 3. Salve e aguarde a publicação.
 4. O endereço esperado é `https://ehnoixx.github.io/projeto-192-nuclear-simulator/`.
 
-## Funcionalidades da versão 0.1.0
-- Visualização 3D esquemática do núcleo com prótons e nêutrons.
+## Funcionalidades da versão 0.2.0
+- Visualização 3D aprimorada com prótons e nêutrons diferenciados por cor, rotação por arraste e zoom pela roda do mouse ou botões.
+- Legenda de partículas, contador de partículas exibidas e alternância entre núcleo e nuvem ilustrativa.
 - Controles de Z e N.
 - Parâmetro de fissilidade no modelo simplificado da gota líquida.
 - Estimativa de massa por A unidades de massa atômica.
@@ -23,6 +24,11 @@ Laboratório web educacional para explorar estimativas teóricas relacionadas a 
 - Radiação, meia-vida e espectros não são calculados por falta de um modelo nuclear validado para Z=192.
 - Velocidades eletrônicas não são exibidas: a aproximação hidrogenoide de núcleo pontual falha quando Zα≥1; é necessário tratamento relativístico e de tamanho nuclear finito.
 - Não há evidência de antigravidade associada a núcleos superpesados. O módulo gravitacional apresenta apenas gravidade convencional.
+
+## Interface e visualização 3D
+- A distribuição espacial dos nucleons é determinística apenas para fins gráficos; não representa posições reais nem uma configuração nuclear de energia mínima.
+- A nuvem é uma representação visual conceitual e não corresponde a orbitais eletrônicos calculados.
+- O zoom é limitado para manter o núcleo dentro da área de visualização; os botões +, − e RESET também controlam a câmera.
 
 ## Próximas etapas
 1. Fórmula semiempírica de massas com coeficientes documentados.
