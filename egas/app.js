@@ -360,7 +360,7 @@ renderer.localClippingEnabled=true;
 function applyCut(){Object.values(groups).forEach(g=>g.children.forEach(o=>{if(o.material&&!Array.isArray(o.material)){o.material.clippingPlanes=sectionEnabled?[cutPlane]:[];o.material.needsUpdate=true;}}));}
 function setExploded(on){
  exploded=on;
- const off={structure:[0,0,0],core:[0,0,0],field:[0,0,0],plasma:[0,0,0],nova:[0,0,0],control:[0,0,0],radiation:[0,0,0],instrumentation:[0,0,0]};
+ const off={structure:[0,0,0],core:[0,0,0],field:[0,0,0],plasma:[0,0,0],nova:[0,0,0],control:[0,0,0],radiation:[0,0,0],instrumentation:[0,0,0],insulation:[0,0,0],denseShell:[0,0,0],armor:[0,0,0]};
  if(on){off.core=[0,0,0];off.field=[0,2.8,0];off.plasma=[0,-2.6,0];off.nova=[0,0,2.6];off.control=[2.0,0,-2.4];off.instrumentation=[0,0,3.4];}
  Object.entries(groups).forEach(([k,g])=>g.position.set(...off[k]));
  $('explodeBtn').setAttribute('aria-pressed',String(on));$('explodeBtn').textContent=on?'VISTA MONTADA':'VISTA EXPLODIDA';
@@ -439,4 +439,4 @@ restoreSaved();
 refreshPieceInventory();
 let lastFrame=performance.now(),frames=0;
 function animate(now=performance.now()){requestAnimationFrame(animate);controls.update();const pulse=0.8+0.2*Math.sin(now*0.0018);if(objects.coreInner?.material)objects.coreInner.material.opacity=pulse;for(let i=0;i<9;i++){const e=objects['electron'+i];if(e){const a=now*.00035+i*2*Math.PI/9;e.position.set(1.15*Math.cos(a),.78*Math.sin(a),.35*Math.sin(a*2));}}composer.render();frames++;if(now-lastFrame>=1000){$('fpsReadout').textContent=frames+' FPS';frames=0;lastFrame=now;}}
-refresh();highlight();animate();
+refresh();highlight();animate();\nconst bootStatus=$('bootStatus');if(bootStatus)bootStatus.remove();
