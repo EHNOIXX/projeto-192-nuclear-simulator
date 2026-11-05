@@ -57,7 +57,7 @@ ground.rotation.x=-Math.PI/2; ground.position.y=-4.43; ground.receiveShadow=true
 const root = new THREE.Group(); scene.add(root);
 const groups = {
  structure:new THREE.Group(), core:new THREE.Group(), radiation:new THREE.Group(), field:new THREE.Group(),
- plasma:new THREE.Group(), nova:new THREE.Group(), control:new THREE.Group(), instrumentation:new THREE.Group()
+ plasma:new THREE.Group(), nova:new THREE.Group(), control:new THREE.Group(), instrumentation:new THREE.Group(), insulation:new THREE.Group(), denseShell:new THREE.Group(), armor:new THREE.Group()
 };
 Object.values(groups).forEach(g=>root.add(g));
 
@@ -73,7 +73,7 @@ const mat = {
  glow:new THREE.MeshBasicMaterial({color:0x9c76ff}),
  shield:new THREE.MeshPhysicalMaterial({color:0x8eb7c5,metalness:.55,roughness:.28,transparent:true,opacity:.22,side:THREE.DoubleSide,depthWrite:false}),
  solar:new THREE.MeshStandardMaterial({color:0x315b82,metalness:.48,roughness:.3,emissive:0x102b49,emissiveIntensity:.45}),
- electron:new THREE.MeshBasicMaterial({color:0x70e9ff})
+ electron:new THREE.MeshBasicMaterial({color:0x70e9ff}),\n insulation:new THREE.MeshStandardMaterial({color:0xc8c2ad,metalness:.12,roughness:.88}),\n dense:new THREE.MeshStandardMaterial({color:0x58636d,metalness:.72,roughness:.42}),\n armor:new THREE.MeshStandardMaterial({color:0x9ba8b4,metalness:.9,roughness:.24})
 };
 const objects={};
 function add(id,label,layer,geometry,material,position=[0,0,0],rotation=[0,0,0]){
@@ -233,9 +233,19 @@ for(let x of [-5.9,5.9]){
  }
 }
 
-const names={structure:'Estrutura externa',core:'Núcleo E-192',radiation:'Blindagem e recuperação energética',field:'Sistema eletromagnético',plasma:'Câmaras conceituais de plasma',nova:'Módulo N.O.V.A.',control:'Controle vetorial',instrumentation:'Instrumentação e serviços'};
+// Carcaças visuais fechadas em camadas independentes; sem composição ou desempenho especificados.
+const thermalCase=add('thermalCase','Carcaça isolante conceitual','insulation',new THREE.CylinderGeometry(2.48,2.48,13.8,96,1,false),mat.insulation,[0,0,0],[0,0,Math.PI/2]);
+thermalCase.material.side=THREE.DoubleSide;
+for(const x of [-6.95,6.95]) torus('thermalEnd_'+x,'Aro da carcaça isolante','insulation',x,2.48,.12,mat.insulation,0,0,.92,.92);
+const denseCase=add('denseCase','Camada densa conceitual','denseShell',new THREE.CylinderGeometry(2.68,2.68,14.15,96,1,false),mat.dense,[0,0,0],[0,0,Math.PI/2]);
+denseCase.material.side=THREE.DoubleSide;
+for(const x of [-7.12,7.12]) torus('denseEnd_'+x,'Aro da camada externa','denseShell',x,2.68,.13,mat.dark,0,0,.92,.92);
+const armorCase=add('armorCase','Armadura externa integral','armor',new THREE.CylinderGeometry(2.91,2.91,14.55,96,1,false),mat.armor,[0,0,0],[0,0,Math.PI/2]);
+armorCase.material.side=THREE.DoubleSide;
+for(const x of [-7.3,7.3]) torus('armorEnd_'+x,'Aro terminal da armadura','armor',x,2.91,.16,mat.steel,0,0,.92,.92);
+const names={structure:'Estrutura externa',core:'Núcleo E-192',radiation:'Blindagem e recuperação energética',field:'Sistema eletromagnético',plasma:'Câmaras conceituais de plasma',nova:'Módulo N.O.V.A.',control:'Controle vetorial',instrumentation:'Instrumentação e serviços',insulation:'Isolamento térmico conceitual',denseShell:'Camada densa conceitual',armor:'Armadura externa integral'};
 const descriptions={
- outerShell:'A estrutura agora é uma armação aberta de anéis, longarinas e painéis independentes.',
+ outerShell:'Estrutura interna com carcaças externas fechadas em camadas conceituais. Use o inventário para ocultar e recolocar componentes.',\n thermalCase:'Camada visual genérica de isolamento térmico. Não especifica material, composição, espessura ou desempenho.',\n denseCase:'Camada visual densa separada do isolamento térmico. Não especifica composição ou proteção radiológica.',\n armorCase:'Fechamento visual integral da armadura externa; geometria ilustrativa, sem especificação estrutural.',
  core:'Posição hipotética do E-192. Elemento 192 não foi descoberto; propriedades e capacidade de alterar o espaço-tempo são desconhecidas.',
  radiationShield:'Camadas cenográficas de blindagem radiológica ao redor do núcleo. Não representam materiais, espessuras ou proteção calculados.',
  energyCollector:'Placas conversoras hipotéticas que representam recuperação de parte da energia radiativa absorvida. Não equivalem a painéis fotovoltaicos comuns validados para essa função.',
@@ -250,7 +260,7 @@ const partList=[
  ['radiationShield','Filtros de radiação intensa','radiation'],['energyCollector','Placas de recuperação energética','radiation'],['electronFlow','Região eletrônica hipotética','radiation'],
  ['coilLeft','Bobina eletromagnética esquerda','field'],['coilRight','Bobina eletromagnética direita','field'],
  ['plasmaLeft','Câmara de plasma esquerda','plasma'],['plasmaRight','Câmara de plasma direita','plasma'],
- ['nova','Módulo N.O.V.A.','nova'],['vectorRing','Controle vetorial','control'],['nozzle','Bocal cenográfico','structure'],['containmentVessel','Vaso central de contenção','core'],['instrumentation','Instrumentação e serviços','instrumentation']
+ ['nova','Módulo N.O.V.A.','nova'],['vectorRing','Controle vetorial','control'],['nozzle','Bocal cenográfico','structure'],['containmentVessel','Vaso central de contenção','core'],['instrumentation','Instrumentação e serviços','instrumentation'],['thermalCase','Carcaça isolante conceitual','insulation'],['denseCase','Camada densa conceitual','denseShell'],['armorCase','Armadura externa integral','armor']
 ];
 // Alias de seleção para peças compostas.
 objects.outerShell=objects.frameRing0;
@@ -273,7 +283,7 @@ const materialData={
 const evidenceStatus={
  outerShell:['ENGENHARIA CONVENCIONAL','Geometrias estruturais são familiares à engenharia; dimensões, cargas, materiais e segurança deste conceito não foram dimensionados.'],
  containmentVessel:['ANALOGIA DE ENGENHARIA','Vasos e flanges existem em instalações reais; este modelo não calcula pressão, vácuo, fadiga, espessura ou contenção.'],
- instrumentation:['TECNOLOGIA ESTABELECIDA / INTEGRAÇÃO CONCEITUAL','Sensores, cabos e instrumentação são tecnologias conhecidas; a integração EGAS é cenográfica e não validada.'],
+ instrumentation:['TECNOLOGIA ESTABELECIDA / INTEGRAÇÃO CONCEITUAL','Sensores, cabos e instrumentação são tecnologias conhecidas; a integração EGAS é cenográfica e não validada.'],\n thermalCase:['REPRESENTAÇÃO CONCEITUAL','Carcaça visual de isolamento genérico. Não define material, composição ou desempenho térmico.'],\n denseCase:['CAMADA NÃO DIMENSIONADA','Representação visual de camada densa. Não define composição, espessura ou proteção radiológica.'],\n armorCase:['ARMADURA VISUAL','Fechamento externo estético; não representa estrutura calculada ou proteção certificada.'],
  coilLeft:['PRINCÍPIO ESTABELECIDO / DESEMPENHO NÃO AVALIADO','Eletroímãs e bobinas são tecnologias reais; campo, aquecimento, refrigeração e confinamento não foram calculados.'],
  coilRight:['PRINCÍPIO ESTABELECIDO / DESEMPENHO NÃO AVALIADO','Eletroímãs e bobinas são tecnologias reais; campo, aquecimento, refrigeração e confinamento não foram calculados.'],
  plasmaLeft:['FENÔMENO ESTABELECIDO / MÓDULO HIPOTÉTICO','Plasma é um estado da matéria conhecido; esta câmara não representa um projeto operacional ou confinamento validado.'],
@@ -347,6 +357,14 @@ function setExploded(on){
  $('explodeBtn').setAttribute('aria-pressed',String(on));$('explodeBtn').textContent=on?'VISTA MONTADA':'VISTA EXPLODIDA';
 }
 $('explodeBtn').addEventListener('click',()=>setExploded(!exploded));
+let shellsClosed=true;
+function setShellsClosed(on){
+ shellsClosed=on;groups.insulation.visible=on;groups.denseShell.visible=on;groups.armor.visible=on;
+ $('shellBtn').setAttribute('aria-pressed',String(on));
+ $('shellBtn').textContent=on?'CARCAÇAS: FECHADAS':'CARCAÇAS: ABERTAS';
+}
+$('shellBtn').addEventListener('click',()=>setShellsClosed(!shellsClosed));
+
 $('sectionBtn').addEventListener('click',()=>{sectionEnabled=!sectionEnabled;applyCut();$('sectionBtn').setAttribute('aria-pressed',String(sectionEnabled));$('sectionBtn').textContent=sectionEnabled?'DESATIVAR CORTE':'CORTE TRANSVERSAL';$('sectionRange').disabled=!sectionEnabled;});
 $('sectionRange').addEventListener('input',e=>{cutPlane.constant=Number(e.target.value);$('sectionOut').value=cutPlane.constant.toFixed(1);if(sectionEnabled)applyCut();});
 $('rotateBtn').addEventListener('click',()=>{controls.autoRotate=!controls.autoRotate;controls.autoRotateSpeed=1.0;$('rotateBtn').setAttribute('aria-pressed',String(controls.autoRotate));$('rotateBtn').textContent=controls.autoRotate?'PARAR ÓRBITA':'ÓRBITA AUTOMÁTICA';});
@@ -377,14 +395,14 @@ $('restorePieces').addEventListener('click',()=>{
  getPieceMeshes().forEach(o=>o.visible=true);updatePieceStatus();
 });
 refreshPieceInventory();
-function configData(){return {version:'0.6',selected,material,length:Number($('length').value),diameter:Number($('diameter').value),alpha:Number($('alpha').value),layers:Object.fromEntries(Object.keys(groups).map(k=>[k,groups[k].visible])),exploded,sectionEnabled,sectionPosition:cutPlane.constant,pieces:Object.fromEntries(getPieceMeshes().map(o=>[o.userData.id,o.visible]))};}
+function configData(){return {version:'0.7',selected,material,length:Number($('length').value),diameter:Number($('diameter').value),alpha:Number($('alpha').value),layers:Object.fromEntries(Object.keys(groups).map(k=>[k,groups[k].visible])),exploded,sectionEnabled,sectionPosition:cutPlane.constant,pieces:Object.fromEntries(getPieceMeshes().map(o=>[o.userData.id,o.visible])),shellsClosed};}
 $('saveBtn').addEventListener('click',()=>{try{localStorage.setItem('egas-lab-config',JSON.stringify(configData()));$('saveBtn').textContent='CONFIGURAÇÃO SALVA';}catch(e){$('saveBtn').textContent='FALHA AO SALVAR';}setTimeout(()=>$('saveBtn').textContent='SALVAR CONFIG.',1800);});
 $('exportBtn').addEventListener('click',()=>{const data={projeto:'S.P.E.C.T.R.A. / EGAS',natureza:'modelo conceitual educacional; não validado',aviso:'Elemento 192 não descoberto. Geometrias e valores são ilustrativos.',configuracao:configData(),componentes:partList.map(p=>({id:p[0],nome:p[1],camada:p[2]})),materiais:materialData};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='EGAS-ficha-conceitual.json';a.click();URL.revokeObjectURL(url);});
 function restoreSaved(){
  try{const raw=localStorage.getItem('egas-lab-config');if(!raw)return;const d=JSON.parse(raw);if(d.material&&materialData[d.material]){$('material').value=d.material;material=d.material;}if(partList.some(p=>p[0]===d.selected)){$('partSelect').value=d.selected;selected=d.selected;}
  $('length').value=d.length??24;$('diameter').value=d.diameter??8;$('alpha').value=d.alpha??100;$('length').dispatchEvent(new Event('input'));$('diameter').dispatchEvent(new Event('input'));$('alpha').dispatchEvent(new Event('input'));
  Object.keys(groups).forEach(k=>{const el=document.querySelector('[data-layer="'+k+'"]');if(el){el.checked=d.layers?.[k]??true;groups[k].visible=el.checked;}});
- if(d.pieces)getPieceMeshes().forEach(o=>{if(Object.hasOwn(d.pieces,o.userData.id))o.visible=Boolean(d.pieces[o.userData.id]);});setExploded(Boolean(d.exploded));sectionEnabled=Boolean(d.sectionEnabled);cutPlane.constant=Number(d.sectionPosition)||0;$('sectionRange').value=cutPlane.constant;$('sectionOut').value=cutPlane.constant.toFixed(1);$('sectionBtn').textContent=sectionEnabled?'DESATIVAR CORTE':'CORTE TRANSVERSAL';$('sectionRange').disabled=!sectionEnabled;applyCut();refresh();highlight();applyMaterial();
+ if(d.pieces)getPieceMeshes().forEach(o=>{if(Object.hasOwn(d.pieces,o.userData.id))o.visible=Boolean(d.pieces[o.userData.id]);});setShellsClosed(d.shellsClosed!==false);setExploded(Boolean(d.exploded));sectionEnabled=Boolean(d.sectionEnabled);cutPlane.constant=Number(d.sectionPosition)||0;$('sectionRange').value=cutPlane.constant;$('sectionOut').value=cutPlane.constant.toFixed(1);$('sectionBtn').textContent=sectionEnabled?'DESATIVAR CORTE':'CORTE TRANSVERSAL';$('sectionRange').disabled=!sectionEnabled;applyCut();refresh();highlight();applyMaterial();
  }catch(e){console.warn('Configuração salva não pôde ser carregada.',e);}
 }
 function updatePhysics(){
