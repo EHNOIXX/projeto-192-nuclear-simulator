@@ -25,3 +25,16 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 .viewportBadge span{color:var(--cyan);margin-left:10px}
 #viewport{overflow:hidden}
 @media(max-width:720px){.toolbar{gap:5px}.toolbtn{font-size:7px;padding:8px 6px}.cameraPresets{gap:5px}.sectionRange{width:100%;margin:6px 0 0}.sectionRange input{flex:1}}
+
+/* EGAS 0.6 — painel científico e hierarquia visual */
+.microcopy{font-size:9px;line-height:1.65;color:#91a2b8;margin:8px 0}
+.warningCopy{color:#d6b47c}
+.physicsResults{display:grid;gap:8px;margin-top:12px}
+.physicsMetric{padding:9px;background:#0a121d;border:1px solid #26364b;border-radius:5px}
+.physicsMetric span{display:block;color:#8fa2b8;font:8px var(--mono);letter-spacing:.6px;margin-bottom:5px}
+.physicsMetric b{font:11px var(--mono);color:var(--cyan);overflow-wrap:anywhere}
+.mcRows{display:grid;gap:7px;margin-top:12px}
+.mcRow{display:grid;grid-template-columns:1fr auto;gap:4px;font-size:9px;color:#c5d2e0}
+.mcRow b{font:10px var(--mono);color:var(--cyan)}
+.mcBar{grid-column:1/-1;height:4px;background:#263449;border-radius:5px;overflow:hidden}
+.mcBar i{display:block;height:100%;background:linear-gradient(90deg,#5ac7c5,#9b83e9)}
