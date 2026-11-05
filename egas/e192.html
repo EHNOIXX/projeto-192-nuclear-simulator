@@ -38,7 +38,7 @@ document.getElementById('mass').addEventListener('input',update);document.getEle
 <style>
 #atomStage{height:min(68vh,680px);min-height:430px;position:relative;overflow:hidden;border:1px solid #294158;border-radius:12px;background:radial-gradient(ellipse at 50% 45%,#142d43,#050c16 72%)}
 #atom3d{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
-#atom3d:active{cursor:grabbing}.atomHud{position:absolute;left:14px;top:12px;background:#071522d9;border:1px solid #35516a;padding:9px 12px;border-radius:9px;font-size:13px;pointer-events:none}
+#atom3d:active{cursor:grabbing}.zoomBar{gap:8px}.zoomBar button{min-width:38px}.zoomBar input{flex:1}.zoomBar strong{font-size:12px;letter-spacing:.08em}.atomHud{position:absolute;left:14px;top:12px;background:#071522d9;border:1px solid #35516a;padding:9px 12px;border-radius:9px;font-size:13px;pointer-events:none}
 #atomLegend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;color:#b8c9d8;font-size:13px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
 #stability{padding:13px 15px;border-radius:10px;margin-top:12px;font-weight:700;border:1px solid #9c6932;background:#302313;color:#ffd99c}
 #stability.caution{border-color:#a84e58;background:#321820;color:#ffbdc4}
@@ -61,6 +61,24 @@ document.getElementById('mass').addEventListener('input',update);document.getEle
 <label><input id="showNucleons" type="checkbox" checked> Mostrar prótons e nêutrons</label>
 </div>
 <div class="actions" style="margin-top:12px"><button id="rotateReset">Centralizar visualização</button><button id="spinToggle">Pausar rotação</button></div>
+<div class="actions zoomBar" style="margin-top:10px;align-items:center">
+<strong style="color:#a9bdcf;margin-right:4px">ZOOM</strong>
+<button id="zoomMinus" aria-label="Afastar">−</button>
+<input id="zoomRange" type="range" min="0.3" max="5" step="0.05" value="1" style="max-width:260px">
+<button id="zoomPlus" aria-label="Aproximar">+</button>
+<button id="zoomHome">Zoom padrão</button>
+<span id="zoomReadout" style="color:#62d6c5;min-width:48px">1,00×</span>
+</div>
+<div class="note" style="margin-top:12px"><b>Tecido do espaço-tempo:</b> a malha curva é uma ilustração conceitual. A curvatura gravitacional real produzida por um átomo é extremamente pequena e não seria visível nessa escala. O relevo foi amplificado muitas ordens de grandeza para fins didáticos.</div>
+<div class="panel" style="margin-top:12px">
+<h3 style="margin-top:0">Efeitos relativísticos esperados (qualitativos)</h3>
+<div class="metrics">
+<div class="metric"><small>Z · α</small><strong>1,401</strong></div>
+<div class="metric"><small>Regime eletrônico</small><strong>Extremo</strong></div>
+<div class="metric"><small>Correções</small><strong>Importantes</strong></div>
+</div>
+<p style="margin-bottom:0">Em um átomo hipotético com Z = 192, o forte campo elétrico nuclear exigiria uma descrição relativística dos elétrons. Isso pode alterar energias, distribuição eletrônica e estrutura dos orbitais. Não é correto representar isso como elétrons viajando acima da velocidade da luz. A malha abaixo representa gravidade; as correções eletrônicas são um efeito distinto, ainda não calculável com confiança para E-192.</p>
+</div>
 <div class="panel" id="electronSpeedPanel" style="margin:14px 0 0;background:#0a1928;border-color:#416078">
 <h3 style="margin-top:0">Velocidade eletrônica — extrapolação hipotética</h3>
 <div class="metrics">
@@ -94,7 +112,31 @@ function build(){
 function project(p,w,h,rot){let x=p.x*Math.cos(yaw)-p.z*Math.sin(yaw),z=p.x*Math.sin(yaw)+p.z*Math.cos(yaw),y=p.y*Math.cos(pitch)-z*Math.sin(pitch);z=p.y*Math.sin(pitch)+z*Math.cos(pitch);let depth=5.8-z*zoom,scale=Math.min(w,h)*.19*zoom/depth;return {x:w/2+x*scale,y:h/2-y*scale,z,scale}}
 function sphere(p,color,r,w,h){let q=project(p,w,h);let rad=Math.max(1.1,r*q.scale);ctx.beginPath();let g=ctx.createRadialGradient(q.x-rad*.35,q.y-rad*.4,rad*.05,q.x,q.y,rad);g.addColorStop(0,'#ffffff');g.addColorStop(.22,color);g.addColorStop(1,'#07101a');ctx.fillStyle=g;ctx.globalAlpha=Math.max(.35,Math.min(1,.8+q.z*.08));ctx.arc(q.x,q.y,rad,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
 function pathRing(rad,tilt,w,h){ctx.beginPath();for(let i=0;i<=180;i++){let a=i/180*Math.PI*2,p={x:rad*Math.cos(a),y:rad*Math.sin(a)*Math.sin(tilt),z:rad*Math.sin(a)*Math.cos(tilt)},q=project(p,w,h);if(i===0)ctx.moveTo(q.x,q.y);else ctx.lineTo(q.x,q.y)}ctx.strokeStyle='rgba(98,214,197,.38)';ctx.lineWidth=1.5;ctx.stroke()}
+function drawSpacetime(w,h){
+ // Malha conceitual com deformação deliberadamente amplificada; não está em escala física.
+ const extent=4.2,steps=18,depth=-1.18;
+ function point(u,v){const rr=u*u+v*v;return {x:u,y:depth-1.05*Math.exp(-rr/2.7),z:v}}
+ ctx.save();ctx.lineWidth=1;
+ for(let k=0;k<=steps;k++){
+   const t=-extent+2*extent*k/steps;
+   for(let axis=0;axis<2;axis++){
+     ctx.beginPath();
+     for(let j=0;j<=100;j++){
+       const q=-extent+2*extent*j/100;
+       const p=axis===0?point(t,q):point(q,t),s=project(p,w,h);
+       if(j===0)ctx.moveTo(s.x,s.y);else ctx.lineTo(s.x,s.y);
+     }
+     ctx.strokeStyle='rgba(83,190,205,'+(0.16+0.12*(1-Math.abs(t)/extent))+')';
+     ctx.stroke();
+   }
+ }
+ const center=project(point(0,0),w,h);
+ ctx.fillStyle='#9de8e8';ctx.font='12px system-ui';ctx.fillText('MALHA ESPAÇO-TEMPO · CURVATURA AMPLIFICADA',14,h-18);
+ ctx.restore();
+}
+function syncZoom(){document.getElementById('zoomRange').value=zoom;document.getElementById('zoomReadout').textContent=zoom.toFixed(2).replace('.',',')+'×'}
 function render(){let w=canvas.clientWidth,h=canvas.clientHeight,dpr=Math.min(devicePixelRatio||1,2);if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr)}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+ drawSpacetime(w,h);
  let scale=+document.getElementById('nucScale').value/100;ctx.save();ctx.translate(w/2,h/2);ctx.scale(scale,scale);ctx.translate(-w/2,-h/2);
  if(document.getElementById('showElectrons').checked){shells.forEach((s,i)=>pathRing(s.radius,((i%3)-1)*.38,w,h));electrons.forEach(e=>sphere(e,'#65d9ff',.055,w,h))}
  if(document.getElementById('showNucleons').checked){let ordered=particles.map(p=>({p,q:project(p,w,h)})).sort((a,b)=>a.q.z-b.q.z);ordered.forEach(o=>sphere(o.p,o.p.type==='p'?'#f06467':'#91a9c2',o.p.size,w,h))}
@@ -102,10 +144,15 @@ function render(){let w=canvas.clientWidth,h=canvas.clientHeight,dpr=Math.min(de
 canvas.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId)});
 canvas.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-lastX)*.008;pitch=Math.max(-1.35,Math.min(1.35,pitch+(e.clientY-lastY)*.008));lastX=e.clientX;lastY=e.clientY});
 canvas.addEventListener('pointerup',()=>drag=false);canvas.addEventListener('pointercancel',()=>drag=false);
-canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.55,Math.min(2.2,zoom*(e.deltaY<0?1.08:.92)))},{passive:false});
+canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.3,Math.min(5,zoom*(e.deltaY<0?1.12:.89)));syncZoom()},{passive:false});
 document.getElementById('mass').addEventListener('input',build);
 document.getElementById('nucScale').addEventListener('input',()=>{});
-document.getElementById('rotateReset').addEventListener('click',()=>{yaw=.55;pitch=-.24;zoom=1});
+document.getElementById('rotateReset').addEventListener('click',()=>{yaw=.55;pitch=-.24;zoom=1;syncZoom()});
+document.getElementById('zoomRange').addEventListener('input',e=>{zoom=+e.target.value;syncZoom()});
+document.getElementById('zoomPlus').addEventListener('click',()=>{zoom=Math.min(5,zoom*1.2);syncZoom()});
+document.getElementById('zoomMinus').addEventListener('click',()=>{zoom=Math.max(.3,zoom/1.2);syncZoom()});
+document.getElementById('zoomHome').addEventListener('click',()=>{zoom=1;syncZoom()});
+syncZoom();
 document.getElementById('spinToggle').addEventListener('click',e=>{spin=!spin;e.target.textContent=spin?'Pausar rotação':'Retomar rotação'});
 document.getElementById('showElectrons').addEventListener('change',()=>{});document.getElementById('showNucleons').addEventListener('change',()=>{});
 build();render();
