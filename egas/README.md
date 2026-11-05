@@ -56,3 +56,18 @@ Three.js 0.160.0, OrbitControls e módulos de pós-processamento carregados via 
 
 ### Atualização visual 0.5
 A região central agora é uma montagem visual em camadas, com vaso, interfaces mecânicas, blindagem segmentada e instrumentação. O conjunto é inspirado em convenções visuais de equipamentos industriais e instalações experimentais. Nenhum componente representa especificação de engenharia, solução de contenção radiológica ou sistema energético demonstrado.
+
+
+## Versão 0.6 — revisão científica e modelo paramétrico
+
+- O antigo índice de compatibilidade numérico foi removido: não tinha calibração experimental e podia sugerir uma precisão inexistente.
+- Cada componente agora recebe uma classificação textual de maturidade/evidência, distinguindo tecnologias estabelecidas, analogias de engenharia e hipóteses não demonstradas.
+- Painel gravitacional paramétrico: compara a contribuição newtoniana aproximada da massa nuclear de referência e da massa/energia eletrônica para valores escolhidos de gamma e distância.
+- O modelo usa Z=192 e A=300 apenas como cenário ilustrativo. Gamma é um parâmetro uniforme hipotético, não uma previsão da estrutura eletrônica. A energia de ligação, campos e distribuição espacial completa não estão incluídos.
+- Escalas equivalentes de Schwarzschild são exibidas apenas como comparação de ordem de grandeza; não representam um horizonte ou uma solução exata para o átomo.
+- Incorporadas as médias do Monte Carlo anterior (30.000 amostras). O índice é apenas coerência interna de hipóteses e não probabilidade de funcionamento, compatibilidade física ou desempenho.
+- A animação de elétrons continua explicitamente identificada como ilustração gráfica, não como orbitais reais.
+- A hipótese de curvatura útil para propulsão não é validada. Contribuição gravitacional não implica mecanismo de empuxo; qualquer propulsão exige balanço de momento e interação com o ambiente externo.
+
+### Limitações do modelo físico
+A aproximação de campo fraco e massa equivalente não substitui o cálculo do tensor energia-momento completo nem a solução das equações de Einstein. Para Z=192, a estrutura eletrônica é uma questão de campo de Coulomb supercrítico; não se deve extrapolar órbitas atômicas convencionais. O modelo não prevê estabilidade nuclear, espectro eletrônico, blindagem, conversão energética, plasma, empuxo ou viabilidade de construção.
