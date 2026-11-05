@@ -48,6 +48,18 @@ document.getElementById('mass').addEventListener('input',update);document.getEle
 <h2>Visualizador atômico 3D interativo</h2>
 <p>Arraste para girar, use a roda do mouse para aproximar ou afastar e altere A para reconstruir o núcleo. A visualização representa prótons, nêutrons e uma distribuição eletrônica esquemática.</p>
 <div id="atomStage"><canvas id="atom3d" aria-label="Representação tridimensional interativa do átomo hipotético E-192"></canvas><div class="atomHud" id="atomHud">E-192 · Z = 192 · A = 360</div></div>
+
+<div class="panel" id="particleEditor" style="margin-top:12px">
+<h3 style="margin-top:0">Montagem manual de partículas</h3>
+<p>Altere as quantidades e clique em Aplicar para reconstruir a visualização. Este editor modifica o modelo visual; os cálculos nucleares acima continuam definidos para Z = 192.</p>
+<div class="metrics">
+<label class="metric">Prótons <input id="visualProtons" type="number" min="1" max="500" value="192" style="width:100%;padding:8px;background:#071522;color:#e8f1fa;border:1px solid #37657b;border-radius:6px"></label>
+<label class="metric">Nêutrons <input id="visualNeutrons" type="number" min="0" max="1000" value="168" style="width:100%;padding:8px;background:#071522;color:#e8f1fa;border:1px solid #37657b;border-radius:6px"></label>
+<label class="metric">Elétrons <input id="visualElectrons" type="number" min="0" max="500" value="192" style="width:100%;padding:8px;background:#071522;color:#e8f1fa;border:1px solid #37657b;border-radius:6px"></label>
+</div>
+<div class="actions" style="margin-top:10px"><button id="applyParticles">Aplicar partículas</button><button id="resetParticles">Restaurar E-192</button></div>
+<p id="particleSummary" style="margin-bottom:0">P = 192 · N = 168 · e⁻ = 192</p>
+</div>
 <div id="atomLegend">
 <span><i class="dot" style="background:#f06467"></i>Prótons</span>
 <span><i class="dot" style="background:#91a9c2"></i>Nêutrons</span>
@@ -95,7 +107,7 @@ document.getElementById('mass').addEventListener('input',update);document.getEle
 <script>
 (()=>{
 const canvas=document.getElementById('atom3d'),ctx=canvas.getContext('2d'),stage=document.getElementById('atomStage');
-let yaw=.55,pitch=-.24,zoom=1,drag=false,lastX=0,lastY=0,spin=true,angle=0,particles=[],electrons=[],shells=[];
+let yaw=.55,pitch=-.24,zoom=1,drag=false,lastX=0,lastY=0,spin=true,angle=0,particles=[],electrons=[],shells=[];\nlet visualP=192,visualN=168,visualE=192;
 const Z=192;
 function rng(seed){let x=seed>>>0;return()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296}}
 function build(){
@@ -131,7 +143,7 @@ function drawSpacetime(w,h){
    }
  }
  const center=project(point(0,0),w,h);
- ctx.fillStyle='#9de8e8';ctx.font='12px system-ui';ctx.fillText('MALHA ESPAÇO-TEMPO · CURVATURA AMPLIFICADA',14,h-18);
+ ctx.fillStyle='#9de8e8';ctx.font='12px system-ui';ctx.fillText('MALHA ESPAÇO-TEMPO · DEFORMAÇÃO VISUAL × '+curvature.toFixed(2),14,h-18);
  ctx.restore();
 }
 function syncZoom(){document.getElementById('zoomRange').value=zoom;document.getElementById('zoomReadout').textContent=zoom.toFixed(2).replace('.',',')+'×'}
@@ -145,7 +157,20 @@ canvas.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clie
 canvas.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-lastX)*.008;pitch=Math.max(-1.35,Math.min(1.35,pitch+(e.clientY-lastY)*.008));lastX=e.clientX;lastY=e.clientY});
 canvas.addEventListener('pointerup',()=>drag=false);canvas.addEventListener('pointercancel',()=>drag=false);
 canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.3,Math.min(5,zoom*(e.deltaY<0?1.12:.89)));syncZoom()},{passive:false});
-document.getElementById('mass').addEventListener('input',build);
+document.getElementById('mass').addEventListener('input',()=>{
+ visualP=192;visualN=+document.getElementById('mass').value-192;visualE=192;
+ document.getElementById('visualProtons').value=visualP;document.getElementById('visualNeutrons').value=visualN;document.getElementById('visualElectrons').value=visualE;build();
+});
+document.getElementById('applyParticles').addEventListener('click',()=>{
+ const p=Math.max(1,Math.min(500,Math.floor(+document.getElementById('visualProtons').value||1)));
+ const n=Math.max(0,Math.min(1000,Math.floor(+document.getElementById('visualNeutrons').value||0)));
+ const e=Math.max(0,Math.min(500,Math.floor(+document.getElementById('visualElectrons').value||0)));
+ visualP=p;visualN=n;visualE=e;build();
+});
+document.getElementById('resetParticles').addEventListener('click',()=>{
+ visualP=192;visualN=168;visualE=192;
+ document.getElementById('visualProtons').value=192;document.getElementById('visualNeutrons').value=168;document.getElementById('visualElectrons').value=192;build();
+});
 document.getElementById('nucScale').addEventListener('input',()=>{});
 document.getElementById('rotateReset').addEventListener('click',()=>{yaw=.55;pitch=-.24;zoom=1;syncZoom()});
 document.getElementById('zoomRange').addEventListener('input',e=>{zoom=+e.target.value;syncZoom()});
