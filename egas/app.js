@@ -270,14 +270,29 @@ const materialData={
  ceramic:{name:'Cerâmica técnica',density:'Pode oferecer estabilidade térmica e dureza.',fit:70,caution:'Fragilidade e choque térmico precisam ser considerados.'},
  niobium:{name:'Nióbio',density:'Metal empregado em certas ligas e materiais supercondutores.',fit:64,caution:'Supercondutividade depende de composição e condições específicas.'}
 };
-function scoreFor(id){if(id==='core'||id==='nova'||id==='radiationShield'||id==='energyCollector'||id==='electronFlow')return null;const base={outerShell:80,coilLeft:74,coilRight:74,plasmaLeft:62,plasmaRight:62,vectorRing:67,nozzle:55}[id]??70;const delta={titanium:4,aluminum:-3,copper:-8,graphite:-1,ceramic:-4,niobium:-6}[material];return Math.max(0,Math.min(100,base+delta));}
+const evidenceStatus={
+ outerShell:['ENGENHARIA CONVENCIONAL','Geometrias estruturais são familiares à engenharia; dimensões, cargas, materiais e segurança deste conceito não foram dimensionados.'],
+ containmentVessel:['ANALOGIA DE ENGENHARIA','Vasos e flanges existem em instalações reais; este modelo não calcula pressão, vácuo, fadiga, espessura ou contenção.'],
+ instrumentation:['TECNOLOGIA ESTABELECIDA / INTEGRAÇÃO CONCEITUAL','Sensores, cabos e instrumentação são tecnologias conhecidas; a integração EGAS é cenográfica e não validada.'],
+ coilLeft:['PRINCÍPIO ESTABELECIDO / DESEMPENHO NÃO AVALIADO','Eletroímãs e bobinas são tecnologias reais; campo, aquecimento, refrigeração e confinamento não foram calculados.'],
+ coilRight:['PRINCÍPIO ESTABELECIDO / DESEMPENHO NÃO AVALIADO','Eletroímãs e bobinas são tecnologias reais; campo, aquecimento, refrigeração e confinamento não foram calculados.'],
+ plasmaLeft:['FENÔMENO ESTABELECIDO / MÓDULO HIPOTÉTICO','Plasma é um estado da matéria conhecido; esta câmara não representa um projeto operacional ou confinamento validado.'],
+ plasmaRight:['FENÔMENO ESTABELECIDO / MÓDULO HIPOTÉTICO','Plasma é um estado da matéria conhecido; esta câmara não representa um projeto operacional ou confinamento validado.'],
+ core:['HIPÓTESE NÃO COMPROVADA','E-192 (Z=192) não foi descoberto ou sintetizado. Massa, estabilidade, estrutura nuclear e eletrônica são desconhecidas.'],
+ radiationShield:['SEM DIMENSIONAMENTO','Blindagem radiológica depende do tipo e espectro da radiação, material, geometria e critérios de dose. Nada disso foi calculado aqui.'],
+ energyCollector:['CONVERSÃO NÃO DEMONSTRADA','Absorver radiação não garante conversão elétrica útil. Não há eficiência, balanço energético ou arquitetura validada para este módulo.'],
+ electronFlow:['ILUSTRAÇÃO, NÃO ORBITAIS','As linhas e partículas animadas são recursos gráficos. Não descrevem orbitais quânticos nem velocidades reais de elétrons em Z=192.'],
+ nova:['MÓDULO ESPECULATIVO','N.O.V.A. é uma organização conceitual do projeto, sem mecanismo físico ou desempenho demonstrado.'],
+ vectorRing:['FUNÇÃO NÃO DEMONSTRADA','Anel e aletas são geometria cenográfica; não demonstram controle vetorial, empuxo ou troca de momento.'],
+ nozzle:['GEOMETRIA CENOGRÁFICA','Um bocal só produz empuxo em conjunto com fluxo de massa/energia e condições de operação definidas.']
+};
 function refresh(){
- const p=partList.find(x=>x[0]===selected)||partList[0],sc=scoreFor(selected),md=materialData[material];
+ const p=partList.find(x=>x[0]===selected)||partList[0],md=materialData[material],ev=evidenceStatus[selected]||['NÃO AVALIADO','Não há dados suficientes para classificar este componente.'];
  $('partInfo').innerHTML='<b>'+p[1]+'</b><br>'+(descriptions[selected]||'Componente visual do modelo.')+'<br><br><span>Camada: '+names[p[2]]+'</span>';
  $('materialInfo').innerHTML='<b>'+md.name+'</b><br>'+md.density+'<br><br>'+md.caution;
- $('score').innerHTML=(sc===null?'N/A':sc+'/100')+'<small>ÍNDICE QUALITATIVO, NÃO VALIDADO</small>';
- $('compatText').textContent=sc===null?'Não há base científica para pontuar a compatibilidade deste módulo.':sc>=80?'Compatibilidade conceitual para estudo; ainda exige análise de engenharia.':sc>=65?'Compatibilidade parcial; há propriedades úteis e limitações.':'Compatibilidade conceitual limitada; requer estudos adicionais.';
- $('criteria').innerHTML=sc===null?'Evidência experimental: indisponível<br>Desempenho: desconhecido<br>Viabilidade: não demonstrada':[['Propriedades relevantes',Math.min(98,sc+5)],['Compatibilidade térmica',Math.max(20,sc-12)],['Maturidade tecnológica',Math.max(10,sc-24)]].map(([n,v])=>'<div class="criterion">'+n+'<div><i style="width:'+v+'%"></i></div></div>').join('');
+ $('score').innerHTML='—<small>'+ev[0]+'</small>';
+ $('compatText').textContent=ev[1];
+ $('criteria').innerHTML='<div class="criterion">Evidência experimental: não atribuída sem fonte específica.</div><div class="criterion">Desempenho: não calculado.</div><div class="criterion">Viabilidade do conjunto: não demonstrada.</div>';
  $('selectionLabel').textContent=p[1].toUpperCase();
 }
 function highlight(){
@@ -339,7 +354,7 @@ const views={front:[0,2,25],side:[25,2,0],top:[0,25,.01],iso:[19,11,20]};
 document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>{const v=views[btn.dataset.view];camera.position.set(...v);controls.target.set(0,0,0);controls.update();controls.autoRotate=false;$('rotateBtn').setAttribute('aria-pressed','false');$('rotateBtn').textContent='ÓRBITA AUTOMÁTICA';}));
 $('shotBtn').addEventListener('click',()=>{composer.render();const a=document.createElement('a');a.download='EGAS-industrial-conceitual.png';a.href=renderer.domElement.toDataURL('image/png');a.click();});
 $('fullBtn').addEventListener('click',()=>{const t=$('viewport').parentElement;if(!document.fullscreenElement)t.requestFullscreen?.();else document.exitFullscreen?.();});
-function configData(){return {version:'0.5',selected,material,length:Number($('length').value),diameter:Number($('diameter').value),alpha:Number($('alpha').value),layers:Object.fromEntries(Object.keys(groups).map(k=>[k,groups[k].visible])),exploded,sectionEnabled,sectionPosition:cutPlane.constant};}
+function configData(){return {version:'0.6',selected,material,length:Number($('length').value),diameter:Number($('diameter').value),alpha:Number($('alpha').value),layers:Object.fromEntries(Object.keys(groups).map(k=>[k,groups[k].visible])),exploded,sectionEnabled,sectionPosition:cutPlane.constant};}
 $('saveBtn').addEventListener('click',()=>{try{localStorage.setItem('egas-lab-config',JSON.stringify(configData()));$('saveBtn').textContent='CONFIGURAÇÃO SALVA';}catch(e){$('saveBtn').textContent='FALHA AO SALVAR';}setTimeout(()=>$('saveBtn').textContent='SALVAR CONFIG.',1800);});
 $('exportBtn').addEventListener('click',()=>{const data={projeto:'S.P.E.C.T.R.A. / EGAS',natureza:'modelo conceitual educacional; não validado',aviso:'Elemento 192 não descoberto. Geometrias e valores são ilustrativos.',configuracao:configData(),componentes:partList.map(p=>({id:p[0],nome:p[1],camada:p[2]})),materiais:materialData};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='EGAS-ficha-conceitual.json';a.click();URL.revokeObjectURL(url);});
 function restoreSaved(){
@@ -349,6 +364,27 @@ function restoreSaved(){
  setExploded(Boolean(d.exploded));sectionEnabled=Boolean(d.sectionEnabled);cutPlane.constant=Number(d.sectionPosition)||0;$('sectionRange').value=cutPlane.constant;$('sectionOut').value=cutPlane.constant.toFixed(1);$('sectionBtn').textContent=sectionEnabled?'DESATIVAR CORTE':'CORTE TRANSVERSAL';$('sectionRange').disabled=!sectionEnabled;applyCut();refresh();highlight();applyMaterial();
  }catch(e){console.warn('Configuração salva não pôde ser carregada.',e);}
 }
+function updatePhysics(){
+ const gamma=Number($('gammaInput').value),r=10**Number($('radiusInput').value);
+ const me=9.1093837139e-31,u=1.66053906660e-27,G=6.67430e-11,c=299792458,Z=192,A=300;
+ const electronRest=Z*me,nuclearMass=A*u,kinetic=Z*(gamma-1)*me*c*c;
+ const gElectron=G*(electronRest+kinetic/(c*c))/(r*r),gNucleus=G*nuclearMass/(r*r);
+ const rsElectron=2*G*(electronRest+kinetic/(c*c))/(c*c),rsNucleus=2*G*nuclearMass/(c*c);
+ const fmt=x=>x.toExponential(3);
+ $('gammaOut').value=gamma.toFixed(2);$('radiusOut').value=fmt(r)+' m';
+ $('physicsResults').innerHTML=[
+ ['ENERGIA CINÉTICA ELETRÔNICA TOTAL',fmt(kinetic/1.602176634e-13)+' MeV'],
+ ['g ESTIMADO — ELÉTRONS',fmt(gElectron)+' m/s²'],
+ ['g ESTIMADO — NÚCLEO',fmt(gNucleus)+' m/s²'],
+ ['RAIO DE SCHWARZSCHILD EQUIVALENTE — ELÉTRONS',fmt(rsElectron)+' m'],
+ ['RAIO DE SCHWARZSCHILD EQUIVALENTE — NÚCLEO',fmt(rsNucleus)+' m']
+ ].map(([a,b])=>'<div class="physicsMetric"><span>'+a+'</span><b>'+b+'</b></div>').join('');
+}
+$('gammaInput').addEventListener('input',updatePhysics);
+$('radiusInput').addEventListener('input',updatePhysics);
+const mcData=[['Instrumentação e serviços',52.19],['Vaso e interfaces mecânicas',38.64],['Contenção radiológica',33.00],['Recuperação energética',25.89],['Núcleo E-192',21.25],['Interação eletrônica / espaço-tempo',16.08]];
+$('mcRows').innerHTML=mcData.map(([n,v])=>'<div class="mcRow"><span>'+n+'</span><b>'+v.toFixed(2)+'</b><div class="mcBar"><i style="width:'+v+'%"></i></div></div>').join('');
+updatePhysics();
 restoreSaved();
 let lastFrame=performance.now(),frames=0;
 function animate(now=performance.now()){requestAnimationFrame(animate);controls.update();const pulse=0.8+0.2*Math.sin(now*0.0018);if(objects.coreInner?.material)objects.coreInner.material.opacity=pulse;for(let i=0;i<9;i++){const e=objects['electron'+i];if(e){const a=now*.00035+i*2*Math.PI/9;e.position.set(1.15*Math.cos(a),.78*Math.sin(a),.35*Math.sin(a*2));}}composer.render();frames++;if(now-lastFrame>=1000){$('fpsReadout').textContent=frames+' FPS';frames=0;lastFrame=now;}}
