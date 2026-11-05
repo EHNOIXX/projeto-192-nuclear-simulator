@@ -38,3 +38,8 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 .mcRow b{font:10px var(--mono);color:var(--cyan)}
 .mcBar{grid-column:1/-1;height:4px;background:#263449;border-radius:5px;overflow:hidden}
 .mcBar i{display:block;height:100%;background:linear-gradient(90deg,#5ac7c5,#9b83e9)}
+
+/* EGAS 0.7 — inventário desmontável e acabamento externo */
+.pieceActions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:9px}
+.pieceActions .toolbtn{font-size:7px;padding:9px 5px}
+#pieceSelect{max-height:220px}
