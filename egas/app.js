@@ -30,8 +30,8 @@ composer.addPass(new OutputPass());
 const controls = new OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = .06;
-controls.minDistance = 7;
-controls.maxDistance = 48;
+controls.minDistance = 1.25;
+controls.maxDistance = 90;
 controls.target.set(0,0,0);
 controls.screenSpacePanning = true;
 
