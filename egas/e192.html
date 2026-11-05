@@ -34,4 +34,72 @@ function fmt(v){return Number(v).toFixed(3)}
 function draw(canvasId,key,title){const c=document.getElementById(canvasId),ctx=c.getContext('2d'),w=c.width,h=c.height,p=48;const pts=[];for(let A=280;A<=700;A++)pts.push(calc(A));let min=Math.min(...pts.map(o=>o[key])),max=Math.max(...pts.map(o=>o[key]));if(min===max)max=min+1;ctx.clearRect(0,0,w,h);ctx.strokeStyle='#294158';ctx.fillStyle='#a9bdcf';ctx.font='15px system-ui';for(let i=0;i<=4;i++){let y=p+(h-2*p)*i/4;ctx.beginPath();ctx.moveTo(p,y);ctx.lineTo(w-p,y);ctx.stroke();let val=max-(max-min)*i/4;ctx.fillText(val.toFixed(2),5,y+5)}ctx.fillText('A = 280',p,h-12);ctx.fillText('A = 700',w-p-75,h-12);ctx.strokeStyle='#62d6c5';ctx.lineWidth=3;ctx.beginPath();pts.forEach((o,i)=>{let x=p+(w-2*p)*i/(pts.length-1),y=h-p-(o[key]-min)/(max-min)*(h-2*p);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();const A=Number(document.getElementById('mass').value),idx=A-280,o=pts[idx],x=p+(w-2*p)*idx/(pts.length-1),y=h-p-(o[key]-min)/(max-min)*(h-2*p);ctx.fillStyle='#f0c674';ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.fill();ctx.fillStyle='#e8f1fa';ctx.fillText(title,p,25)}
 function update(){const A=+document.getElementById('mass').value,o=calc(A);document.getElementById('massText').textContent=A;document.getElementById('neutrons').textContent=o.N;document.getElementById('ba').textContent=fmt(o.ba);document.getElementById('b').textContent=fmt(o.B);document.getElementById('fiss').textContent=fmt(o.x);document.getElementById('class').textContent=o.x>1?'x > 1':'x ≤ 1';draw('chart1','ba','MeV/núcleon');draw('chart2','x','x')}
 document.getElementById('mass').addEventListener('input',update);document.getElementById('reset').addEventListener('click',()=>{document.getElementById('mass').value=360;update()});document.getElementById('scan').addEventListener('click',()=>{let best=calc(280);for(let A=281;A<=700;A++){let o=calc(A);if(o.ba>best.ba)best=o}alert('Varredura concluída: maior B/A nesta faixa em A='+best.A+', N='+best.N+', B/A='+fmt(best.ba)+' MeV. Isso não identifica estabilidade nuclear.')});update();
-</script></body></html>
+</script>
+<style>
+#atomStage{height:min(68vh,680px);min-height:430px;position:relative;overflow:hidden;border:1px solid #294158;border-radius:12px;background:radial-gradient(ellipse at 50% 45%,#142d43,#050c16 72%)}
+#atom3d{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+#atom3d:active{cursor:grabbing}.atomHud{position:absolute;left:14px;top:12px;background:#071522d9;border:1px solid #35516a;padding:9px 12px;border-radius:9px;font-size:13px;pointer-events:none}
+#atomLegend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;color:#b8c9d8;font-size:13px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+#stability{padding:13px 15px;border-radius:10px;margin-top:12px;font-weight:700;border:1px solid #9c6932;background:#302313;color:#ffd99c}
+#stability.caution{border-color:#a84e58;background:#321820;color:#ffbdc4}
+.atomControls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:12px}.atomControls label{margin:0}.atomControls input{margin-top:8px}
+</style>
+<section class="panel">
+<h2>Visualizador atômico 3D interativo</h2>
+<p>Arraste para girar, use a roda do mouse para aproximar ou afastar e altere A para reconstruir o núcleo. A visualização representa prótons, nêutrons e uma distribuição eletrônica esquemática.</p>
+<div id="atomStage"><canvas id="atom3d" aria-label="Representação tridimensional interativa do átomo hipotético E-192"></canvas><div class="atomHud" id="atomHud">E-192 · Z = 192 · A = 360</div></div>
+<div id="atomLegend">
+<span><i class="dot" style="background:#f06467"></i>Prótons</span>
+<span><i class="dot" style="background:#91a9c2"></i>Nêutrons</span>
+<span><i class="dot" style="background:#65d9ff"></i>Elétrons</span>
+<span><i class="dot" style="background:#62d6c5"></i>Camadas eletrônicas (esquemáticas)</span>
+</div>
+<div class="atomControls">
+<label>Escala do núcleo <input id="nucScale" type="range" min="65" max="150" value="100"></label>
+<label>Velocidade de rotação <input id="spin" type="range" min="0" max="20" value="4"></label>
+<label><input id="showElectrons" type="checkbox" checked> Mostrar elétrons e camadas</label>
+<label><input id="showNucleons" type="checkbox" checked> Mostrar prótons e nêutrons</label>
+</div>
+<div class="actions" style="margin-top:12px"><button id="rotateReset">Centralizar visualização</button><button id="spinToggle">Pausar rotação</button></div>
+<div id="stability">AVALIAÇÃO: calculando aproximação macroscópica…</div>
+<p><b>Importante:</b> os elétrons são distribuídos em camadas ilustrativas, não em orbitais calculados. Para Z = 192, efeitos relativísticos e estrutura eletrônica tornam essa distribuição incerta. O núcleo também é uma representação visual, não uma fotografia nem uma simulação quântica.</p>
+</section>
+<script>
+(()=>{
+const canvas=document.getElementById('atom3d'),ctx=canvas.getContext('2d'),stage=document.getElementById('atomStage');
+let yaw=.55,pitch=-.24,zoom=1,drag=false,lastX=0,lastY=0,spin=true,angle=0,particles=[],electrons=[],shells=[];
+const Z=192;
+function rng(seed){let x=seed>>>0;return()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296}}
+function build(){
+ const A=+document.getElementById('mass').value,N=A-Z,r=rng(A*17+192);particles=[];
+ for(let i=0;i<A;i++){let u=r()*2-1,t=r()*Math.PI*2,rr=Math.cbrt(r())*.98,s=Math.sqrt(1-u*u);particles.push({x:rr*s*Math.cos(t),y:rr*u,z:rr*s*Math.sin(t),type:i<Z?'p':'n',size:.035+r()*.012})}
+ // Camadas esquemáticas: capacidades ilustrativas 2, 8, 18, 32, 50, 72, 10.
+ const caps=[2,8,18,32,50,72,10];electrons=[];shells=[];let left=Z;
+ caps.forEach((cap,idx)=>{let count=Math.min(left,cap);left-=count;let radius=1.55+idx*.46;shells.push({radius});for(let k=0;k<count;k++){let a=2*Math.PI*k/count+(idx%2)*.17;let tilt=(idx%3-1)*.38;electrons.push({x:radius*Math.cos(a),y:radius*Math.sin(a)*Math.sin(tilt),z:radius*Math.sin(a)*Math.cos(tilt),shell:idx})}});
+ document.getElementById('atomHud').textContent='E-192 · Z = 192 · N = '+N+' · A = '+A;
+ const x=.711*Z*(Z-1)/(2*17.8*A),el=document.getElementById('stability');
+ if(x>1){el.className='caution';el.textContent='ALERTA DO MODELO: x = '+x.toFixed(3)+' (> 1). A gota nuclear macroscópica indica forte vulnerabilidade à fissão. Isto NÃO comprova a instabilidade real de um isótopo específico.'}
+ else{el.className='';el.textContent='INDICAÇÃO DO MODELO: x = '+x.toFixed(3)+' (≤ 1). O critério macroscópico isolado não aponta a mesma vulnerabilidade; isso NÃO comprova estabilidade real.'}
+}
+function project(p,w,h,rot){let x=p.x*Math.cos(yaw)-p.z*Math.sin(yaw),z=p.x*Math.sin(yaw)+p.z*Math.cos(yaw),y=p.y*Math.cos(pitch)-z*Math.sin(pitch);z=p.y*Math.sin(pitch)+z*Math.cos(pitch);let depth=5.8-z*zoom,scale=Math.min(w,h)*.19*zoom/depth;return {x:w/2+x*scale,y:h/2-y*scale,z,scale}}
+function sphere(p,color,r,w,h){let q=project(p,w,h);let rad=Math.max(1.1,r*q.scale);ctx.beginPath();let g=ctx.createRadialGradient(q.x-rad*.35,q.y-rad*.4,rad*.05,q.x,q.y,rad);g.addColorStop(0,'#ffffff');g.addColorStop(.22,color);g.addColorStop(1,'#07101a');ctx.fillStyle=g;ctx.globalAlpha=Math.max(.35,Math.min(1,.8+q.z*.08));ctx.arc(q.x,q.y,rad,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
+function pathRing(rad,tilt,w,h){ctx.beginPath();for(let i=0;i<=180;i++){let a=i/180*Math.PI*2,p={x:rad*Math.cos(a),y:rad*Math.sin(a)*Math.sin(tilt),z:rad*Math.sin(a)*Math.cos(tilt)},q=project(p,w,h);if(i===0)ctx.moveTo(q.x,q.y);else ctx.lineTo(q.x,q.y)}ctx.strokeStyle='rgba(98,214,197,.38)';ctx.lineWidth=1.5;ctx.stroke()}
+function render(){let w=canvas.clientWidth,h=canvas.clientHeight,dpr=Math.min(devicePixelRatio||1,2);if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr)}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+ let scale=+document.getElementById('nucScale').value/100;ctx.save();ctx.translate(w/2,h/2);ctx.scale(scale,scale);ctx.translate(-w/2,-h/2);
+ if(document.getElementById('showElectrons').checked){shells.forEach((s,i)=>pathRing(s.radius,((i%3)-1)*.38,w,h));electrons.forEach(e=>sphere(e,'#65d9ff',.055,w,h))}
+ if(document.getElementById('showNucleons').checked){let ordered=particles.map(p=>({p,q:project(p,w,h)})).sort((a,b)=>a.q.z-b.q.z);ordered.forEach(o=>sphere(o.p,o.p.type==='p'?'#f06467':'#91a9c2',o.p.size,w,h))}
+ ctx.restore();if(spin)yaw+=+document.getElementById('spin').value*.0007;requestAnimationFrame(render)}
+canvas.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-lastX)*.008;pitch=Math.max(-1.35,Math.min(1.35,pitch+(e.clientY-lastY)*.008));lastX=e.clientX;lastY=e.clientY});
+canvas.addEventListener('pointerup',()=>drag=false);canvas.addEventListener('pointercancel',()=>drag=false);
+canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.55,Math.min(2.2,zoom*(e.deltaY<0?1.08:.92)))},{passive:false});
+document.getElementById('mass').addEventListener('input',build);
+document.getElementById('nucScale').addEventListener('input',()=>{});
+document.getElementById('rotateReset').addEventListener('click',()=>{yaw=.55;pitch=-.24;zoom=1});
+document.getElementById('spinToggle').addEventListener('click',e=>{spin=!spin;e.target.textContent=spin?'Pausar rotação':'Retomar rotação'});
+document.getElementById('showElectrons').addEventListener('change',()=>{});document.getElementById('showNucleons').addEventListener('change',()=>{});
+build();render();
+})();
+</script>
+
+</body></html>
