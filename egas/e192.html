@@ -111,23 +111,25 @@ let yaw=.55,pitch=-.24,zoom=1,drag=false,lastX=0,lastY=0,spin=true,angle=0,parti
 const Z=192;
 function rng(seed){let x=seed>>>0;return()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296}}
 function build(){
- const A=+document.getElementById('mass').value,N=A-Z,r=rng(A*17+192);particles=[];
- for(let i=0;i<A;i++){let u=r()*2-1,t=r()*Math.PI*2,rr=Math.cbrt(r())*.98,s=Math.sqrt(1-u*u);particles.push({x:rr*s*Math.cos(t),y:rr*u,z:rr*s*Math.sin(t),type:i<Z?'p':'n',size:.035+r()*.012})}
- // Camadas esquemáticas: capacidades ilustrativas 2, 8, 18, 32, 50, 72, 10.
- const caps=[2,8,18,32,50,72,10];electrons=[];shells=[];let left=Z;
- caps.forEach((cap,idx)=>{let count=Math.min(left,cap);left-=count;let radius=1.55+idx*.46;shells.push({radius});for(let k=0;k<count;k++){let a=2*Math.PI*k/count+(idx%2)*.17;let tilt=(idx%3-1)*.38;electrons.push({x:radius*Math.cos(a),y:radius*Math.sin(a)*Math.sin(tilt),z:radius*Math.sin(a)*Math.cos(tilt),shell:idx})}});
- document.getElementById('atomHud').textContent='E-192 · Z = 192 · N = '+N+' · A = '+A;
- const x=.711*Z*(Z-1)/(2*17.8*A),el=document.getElementById('stability');
- if(x>1){el.className='caution';el.textContent='ALERTA DO MODELO: x = '+x.toFixed(3)+' (> 1). A gota nuclear macroscópica indica forte vulnerabilidade à fissão. Isto NÃO comprova a instabilidade real de um isótopo específico.'}
- else{el.className='';el.textContent='INDICAÇÃO DO MODELO: x = '+x.toFixed(3)+' (≤ 1). O critério macroscópico isolado não aponta a mesma vulnerabilidade; isso NÃO comprova estabilidade real.'}
+ const A=visualP+visualN,r=rng(A*17+visualP*31+visualN*7);particles=[];
+ for(let i=0;i<A;i++){let u=r()*2-1,t=r()*Math.PI*2,rr=Math.cbrt(r())*.98,s=Math.sqrt(1-u*u);particles.push({x:rr*s*Math.cos(t),y:rr*u,z:rr*s*Math.sin(t),type:i<visualP?'p':'n',size:.035+r()*.012})}
+ const caps=[2,8,18,32,50,72,128];electrons=[];shells=[];let left=visualE;
+ caps.forEach((cap,idx)=>{let count=Math.min(left,cap);left-=count;let radius=1.55+idx*.46;if(count>0)shells.push({radius});for(let k=0;k<count;k++){let a=2*Math.PI*k/count+(idx%2)*.17;let tilt=(idx%3-1)*.38;electrons.push({x:radius*Math.cos(a),y:radius*Math.sin(a)*Math.sin(tilt),z:radius*Math.sin(a)*Math.cos(tilt),shell:idx})}});
+ document.getElementById('atomHud').textContent='Modelo visual · P = '+visualP+' · N = '+visualN+' · e⁻ = '+visualE;
+ document.getElementById('particleSummary').textContent='P = '+visualP+' · N = '+visualN+' · e⁻ = '+visualE+' · núcleons = '+A;
+ const x=.711*Z*(Z-1)/(2*17.8*Math.max(1,A)),el=document.getElementById('stability');
+ if(x>1){el.className='caution';el.textContent='ALERTA DO MODELO Z=192: x = '+x.toFixed(3)+' (> 1). Este cálculo permanece fixo em Z = 192 e não é recalculado para a montagem visual.'}
+ else{el.className='';el.textContent='INDICAÇÃO DO MODELO Z=192: x = '+x.toFixed(3)+' (≤ 1). Não comprova estabilidade real.'}
 }
 function project(p,w,h,rot){let x=p.x*Math.cos(yaw)-p.z*Math.sin(yaw),z=p.x*Math.sin(yaw)+p.z*Math.cos(yaw),y=p.y*Math.cos(pitch)-z*Math.sin(pitch);z=p.y*Math.sin(pitch)+z*Math.cos(pitch);let depth=5.8-z*zoom,scale=Math.min(w,h)*.19*zoom/depth;return {x:w/2+x*scale,y:h/2-y*scale,z,scale}}
 function sphere(p,color,r,w,h){let q=project(p,w,h);let rad=Math.max(1.1,r*q.scale);ctx.beginPath();let g=ctx.createRadialGradient(q.x-rad*.35,q.y-rad*.4,rad*.05,q.x,q.y,rad);g.addColorStop(0,'#ffffff');g.addColorStop(.22,color);g.addColorStop(1,'#07101a');ctx.fillStyle=g;ctx.globalAlpha=Math.max(.35,Math.min(1,.8+q.z*.08));ctx.arc(q.x,q.y,rad,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
 function pathRing(rad,tilt,w,h){ctx.beginPath();for(let i=0;i<=180;i++){let a=i/180*Math.PI*2,p={x:rad*Math.cos(a),y:rad*Math.sin(a)*Math.sin(tilt),z:rad*Math.sin(a)*Math.cos(tilt)},q=project(p,w,h);if(i===0)ctx.moveTo(q.x,q.y);else ctx.lineTo(q.x,q.y)}ctx.strokeStyle='rgba(98,214,197,.38)';ctx.lineWidth=1.5;ctx.stroke()}
 function drawSpacetime(w,h){
- // Malha conceitual com deformação deliberadamente amplificada; não está em escala física.
+ // Deformação ilustrativa que responde à massa aproximada dos núcleons.
+ // O fator visual é amplificado e não corresponde à curvatura física em escala.
  const extent=4.2,steps=18,depth=-1.18;
- function point(u,v){const rr=u*u+v*v;return {x:u,y:depth-1.05*Math.exp(-rr/2.7),z:v}}
+ const curvature=0.12+0.93*Math.sqrt(Math.max(1,visualP+visualN)/360);
+ function point(u,v){const rr=u*u+v*v;return {x:u,y:depth-curvature*Math.exp(-rr/2.7),z:v}}
  ctx.save();ctx.lineWidth=1;
  for(let k=0;k<=steps;k++){
    const t=-extent+2*extent*k/steps;
@@ -138,12 +140,11 @@ function drawSpacetime(w,h){
        const p=axis===0?point(t,q):point(q,t),s=project(p,w,h);
        if(j===0)ctx.moveTo(s.x,s.y);else ctx.lineTo(s.x,s.y);
      }
-     ctx.strokeStyle='rgba(83,190,205,'+(0.16+0.12*(1-Math.abs(t)/extent))+')';
-     ctx.stroke();
+     ctx.strokeStyle='rgba(83,190,205,'+(0.16+0.12*(1-Math.abs(t)/extent))+')';ctx.stroke();
    }
  }
- const center=project(point(0,0),w,h);
- ctx.fillStyle='#9de8e8';ctx.font='12px system-ui';ctx.fillText('MALHA ESPAÇO-TEMPO · DEFORMAÇÃO VISUAL × '+curvature.toFixed(2),14,h-18);
+ ctx.fillStyle='#9de8e8';ctx.font='12px system-ui';
+ ctx.fillText('MALHA · MASSA VISUAL '+(visualP+visualN)+' · DEFORMAÇÃO × '+curvature.toFixed(2),14,h-18);
  ctx.restore();
 }
 function syncZoom(){document.getElementById('zoomRange').value=zoom;document.getElementById('zoomReadout').textContent=zoom.toFixed(2).replace('.',',')+'×'}
