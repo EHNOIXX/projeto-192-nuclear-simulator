@@ -73,7 +73,10 @@ const mat = {
  glow:new THREE.MeshBasicMaterial({color:0x9c76ff}),
  shield:new THREE.MeshPhysicalMaterial({color:0x8eb7c5,metalness:.55,roughness:.28,transparent:true,opacity:.22,side:THREE.DoubleSide,depthWrite:false}),
  solar:new THREE.MeshStandardMaterial({color:0x315b82,metalness:.48,roughness:.3,emissive:0x102b49,emissiveIntensity:.45}),
- electron:new THREE.MeshBasicMaterial({color:0x70e9ff}),\n insulation:new THREE.MeshStandardMaterial({color:0xc8c2ad,metalness:.12,roughness:.88}),\n dense:new THREE.MeshStandardMaterial({color:0x58636d,metalness:.72,roughness:.42}),\n armor:new THREE.MeshStandardMaterial({color:0x9ba8b4,metalness:.9,roughness:.24})
+ electron:new THREE.MeshBasicMaterial({color:0x70e9ff}),
+ insulation:new THREE.MeshStandardMaterial({color:0xc8c2ad,metalness:.12,roughness:.88}),
+ dense:new THREE.MeshStandardMaterial({color:0x58636d,metalness:.72,roughness:.42}),
+ armor:new THREE.MeshStandardMaterial({color:0x9ba8b4,metalness:.9,roughness:.24})
 };
 const objects={};
 function add(id,label,layer,geometry,material,position=[0,0,0],rotation=[0,0,0]){
@@ -245,7 +248,10 @@ armorCase.material.side=THREE.DoubleSide;
 for(const x of [-7.3,7.3]) torus('armorEnd_'+x,'Aro terminal da armadura','armor',x,2.91,.16,mat.steel,0,0,.92,.92);
 const names={structure:'Estrutura externa',core:'Núcleo E-192',radiation:'Blindagem e recuperação energética',field:'Sistema eletromagnético',plasma:'Câmaras conceituais de plasma',nova:'Módulo N.O.V.A.',control:'Controle vetorial',instrumentation:'Instrumentação e serviços',insulation:'Isolamento térmico conceitual',denseShell:'Camada densa conceitual',armor:'Armadura externa integral'};
 const descriptions={
- outerShell:'Estrutura interna com carcaças externas fechadas em camadas conceituais. Use o inventário para ocultar e recolocar componentes.',\n thermalCase:'Camada visual genérica de isolamento térmico. Não especifica material, composição, espessura ou desempenho.',\n denseCase:'Camada visual densa separada do isolamento térmico. Não especifica composição ou proteção radiológica.',\n armorCase:'Fechamento visual integral da armadura externa; geometria ilustrativa, sem especificação estrutural.',
+ outerShell:'Estrutura interna com carcaças externas fechadas em camadas conceituais. Use o inventário para ocultar e recolocar componentes.',
+ thermalCase:'Camada visual genérica de isolamento térmico. Não especifica material, composição, espessura ou desempenho.',
+ denseCase:'Camada visual densa separada do isolamento térmico. Não especifica composição ou proteção radiológica.',
+ armorCase:'Fechamento visual integral da armadura externa; geometria ilustrativa, sem especificação estrutural.',
  core:'Posição hipotética do E-192. Elemento 192 não foi descoberto; propriedades e capacidade de alterar o espaço-tempo são desconhecidas.',
  radiationShield:'Camadas cenográficas de blindagem radiológica ao redor do núcleo. Não representam materiais, espessuras ou proteção calculados.',
  energyCollector:'Placas conversoras hipotéticas que representam recuperação de parte da energia radiativa absorvida. Não equivalem a painéis fotovoltaicos comuns validados para essa função.',
@@ -283,7 +289,10 @@ const materialData={
 const evidenceStatus={
  outerShell:['ENGENHARIA CONVENCIONAL','Geometrias estruturais são familiares à engenharia; dimensões, cargas, materiais e segurança deste conceito não foram dimensionados.'],
  containmentVessel:['ANALOGIA DE ENGENHARIA','Vasos e flanges existem em instalações reais; este modelo não calcula pressão, vácuo, fadiga, espessura ou contenção.'],
- instrumentation:['TECNOLOGIA ESTABELECIDA / INTEGRAÇÃO CONCEITUAL','Sensores, cabos e instrumentação são tecnologias conhecidas; a integração EGAS é cenográfica e não validada.'],\n thermalCase:['REPRESENTAÇÃO CONCEITUAL','Carcaça visual de isolamento genérico. Não define material, composição ou desempenho térmico.'],\n denseCase:['CAMADA NÃO DIMENSIONADA','Representação visual de camada densa. Não define composição, espessura ou proteção radiológica.'],\n armorCase:['ARMADURA VISUAL','Fechamento externo estético; não representa estrutura calculada ou proteção certificada.'],
+ instrumentation:['TECNOLOGIA ESTABELECIDA / INTEGRAÇÃO CONCEITUAL','Sensores, cabos e instrumentação são tecnologias conhecidas; a integração EGAS é cenográfica e não validada.'],
+ thermalCase:['REPRESENTAÇÃO CONCEITUAL','Carcaça visual de isolamento genérico. Não define material, composição ou desempenho térmico.'],
+ denseCase:['CAMADA NÃO DIMENSIONADA','Representação visual de camada densa. Não define composição, espessura ou proteção radiológica.'],
+ armorCase:['ARMADURA VISUAL','Fechamento externo estético; não representa estrutura calculada ou proteção certificada.'],
  coilLeft:['PRINCÍPIO ESTABELECIDO / DESEMPENHO NÃO AVALIADO','Eletroímãs e bobinas são tecnologias reais; campo, aquecimento, refrigeração e confinamento não foram calculados.'],
  coilRight:['PRINCÍPIO ESTABELECIDO / DESEMPENHO NÃO AVALIADO','Eletroímãs e bobinas são tecnologias reais; campo, aquecimento, refrigeração e confinamento não foram calculados.'],
  plasmaLeft:['FENÔMENO ESTABELECIDO / MÓDULO HIPOTÉTICO','Plasma é um estado da matéria conhecido; esta câmara não representa um projeto operacional ou confinamento validado.'],
