@@ -354,14 +354,37 @@ const views={front:[0,2,25],side:[25,2,0],top:[0,25,.01],iso:[19,11,20]};
 document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>{const v=views[btn.dataset.view];camera.position.set(...v);controls.target.set(0,0,0);controls.update();controls.autoRotate=false;$('rotateBtn').setAttribute('aria-pressed','false');$('rotateBtn').textContent='ÓRBITA AUTOMÁTICA';}));
 $('shotBtn').addEventListener('click',()=>{composer.render();const a=document.createElement('a');a.download='EGAS-industrial-conceitual.png';a.href=renderer.domElement.toDataURL('image/png');a.click();});
 $('fullBtn').addEventListener('click',()=>{const t=$('viewport').parentElement;if(!document.fullscreenElement)t.requestFullscreen?.();else document.exitFullscreen?.();});
-function configData(){return {version:'0.6',selected,material,length:Number($('length').value),diameter:Number($('diameter').value),alpha:Number($('alpha').value),layers:Object.fromEntries(Object.keys(groups).map(k=>[k,groups[k].visible])),exploded,sectionEnabled,sectionPosition:cutPlane.constant};}
+// Inventário de peças: ocultação visual reversível, sem apagar geometria.
+function getPieceMeshes(){return Object.values(groups).flatMap(g=>g.children).filter(o=>o.isMesh&&o.userData?.id);}
+function refreshPieceInventory(){
+ const list=getPieceMeshes(),sel=$('pieceSelect'),previous=sel.value;
+ sel.innerHTML=list.map(o=>'<option value="'+o.userData.id+'">'+o.userData.label+' · '+o.userData.id+'</option>').join('');
+ if(list.some(o=>o.userData.id===previous))sel.value=previous;
+ updatePieceStatus();
+}
+function updatePieceStatus(){
+ const o=getPieceMeshes().find(x=>x.userData.id===$('pieceSelect').value);
+ if(!o){$('pieceStatus').textContent='Nenhuma peça selecionada.';return;}
+ $('pieceStatus').textContent=o.visible?'Peça montada e visível.':'Peça retirada visualmente — pode ser recolocada.';
+ $('pieceToggle').textContent=o.visible?'RETIRAR PEÇA':'RECOLOCAR PEÇA';
+}
+$('pieceSelect').addEventListener('change',updatePieceStatus);
+$('pieceToggle').addEventListener('click',()=>{
+ const o=getPieceMeshes().find(x=>x.userData.id===$('pieceSelect').value);if(!o)return;
+ o.visible=!o.visible;updatePieceStatus();
+});
+$('restorePieces').addEventListener('click',()=>{
+ getPieceMeshes().forEach(o=>o.visible=true);updatePieceStatus();
+});
+refreshPieceInventory();
+function configData(){return {version:'0.6',selected,material,length:Number($('length').value),diameter:Number($('diameter').value),alpha:Number($('alpha').value),layers:Object.fromEntries(Object.keys(groups).map(k=>[k,groups[k].visible])),exploded,sectionEnabled,sectionPosition:cutPlane.constant,pieces:Object.fromEntries(getPieceMeshes().map(o=>[o.userData.id,o.visible]))};}
 $('saveBtn').addEventListener('click',()=>{try{localStorage.setItem('egas-lab-config',JSON.stringify(configData()));$('saveBtn').textContent='CONFIGURAÇÃO SALVA';}catch(e){$('saveBtn').textContent='FALHA AO SALVAR';}setTimeout(()=>$('saveBtn').textContent='SALVAR CONFIG.',1800);});
 $('exportBtn').addEventListener('click',()=>{const data={projeto:'S.P.E.C.T.R.A. / EGAS',natureza:'modelo conceitual educacional; não validado',aviso:'Elemento 192 não descoberto. Geometrias e valores são ilustrativos.',configuracao:configData(),componentes:partList.map(p=>({id:p[0],nome:p[1],camada:p[2]})),materiais:materialData};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='EGAS-ficha-conceitual.json';a.click();URL.revokeObjectURL(url);});
 function restoreSaved(){
  try{const raw=localStorage.getItem('egas-lab-config');if(!raw)return;const d=JSON.parse(raw);if(d.material&&materialData[d.material]){$('material').value=d.material;material=d.material;}if(partList.some(p=>p[0]===d.selected)){$('partSelect').value=d.selected;selected=d.selected;}
  $('length').value=d.length??24;$('diameter').value=d.diameter??8;$('alpha').value=d.alpha??100;$('length').dispatchEvent(new Event('input'));$('diameter').dispatchEvent(new Event('input'));$('alpha').dispatchEvent(new Event('input'));
  Object.keys(groups).forEach(k=>{const el=document.querySelector('[data-layer="'+k+'"]');if(el){el.checked=d.layers?.[k]??true;groups[k].visible=el.checked;}});
- setExploded(Boolean(d.exploded));sectionEnabled=Boolean(d.sectionEnabled);cutPlane.constant=Number(d.sectionPosition)||0;$('sectionRange').value=cutPlane.constant;$('sectionOut').value=cutPlane.constant.toFixed(1);$('sectionBtn').textContent=sectionEnabled?'DESATIVAR CORTE':'CORTE TRANSVERSAL';$('sectionRange').disabled=!sectionEnabled;applyCut();refresh();highlight();applyMaterial();
+ if(d.pieces)getPieceMeshes().forEach(o=>{if(Object.hasOwn(d.pieces,o.userData.id))o.visible=Boolean(d.pieces[o.userData.id]);});setExploded(Boolean(d.exploded));sectionEnabled=Boolean(d.sectionEnabled);cutPlane.constant=Number(d.sectionPosition)||0;$('sectionRange').value=cutPlane.constant;$('sectionOut').value=cutPlane.constant.toFixed(1);$('sectionBtn').textContent=sectionEnabled?'DESATIVAR CORTE':'CORTE TRANSVERSAL';$('sectionRange').disabled=!sectionEnabled;applyCut();refresh();highlight();applyMaterial();
  }catch(e){console.warn('Configuração salva não pôde ser carregada.',e);}
 }
 function updatePhysics(){
@@ -386,6 +409,7 @@ const mcData=[['Instrumentação e serviços',52.19],['Vaso e interfaces mecâni
 $('mcRows').innerHTML=mcData.map(([n,v])=>'<div class="mcRow"><span>'+n+'</span><b>'+v.toFixed(2)+'</b><div class="mcBar"><i style="width:'+v+'%"></i></div></div>').join('');
 updatePhysics();
 restoreSaved();
+refreshPieceInventory();
 let lastFrame=performance.now(),frames=0;
 function animate(now=performance.now()){requestAnimationFrame(animate);controls.update();const pulse=0.8+0.2*Math.sin(now*0.0018);if(objects.coreInner?.material)objects.coreInner.material.opacity=pulse;for(let i=0;i<9;i++){const e=objects['electron'+i];if(e){const a=now*.00035+i*2*Math.PI/9;e.position.set(1.15*Math.cos(a),.78*Math.sin(a),.35*Math.sin(a*2));}}composer.render();frames++;if(now-lastFrame>=1000){$('fpsReadout').textContent=frames+' FPS';frames=0;lastFrame=now;}}
 refresh();highlight();animate();
