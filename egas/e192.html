@@ -61,6 +61,16 @@ document.getElementById('mass').addEventListener('input',update);document.getEle
 <label><input id="showNucleons" type="checkbox" checked> Mostrar prótons e nêutrons</label>
 </div>
 <div class="actions" style="margin-top:12px"><button id="rotateReset">Centralizar visualização</button><button id="spinToggle">Pausar rotação</button></div>
+<div class="panel" id="electronSpeedPanel" style="margin:14px 0 0;background:#0a1928;border-color:#416078">
+<h3 style="margin-top:0">Velocidade eletrônica — extrapolação hipotética</h3>
+<div class="metrics">
+<div class="metric"><small>Parâmetro relativístico Z · α</small><strong id="zAlpha">1,401</strong></div>
+<div class="metric"><small>Estimativa de Bohr (1s)</small><strong id="bohrSpeed">1,40 c</strong></div>
+<div class="metric"><small>Equivalente numérico</small><strong id="bohrKms">420.000 km/s</strong></div>
+</div>
+<div class="note" style="margin-top:12px"><b>ATENÇÃO — extrapolação não física:</b> a fórmula não relativística de Bohr resulta em velocidade maior que a da luz. Isso indica que ela falha para Z = 192; não significa que elétrons reais ultrapassem c.</div>
+<p style="margin-bottom:0">Este número é apenas um alerta quantitativo da importância dos efeitos relativísticos, usando um elétron 1s hidrogenoide sem blindagem. Uma velocidade fisicamente defensável exigiria resolver a equação de Dirac com distribuição nuclear de carga finita e considerar as interações entre os elétrons. A estrutura eletrônica do E-192 é desconhecida.</p>
+</div>
 <div id="stability">AVALIAÇÃO: calculando aproximação macroscópica…</div>
 <p><b>Importante:</b> os elétrons são distribuídos em camadas ilustrativas, não em orbitais calculados. Para Z = 192, efeitos relativísticos e estrutura eletrônica tornam essa distribuição incerta. O núcleo também é uma representação visual, não uma fotografia nem uma simulação quântica.</p>
 </section>
@@ -102,4 +112,5 @@ build();render();
 })();
 </script>
 
+<script>(()=>{const alpha=1/137.035999084,c=299792.458,z=192,za=z*alpha;document.getElementById('zAlpha').textContent=za.toFixed(3);document.getElementById('bohrSpeed').textContent=za.toFixed(2)+' c';document.getElementById('bohrKms').textContent=Math.round(za*c).toLocaleString('pt-BR')+' km/s';})();</script>
 </body></html>
