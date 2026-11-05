@@ -107,7 +107,8 @@ document.getElementById('mass').addEventListener('input',update);document.getEle
 <script>
 (()=>{
 const canvas=document.getElementById('atom3d'),ctx=canvas.getContext('2d'),stage=document.getElementById('atomStage');
-let yaw=.55,pitch=-.24,zoom=1,drag=false,lastX=0,lastY=0,spin=true,angle=0,particles=[],electrons=[],shells=[];\nlet visualP=192,visualN=168,visualE=192;
+let yaw=.55,pitch=-.24,zoom=1,drag=false,lastX=0,lastY=0,spin=true,angle=0,particles=[],electrons=[],shells=[];
+let visualP=192,visualN=168,visualE=192;
 const Z=192;
 function rng(seed){let x=seed>>>0;return()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296}}
 function build(){
