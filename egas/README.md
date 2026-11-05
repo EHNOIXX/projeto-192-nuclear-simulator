@@ -71,3 +71,14 @@ A região central agora é uma montagem visual em camadas, com vaso, interfaces 
 
 ### Limitações do modelo físico
 A aproximação de campo fraco e massa equivalente não substitui o cálculo do tensor energia-momento completo nem a solução das equações de Einstein. Para Z=192, a estrutura eletrônica é uma questão de campo de Coulomb supercrítico; não se deve extrapolar órbitas atômicas convencionais. O modelo não prevê estabilidade nuclear, espectro eletrônico, blindagem, conversão energética, plasma, empuxo ou viabilidade de construção.
+
+
+## Versão 0.7 — montagem visual e carcaças
+
+- Inventário individual de malhas: qualquer peça listada pode ser ocultada e recolocada sem apagar sua geometria.
+- Botão para restaurar todas as peças e salvamento do estado de visibilidade individual.
+- Zoom ampliado: distância mínima da câmera reduzida e distância máxima aumentada.
+- Carcaças externas representadas em camadas visuais independentes: isolamento térmico genérico, camada densa conceitual e armadura externa integral.
+- As camadas não especificam composição, mistura, espessura, proteção radiológica ou desempenho térmico/mecânico. Não constituem projeto de blindagem ou isolamento.
+- Botão para alternar entre a vista fechada e aberta das carcaças; inventário e vista explodida permitem inspecionar a montagem conceitual.
+- O modelo é uma visualização educacional, não um projeto de fabricação ou proteção.
