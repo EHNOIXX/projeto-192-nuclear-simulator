@@ -73,6 +73,10 @@ document.getElementById('mass').addEventListener('input',update);document.getEle
 <label><input id="showNucleons" type="checkbox" checked> Mostrar prótons e nêutrons</label>
 </div>
 <div class="actions" style="margin-top:12px"><button id="rotateReset">Centralizar visualização</button><button id="spinToggle">Pausar rotação</button></div>
+<div class="actions" style="margin-top:10px">
+<button id="spacetimeToggle" type="button" aria-pressed="true">Ocultar tecido do espaço-tempo</button>
+<span class="note" style="margin:0">Alterna apenas a malha visual; não altera o átomo nem os cálculos.</span>
+</div>
 <div class="actions zoomBar" style="margin-top:10px;align-items:center">
 <strong style="color:#a9bdcf;margin-right:4px">ZOOM</strong>
 <button id="zoomMinus" aria-label="Afastar">−</button>
@@ -107,7 +111,7 @@ document.getElementById('mass').addEventListener('input',update);document.getEle
 <script>
 (()=>{
 const canvas=document.getElementById('atom3d'),ctx=canvas.getContext('2d'),stage=document.getElementById('atomStage');
-let yaw=.55,pitch=-.24,zoom=1,drag=false,lastX=0,lastY=0,spin=true,angle=0,particles=[],electrons=[],shells=[];
+let yaw=.55,pitch=-.24,zoom=1,drag=false,lastX=0,lastY=0,spin=true,angle=0,showSpacetime=true,particles=[],electrons=[],shells=[];
 let visualP=192,visualN=168,visualE=192;
 const Z=192;
 function rng(seed){let x=seed>>>0;return()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296}}
@@ -153,7 +157,7 @@ function drawSpacetime(w,h){
 }
 function syncZoom(){document.getElementById('zoomRange').value=zoom;document.getElementById('zoomReadout').textContent=zoom.toFixed(2).replace('.',',')+'×'}
 function render(){let w=canvas.clientWidth,h=canvas.clientHeight,dpr=Math.min(devicePixelRatio||1,2);if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr)}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
- drawSpacetime(w,h);
+ if(showSpacetime)drawSpacetime(w,h);
  let scale=+document.getElementById('nucScale').value/100;ctx.save();ctx.translate(w/2,h/2);ctx.scale(scale,scale);ctx.translate(-w/2,-h/2);
  if(document.getElementById('showElectrons').checked){shells.forEach((s,i)=>pathRing(s.radius,((i%3)-1)*.38,w,h));electrons.forEach(e=>sphere(e,'#65d9ff',.055,w,h))}
  if(document.getElementById('showNucleons').checked){let ordered=particles.map(p=>({p,q:project(p,w,h)})).sort((a,b)=>a.q.z-b.q.z);ordered.forEach(o=>sphere(o.p,o.p.type==='p'?'#f06467':'#91a9c2',o.p.size,w,h))}
@@ -184,6 +188,11 @@ document.getElementById('zoomMinus').addEventListener('click',()=>{zoom=Math.max
 document.getElementById('zoomHome').addEventListener('click',()=>{zoom=1;syncZoom()});
 syncZoom();
 document.getElementById('spinToggle').addEventListener('click',e=>{spin=!spin;e.target.textContent=spin?'Pausar rotação':'Retomar rotação'});
+document.getElementById('spacetimeToggle').addEventListener('click',e=>{
+ showSpacetime=!showSpacetime;
+ e.currentTarget.textContent=showSpacetime?'Ocultar tecido do espaço-tempo':'Mostrar tecido do espaço-tempo';
+ e.currentTarget.setAttribute('aria-pressed',String(showSpacetime));
+});
 document.getElementById('showElectrons').addEventListener('change',()=>{});document.getElementById('showNucleons').addEventListener('change',()=>{});
 build();render();
 })();
