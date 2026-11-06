@@ -339,7 +339,7 @@ renderer.domElement.addEventListener('click',e=>{
  const hit=hits.find(h=>h.object.userData.layer);if(!hit)return;
  const layer=hit.object.userData.layer;
  const map={structure:'outerShell',core:hit.object.name==='containmentVessel'?'containmentVessel':'core',instrumentation:'instrumentation',radiation:hit.object.name.startsWith('energyPlate')||hit.object.name.startsWith('plateCell')?'energyCollector':hit.object.name.startsWith('electron')?'electronFlow':'radiationShield',field:hit.object.name.includes('1')?'coilRight':'coilLeft',plasma:hit.object.name.includes('1')?'plasmaRight':'plasmaLeft',nova:'nova',control:'vectorRing'};
- selected=map[layer]||'outerShell';$('partSelect').value=selected;refresh();highlight();
+ selected=map[layer]||'outerShell';$('partSelect').value=selected;const pieceSel=$('pieceSelect');if(pieceSel){$('pieceSearch').value=hit.object.userData.label||'';$('pieceCategory').value=layer;renderPieceOptions(hit.object.userData.id);pieceSel.value=hit.object.userData.id;updatePieceStatus();}refresh();highlight();
 });
 $('length').oninput=e=>{length=+e.target.value;$('lengthOut').value=length+' m';root.scale.x=length/24;};
 $('diameter').oninput=e=>{diam=+e.target.value;$('diamOut').value=diam+' m';root.scale.y=diam/8;root.scale.z=diam/8;};
@@ -385,23 +385,36 @@ $('fullBtn').addEventListener('click',()=>{const t=$('viewport').parentElement;i
 function getPieceMeshes(){return Object.values(groups).flatMap(g=>g.children).filter(o=>o.isMesh&&o.userData?.id);}
 function refreshPieceInventory(){
  const list=getPieceMeshes(),sel=$('pieceSelect'),previous=sel.value;
- sel.innerHTML=list.map(o=>'<option value="'+o.userData.id+'">'+o.userData.label+' · '+o.userData.id+'</option>').join('');
- if(list.some(o=>o.userData.id===previous))sel.value=previous;
+ const categories=[...new Set(list.map(o=>o.userData.layer))];
+ const cat=$('pieceCategory'),oldCat=cat.value||'all';
+ cat.innerHTML='<option value="all">Todas as categorias</option>'+categories.map(k=>'<option value="'+k+'">'+(names[k]||k)+'</option>').join('');
+ cat.value=categories.includes(oldCat)?oldCat:'all';
+ renderPieceOptions(previous);
+}
+function renderPieceOptions(previous){
+ const list=getPieceMeshes(),sel=$('pieceSelect'),query=$('pieceSearch').value.trim().toLocaleLowerCase(),category=$('pieceCategory').value;
+ const filtered=list.filter(o=>(category==='all'||o.userData.layer===category)&&(!query||(o.userData.label+' '+o.userData.id+' '+o.userData.layer).toLocaleLowerCase().includes(query)));
+ sel.innerHTML=filtered.map(o=>'<option value="'+o.userData.id+'">'+o.userData.label+' ['+(names[o.userData.layer]||o.userData.layer)+']</option>').join('');
+ if(filtered.some(o=>o.userData.id===previous))sel.value=previous;
+ else if(filtered.length)sel.selectedIndex=0;
  updatePieceStatus();
 }
 function updatePieceStatus(){
  const o=getPieceMeshes().find(x=>x.userData.id===$('pieceSelect').value);
- if(!o){$('pieceStatus').textContent='Nenhuma peça selecionada.';return;}
+ if(!o){$('pieceStatus').textContent='Nenhuma peça encontrada. Tente outro termo ou categoria.';$('pieceToggle').disabled=true;return;}
+ $('pieceToggle').disabled=false;
  $('pieceStatus').textContent=o.visible?'Peça montada e visível.':'Peça retirada visualmente — pode ser recolocada.';
  $('pieceToggle').textContent=o.visible?'RETIRAR PEÇA':'RECOLOCAR PEÇA';
 }
+$('pieceSearch').addEventListener('input',()=>renderPieceOptions($('pieceSelect').value));
+$('pieceCategory').addEventListener('change',()=>renderPieceOptions($('pieceSelect').value));
 $('pieceSelect').addEventListener('change',updatePieceStatus);
 $('pieceToggle').addEventListener('click',()=>{
  const o=getPieceMeshes().find(x=>x.userData.id===$('pieceSelect').value);if(!o)return;
  o.visible=!o.visible;updatePieceStatus();
 });
 $('restorePieces').addEventListener('click',()=>{
- getPieceMeshes().forEach(o=>o.visible=true);updatePieceStatus();
+ getPieceMeshes().forEach(o=>o.visible=true);renderPieceOptions($('pieceSelect').value);updatePieceStatus();
 });
 refreshPieceInventory();
 function configData(){return {version:'0.7',selected,material,length:Number($('length').value),diameter:Number($('diameter').value),alpha:Number($('alpha').value),layers:Object.fromEntries(Object.keys(groups).map(k=>[k,groups[k].visible])),exploded,sectionEnabled,sectionPosition:cutPlane.constant,pieces:Object.fromEntries(getPieceMeshes().map(o=>[o.userData.id,o.visible])),shellsClosed};}
