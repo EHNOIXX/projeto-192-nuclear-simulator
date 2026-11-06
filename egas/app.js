@@ -368,11 +368,20 @@ function setExploded(on){
 $('explodeBtn').addEventListener('click',()=>setExploded(!exploded));
 let shellsClosed=true;
 function setShellsClosed(on){
- shellsClosed=on;groups.insulation.visible=on;groups.denseShell.visible=on;groups.armor.visible=on;
+ shellsClosed=on;
+ ['insulation','denseShell','armor'].forEach(k=>{
+  groups[k].visible=on;
+  const check=document.querySelector('[data-layer="'+k+'"]');
+  if(check)check.checked=on;
+ });
  $('shellBtn').setAttribute('aria-pressed',String(on));
- $('shellBtn').textContent=on?'CARCAÇAS: FECHADAS':'CARCAÇAS: ABERTAS';
+ $('shellBtn').textContent=on?'ABRIR CARCAÇAS':'FECHAR CARCAÇAS';
+ $('shellBtn').title=on?'Clique para ocultar as três carcaças e revelar o interior':'Clique para mostrar novamente as três carcaças externas';
 }
-$('shellBtn').addEventListener('click',()=>setShellsClosed(!shellsClosed));
+$('shellBtn').addEventListener('click',()=>{
+ const areClosed=['insulation','denseShell','armor'].every(k=>groups[k].visible);
+ setShellsClosed(!areClosed);
+});
 
 $('sectionBtn').addEventListener('click',()=>{sectionEnabled=!sectionEnabled;applyCut();$('sectionBtn').setAttribute('aria-pressed',String(sectionEnabled));$('sectionBtn').textContent=sectionEnabled?'DESATIVAR CORTE':'CORTE TRANSVERSAL';$('sectionRange').disabled=!sectionEnabled;});
 $('sectionRange').addEventListener('input',e=>{cutPlane.constant=Number(e.target.value);$('sectionOut').value=cutPlane.constant.toFixed(1);if(sectionEnabled)applyCut();});
