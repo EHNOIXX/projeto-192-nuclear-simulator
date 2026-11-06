@@ -461,4 +461,5 @@ restoreSaved();
 refreshPieceInventory();
 let lastFrame=performance.now(),frames=0;
 function animate(now=performance.now()){requestAnimationFrame(animate);controls.update();const pulse=0.8+0.2*Math.sin(now*0.0018);if(objects.coreInner?.material)objects.coreInner.material.opacity=pulse;for(let i=0;i<9;i++){const e=objects['electron'+i];if(e){const a=now*.00035+i*2*Math.PI/9;e.position.set(1.15*Math.cos(a),.78*Math.sin(a),.35*Math.sin(a*2));}}composer.render();frames++;if(now-lastFrame>=1000){$('fpsReadout').textContent=frames+' FPS';frames=0;lastFrame=now;}}
-refresh();highlight();animate();\nconst bootStatus=$('bootStatus');if(bootStatus)bootStatus.remove();
+refresh();highlight();animate();
+const bootStatus=$('bootStatus');if(bootStatus)bootStatus.remove();
