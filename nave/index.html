@@ -300,8 +300,8 @@ function hullSurface(){
  for(const y of [-3,3])for(const z of [-4.5,4.5]){
   const id='integrated_power_'+y+'_'+z;
   cyl(id+'_thermal_chamber','Câmara termoelétrica integrada ao conjunto propulsivo','propulsion',1.25,1.25,5.4,M.armor,[66.2,y,z],[0,0,Math.PI/2],56);
-  const coreGroup=new THREE.Group();coreGroup.name=id+'_e192_nucleus';coreGroup.userData={label:'Núcleo E-192 · 192 prótons + 250 nêutrons · representação do simulador nuclear',group:'propulsion'};
-  coreGroup.position.set(66.2,y,z);coreGroup.scale.setScalar(1e-10);groups.propulsion.add(coreGroup);
+  const coreGroup=new THREE.Group();coreGroup.name=id+'_e192_nucleus';coreGroup.userData={label:'Núcleo E-192 · escala nuclear de referência · representação hipotética',group:'propulsion'};
+  coreGroup.position.set(66.2,y,z);coreGroup.scale.setScalar(1e-15);groups.propulsion.add(coreGroup);
   const A=442,rad=1.72;
   for(let i=0;i<A;i++){
    const proton=i<192,phi=Math.acos(1-2*(i+.5)/A),theta=Math.PI*(1+Math.sqrt(5))*i;
@@ -471,7 +471,7 @@ const e192Contours=new THREE.MeshBasicMaterial({color:0x8cebea,wireframe:true,tr
 const engineNuclei=[];
 for(const y of [-3,3])for(const z of [-4.5,4.5]){
  const instance=e192Nucleus.clone(true);instance.name='e192_engine_nucleus_'+y+'_'+z;
- instance.scale.setScalar(1e-10);instance.position.set(66.2,y,z);root.add(instance);engineNuclei.push(instance);
+ instance.scale.setScalar(1e-15);instance.position.set(66.2,y,z);root.add(instance);engineNuclei.push(instance);
 }
 const e192Cloud=new THREE.Group();atomGroup.add(e192Cloud);
 const cloudPositions=[];
