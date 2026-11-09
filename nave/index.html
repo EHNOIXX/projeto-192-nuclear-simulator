@@ -22,15 +22,15 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <body>
 <header><a class="brand" href="../index.html"><b>S.</b><span>S.P.E.C.T.R.A.<small>FLIGHT SYSTEMS / CONCEPT LAB</small></span></a><nav class="headlinks"><a href="../index.html">E-192 ↗</a><a href="../egas/">EGAS ↗</a><a href="../">CENTRAL</a></nav><span class="live">● SIMULAÇÃO LOCAL ATIVA</span></header>
 <main>
-<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · CONFIGURAÇÃO CONCEITUAL</p><h1>Flight systems <em>visualization.</em></h1><p>Ambiente de exploração tridimensional da arquitetura externa e dos módulos conceituais da nave. Selecione componentes, altere dimensões de referência e examine a montagem em tempo real.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>Arquitetura aberta e modular ilustrativa para estudo e comunicação científica. Não constitui projeto de engenharia, veículo funcional ou especificação de fabricação.</div></section>
+<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 05.0 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 05.0 · Modelo dimensional conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
 <section class="workspace">
 <aside class="stack leftstack">
 <div class="panel"><div class="paneltitle">01 / GEOMETRIA GLOBAL</div><div class="panelbody">
-<label class="field">Comprimento de referência <output id="lenOut">120 m</output></label><input id="len" type="range" min="70" max="180" value="120">
-<label class="field">Largura máxima <output id="widOut">36 m</output></label><input id="wid" type="range" min="18" max="60" value="36">
-<label class="field">Altura máxima <output id="heiOut">28 m</output></label><input id="hei" type="range" min="14" max="46" value="28">
+<label class="field">Comprimento de referência <output id="lenOut">160 m</output></label><input id="len" type="range" min="70" max="180" value="160">
+<label class="field">Largura máxima <output id="widOut">96 m</output></label><input id="wid" type="range" min="50" max="120" value="96">
+<label class="field">Altura máxima <output id="heiOut">48 m</output></label><input id="hei" type="range" min="25" max="70" value="48">
 <div class="btnrow" style="margin-top:13px"><button class="btn" id="resetDims">RESTAURAR DIMENSÕES</button><button class="btn" id="fit">ENQUADRAR</button></div>
-<p class="hint">As medidas são parâmetros visuais ajustáveis, não dimensões validadas de um veículo.</p></div></div>
+<p class="hint">Envelope de referência: 160 × 96 × 48 m. Ajustes escalam o modelo inteiro; não validam engenharia estrutural.</p></div></div>
 <div class="panel"><div class="paneltitle">02 / MÓDULOS VISÍVEIS</div><div class="panelbody modulelist" id="modules">
 <label><input type="checkbox" data-module="hull" checked> Estrutura e carenagem</label>
 <label><input type="checkbox" data-module="bridge" checked> Módulo de comando</label>
@@ -41,7 +41,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <label><input type="checkbox" data-module="field" checked> Anéis de campo ilustrativos</label>
 <label><input type="checkbox" data-module="antenna" checked> Sensores e antenas</label>
 <label><input type="checkbox" data-module="landing" checked> Suportes inferiores</label>
-<label><input type="checkbox" data-module="interior" checked> Compartimentos internos e corredores</label>
+<label><input type="checkbox" data-module="interior"> Compartimentos internos e corredores</label>
 </div></div>
 <div class="panel"><div class="paneltitle">03 / FERRAMENTAS DE CENA</div><div class="panelbody">
 <div class="btnrow"><button class="btn active" id="modeAssembled">MONTADA</button><button class="btn" id="modeExploded">EXPLODIDA</button><button class="btn" id="modeCut">CORTE</button></div>
@@ -84,7 +84,7 @@ const camera=new THREE.PerspectiveCamera(34,1,.01,1000);camera.position.set(-105
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;viewport.appendChild(renderer.domElement);
 const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(900,600),.2,.42,.86));composer.addPass(new OutputPass());
-const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.target.set(0,0,0);controls.minDistance=18;controls.maxDistance=420;controls.autoRotateSpeed=.35;
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.target.set(0,0,0);controls.minDistance=25;controls.maxDistance=520;controls.autoRotateSpeed=.35;
 scene.add(new THREE.HemisphereLight(0xcce7fa,0x172333,1.65));
 const key=new THREE.DirectionalLight(0xffe8ce,3.2);key.position.set(-65,100,75);key.castShadow=true;key.shadow.mapSize.set(2048,2048);scene.add(key);
 const fill=new THREE.DirectionalLight(0x62c9df,2.2);fill.position.set(75,28,-85);scene.add(fill);
@@ -116,127 +116,182 @@ function cyl(id,label,g,r1,r2,len,mat,p,r=[0,0,0],n=40){return add(id,label,g,ne
 function tor(id,label,g,r,t,mat,p,rot=[0,Math.PI/2,0]){return add(id,label,g,new THREE.TorusGeometry(r,t,12,96),mat,p,rot)}
 function rod(id,label,g,a,b,r,mat){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A);const o=add(id,label,g,new THREE.CylinderGeometry(r,r,d.length(),12),mat,A.clone().add(B).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());return o}
 function sphere(id,label,g,r,mat,p,seg=24){return add(id,label,g,new THREE.SphereGeometry(r,seg,Math.max(12,Math.floor(seg*.65))),mat,p)}
+
+// REV 05.0 — arquitetura modular dimensionada para missão de 50 tripulantes.
+// Coordenadas do modelo em metros: X longitudinal, Y vertical, Z transversal.
+const labelsGroup=new THREE.Group();root.add(labelsGroup);labelsGroup.visible=false;
+function label3D(text,pos,size=3){
+ const cv=document.createElement('canvas');cv.width=512;cv.height=128;
+ const cx=cv.getContext('2d');cx.fillStyle='rgba(5,14,23,.88)';cx.strokeStyle='#64d9df';cx.lineWidth=4;
+ cx.beginPath();cx.roundRect(5,5,502,118,12);cx.fill();cx.stroke();
+ cx.font='bold 34px Arial';cx.fillStyle='#dffcff';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(text,256,64,470);
+ const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;
+ const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+ sp.position.set(...pos);sp.scale.set(size*3.8,size,1);labelsGroup.add(sp);return sp;
+}
+function modulePod(id,label,center,dims,material=M.hull){
+ const [x,y,z]=center,[w,h,d]=dims;
+ box(id,label,'habitat',w,h,d,material,[x,y,z]);
+ box(id+'_roof',label+' — cobertura técnica','hull',w*.88,.65,d*.88,M.armor,[x,y+h/2+.35,z]);
+ // Faixa de janelas voltada para as laterais externas.
+ for(let i=0;i<5;i++){
+  const xx=x-w*.36+i*w*.18;
+  box(id+'_window_'+i,'Janela pressurizada do módulo','habitat',2.1,1.25,.16,M.glass,[xx,y,z+Math.sign(z)*d/2]);
+ }
+ for(const xx of [x-w*.36,x+w*.36]){
+  rod(id+'_mount_'+xx,'Suporte de acoplamento do módulo','hull',[xx,-3,z*.55],[xx,-3,z],.38,M.edge);
+ }
+ label3D(label,[x,y+h/2+5,z],2.4);
+}
 function hullSurface(){
- // Arquitetura aberta tipo estação móvel: treliças, quilhas e anéis estruturais.
- // Não existe um casco monocoque contínuo; os módulos ficam separados e conectados.
- for(const z of [-5.5,5.5])for(const y of [-4.5,4.5]){
-  rod('keel_long_'+y+'_'+z,'Longarina estrutural longitudinal','hull',[-49,y,z],[43,y,z],.62,M.edge);
-  for(let x=-42;x<=36;x+=13)rod('truss_diag_'+y+'_'+z+'_'+x,'Diagonal da treliça principal','hull',[x,y,z],[x+6.5,-y,-z],.24,M.cyan);
+ // Treliça central aberta em forma de espinha, sem casco contínuo.
+ for(const y of [-4.5,4.5])for(const z of [-6,6]){
+  rod('spine_rail_'+y+'_'+z,'Longarina principal da treliça','hull',[-62,y,z],[57,y,z],.48,M.edge);
  }
- for(const x of [-43,-28,-13,2,17,32,44]){
-  for(const a of [0,Math.PI/2])tor('open_frame_'+x+'_'+a,'Pórtico estrutural aberto','hull',a===0?8.2:6.4,.32,M.edge,[x,0,0],[a,Math.PI/2,0]);
-  rod('crossbeam_'+x,'Travessa estrutural do núcleo','hull',[x,-7,0],[x,7,0],.48,M.armor);
+ for(let x=-58;x<=54;x+=8){
+  for(const z of [-6,6])rod('truss_cross_'+x+'_'+z,'Travessa da treliça central','hull',[x,-4.5,z],[x,4.5,z],.32,M.cyan);
+  for(const y of [-4.5,4.5])rod('truss_diag_'+x+'_'+y,'Diagonal estrutural','hull',[x,y,-6],[x+8,-y,6],.22,M.edge);
  }
- box('central_spine','Viga central de integração dos módulos','hull',78,3.2,4.2,M.dark,[0,0,0]);
- for(const x of [-35,-20,-5,10,25,40])box('service_platform_'+x,'Plataforma técnica aberta','hull',8,.55,13,M.armor,[x,-5.5,0]);
- // Braços radiais de conexão para os módulos científicos e habitáveis.
- for(const x of [-24,0,24])for(const s of [-1,1]){
-  rod('radial_arm_'+x+'_'+s,'Braço de conexão modular','hull',[x,0,s*5],[x,0,s*20],.72,M.edge);
-  tor('docking_collar_'+x+'_'+s,'Colar de acoplamento modular','hull',3.4,.28,M.cyan,[x,0,s*19],[Math.PI/2,0,0]);
+ box('central_keel','Quilha central de integração','hull',112,2.4,3.2,M.dark,[-2,0,0]);
+ // Hub central de operações: volume compacto e identificável.
+ box('central_hub','Núcleo central pressurizado de operações','hull',30,11,24,M.armor,[-1,0,0]);
+ box('hub_roof','Cobertura técnica do núcleo central','hull',27,.7,21,M.dark,[-1,5.8,0]);
+ for(let s of [-1,1])for(let x of [-10,8]){
+  box('hub_window_'+s+'_'+x,'Janela do centro de operações','bridge',3,2,.16,M.glass,[x,1,s*12.12]);
+ }
+ label3D('NÚCLEO CENTRAL',[0,10,0],3.1);
+ // Ponte de comando destacada na extremidade frontal.
+ box('bridge_base','Base pressurizada da ponte de comando','bridge',18,8,16,M.hull,[-67,1,0]);
+ const canopy=sphere('command_canopy','Cúpula panorâmica da ponte de comando','bridge',1,M.glass,[-67,6,0],40);canopy.scale.set(9,3.2,7.5);
+ box('bridge_dock','Acesso estrutural da ponte ao eixo central','hull',10,3,5,M.dark,[-56,-1,0]);
+ label3D('PONTE DE COMANDO',[-67,12,0],2.8);
+ // Quatro módulos habitacionais independentes — capacidade conceitual para 48 leitos.
+ const habs=[
+  {id:'hab_nw',name:'HABITAÇÃO A',p:[-27,0,-25]},
+  {id:'hab_sw',name:'HABITAÇÃO B',p:[-27,0,25]},
+  {id:'hab_ne',name:'HABITAÇÃO C',p:[5,0,-25]},
+  {id:'hab_se',name:'HABITAÇÃO D',p:[5,0,25]}
+ ];
+ habs.forEach(h=>modulePod(h.id,h.name,h.p,[21,8,14]));
+ // Laboratórios externos pressurizados, conectados ao núcleo por braços.
+ modulePod('lab_e192','LABORATÓRIO E-192',[37,0,-25],[20,8,14],M.armor);
+ modulePod('lab_egas','LABORATÓRIO EGAS',[37,0,25],[20,8,14],M.armor);
+ for(const x of [-27,5,37])for(const s of [-1,1]){
+  rod('radial_connector_'+x+'_'+s,'Braço estrutural de conexão modular','hull',[x,-2,s*6],[x,-2,s*17],.62,M.edge);
+  tor('dock_ring_'+x+'_'+s,'Anel de acoplamento pressurizado','hull',2.4,.22,M.cyan,[x,-2,s*17],[Math.PI/2,0,0]);
+  box('access_tunnel_'+x+'_'+s,'Túnel pressurizado de acesso','hull',5,4,10,M.dark,[x,-1,s*12]);
+ }
+ // Laboratório científico geral e módulo médico/logístico no núcleo traseiro.
+ box('science_platform','Plataforma de instrumentação científica','hull',20,1,18,M.dark,[25,-7,0]);
+ for(let i=0;i<4;i++)box('science_instrument_'+i,'Instrumento científico externo','antenna',3,4,3,M.gold,[19+i*4,-4,0]);
+ label3D('INSTRUMENTAÇÃO',[25,-1,0],2.3);
+ // Radiadores em painéis longitudinais independentes, fora dos módulos habitáveis.
+ for(const s of [-1,1]){
+  box('radiator_boom_'+s,'Longarina do radiador térmico','radiators',46,.7,2,M.dark,[10,8,s*43]);
+  for(let j=0;j<4;j++){
+   const x=-10+j*13;
+   box('radiator_panel_'+s+'_'+j,'Painel radiador segmentado','radiators',11,.22,14,M.panel,[x,8.6,s*43]);
+   for(let k=0;k<5;k++)box('radiator_channel_'+s+'_'+j+'_'+k,'Canal térmico superficial','radiators',10,.06,.12,M.cyan,[x,8.78,s*(37.8+k*2.6)]);
+  }
+  for(const x of [-10,10,30])rod('radiator_support_'+s+'_'+x,'Suporte estrutural do radiador','radiators',[x,4,s*10],[x,8,s*43],.28,M.edge);
+ }
+ label3D('RADIADORES TÉRMICOS',[10,12,43],2.5);
+ // EGAS no compartimento central, com volume marcado como hipótese.
+ cyl('egas_housing','Compartimento conceitual EGAS','egas',4.5,4.5,18,M.dark,[18,0,0],[0,0,Math.PI/2]);
+ for(const x of [9,27])tor('egas_flange_'+x,'Flange estrutural do compartimento EGAS','egas',4.6,.32,M.edge,[x,0,0]);
+ sphere('egas_core','Representação hipotética do núcleo E-192','egas',1.7,M.violet,[18,0,0],40);
+ for(let i=0;i<4;i++)tor('egas_ring_'+i,'Anel esquemático do EGAS','egas',5.3+i*.55,.14,i%2?M.gold:M.cyan,[18,0,0]);
+ label3D('EGAS · CONCEITUAL',[18,8,0],2.6);
+ // Propulsão visual distribuída na extremidade de serviço, sem alegação de funcionamento.
+ for(const y of [-5,5])for(const z of [-8,8]){
+  cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',3.1,3.5,13,M.dark,[68,y,z],[0,0,Math.PI/2]);
+  tor('aft_engine_ring_'+y+'_'+z,'Aro externo da unidade propulsiva','propulsion',3,.2,M.cyan,[74.7,y,z]);
+  sphere('aft_engine_core_'+y+'_'+z,'Elemento visual da unidade propulsiva','propulsion',1.5,M.violet,[75,y,z],28);
+  rod('engine_mount_'+y+'_'+z,'Suporte estrutural da unidade propulsiva',[68,y,z],[56,y,z],.5,M.edge);
+ }
+ box('aft_service_deck','Convés de manutenção dos sistemas propulsivos','hull',18,1.2,25,M.armor,[54,-7,0]);
+ label3D('CONJUNTOS PROPULSIVOS',[70,7,0],2.6);
+ // Sensores e comunicação na região frontal.
+ rod('sensor_mast','Mastro de instrumentação','antenna',[-45,7,0],[-45,20,0],.25,M.edge);
+ tor('sensor_dish','Antena de comunicação','antenna',3,.2,M.gold,[-45,20,0],[Math.PI/2,0,0]);
+ for(const s of [-1,1])sphere('nav_sensor_'+s,'Sensor de navegação externo','antenna',.8,M.cyan,[-76,0,s*10]);
+ // Estrutura de proteção e suportes de serviço inferiores.
+ for(const x of [-40,0,40])for(const s of [-1,1]){
+  rod('service_strut_'+x+'_'+s,'Suporte de serviço inferior','landing',[x,-5,s*5],[x,-14,s*9],.35,M.edge);
+  box('service_pad_'+x+'_'+s,'Plataforma de manutenção','landing',6,.6,5,M.dark,[x,-14,s*9]);
  }
 }
-function wing(side){
- // Plataformas de serviço independentes, sem formar uma asa ou casco fechado.
- box('service_outboard_'+side,side>0?'Plataforma externa de serviço — bombordo':'Plataforma externa de serviço — estibordo','hull',28,.65,13,M.dark,[12,-5.5,side*36]);
- for(let x of [2,12,22]){
-  box('service_tile_'+side+'_'+x,'Painel de serviço modular','hull',7,.14,9,M.panel,[x,-5.05,side*36]);
-  rod('service_strut_'+side+'_'+x,'Suporte da plataforma externa','hull',[x,-5.5,side*20],[x,-5.5,side*30],.32,M.edge);
- }
- for(let x of [2,22])tor('service_dock_'+side+'_'+x,'Anel de acoplamento externo','hull',2.6,.22,M.cyan,[x,-5.1,side*41],[Math.PI/2,0,0]);
-}
-hullSurface();wing(1);wing(-1);
-// Dorsal spine, armored seams and segmented access panels.
-for(let x of [-43,-28,-12,5,22,38])tor('bulkhead_'+x,'Anel de reforço interno','hull',x===-43?5.1:7.2,.28,M.edge,[x,0,0]);
-for(let side of [-1,1])for(let x of [-35,-20,-5,10,25,40])box('side_armor_'+side+'_'+x,'Painel lateral de proteção','hull',11,.85,.65,M.dark,[x,-1.7,side*7.1],[0,0,side*.13]);
-for(let x of [-44,-32,-20,-8,4,16,28,40]){box('dorsal_tile_'+x,'Placa dorsal de manutenção','hull',8,.24,4.8,M.white,[x,7.45,0],[0,0,0]);box('spine_glow_'+x,'Filete luminoso dorsal','hull',5,.12,.18,M.cyan,[x,7.62,0])}
-// Forward command deck with a low, swept canopy.
-const canopy=sphere('command_canopy','Cúpula panorâmica do comando','bridge',1,M.glass,[-39,9.3,0],40);canopy.scale.set(11,4.2,8.2);
-box('bridge_keel','Base estrutural do comando','bridge',25,3.2,17,M.dark,[-39,5.1,0]);
-box('bridge_observation_deck','Convés frontal de observação','bridge',20,.8,19,M.armor,[-38,3.2,0]);
-for(let s of [-1,1]){rod('canopy_frame_'+s,'Arco de sustentação da cúpula','bridge',[-49,9,s*6],[-28,9,s*6],.2,M.edge)}
-for(let i=0;i<8;i++){const x=-50+i*3.1;box('canopy_louver_'+i,'Divisória externa do cockpit','bridge',.16,.3,8,M.cyan,[x,10.5,0])}
-// Módulos habitáveis em blocos independentes, distribuídos em torno da treliça.
-for(let s of [-1,1]){
- for(const x of [-24,0,24]){
-  box('habitat_pod_'+s+'_'+x,'Módulo habitável pressurizado independente','habitat',17,8.5,10,M.hull,[x,2.5,s*25]);
-  box('habitat_roof_'+s+'_'+x,'Cobertura técnica do módulo habitável','habitat',14,.7,8,M.armor,[x,7.1,s*25]);
-  for(let k=-2;k<=2;k++)box('hab_window_'+s+'_'+x+'_'+k,'Janela do módulo habitável','habitat',2.1,1.5,.18,M.glass,[x+k*2.8,3.4,s*30.08]);
-  for(const xx of [x-6,x+6])rod('hab_support_'+s+'_'+x+'_'+xx,'Suporte do módulo habitável','habitat',[xx,-2,s*20],[xx,-2,s*25],.38,M.edge);
- }
-}
-// INTERIOR CONCEITUAL: corredor longitudinal, compartimentos habitáveis e sala de máquinas.
-const roomMat=new THREE.MeshStandardMaterial({color:0x29465a,metalness:.48,roughness:.55});
-const floorMat=new THREE.MeshStandardMaterial({color:0x526777,metalness:.58,roughness:.48});
-const wallMat=new THREE.MeshStandardMaterial({color:0x8297a8,metalness:.52,roughness:.42});
+hullSurface();
+
+// Planta interna dimensionalmente associada aos módulos externos.
+// O modo interior é uma vista de corte superior, com tetos ocultados pela câmera.
+const roomMat=new THREE.MeshStandardMaterial({color:0x29465a,metalness:.35,roughness:.62});
+const floorMat=new THREE.MeshStandardMaterial({color:0x526777,metalness:.35,roughness:.52});
+const wallMat=new THREE.MeshStandardMaterial({color:0x8297a8,metalness:.35,roughness:.5});
 const lightMat=new THREE.MeshBasicMaterial({color:0x69e3df});
-const furnitureMat=new THREE.MeshStandardMaterial({color:0x344d60,metalness:.3,roughness:.62});
+const furnitureMat=new THREE.MeshStandardMaterial({color:0x344d60,metalness:.2,roughness:.68});
 function interiorBox(id,label,w,h,d,mat,p){return box(id,label,'interior',w,h,d,mat,p)}
-interiorBox('main_corridor_floor','Piso do corredor longitudinal principal',72,.35,5.2,floorMat,[5,-3.25,0]);
-interiorBox('main_corridor_ceiling','Teto técnico do corredor principal',72,.22,5.2,roomMat,[5,2.5,0]);
-for(const z of [-2.55,2.55]){
- interiorBox('corridor_light_'+z,'Iluminação linear do corredor',68,.12,.12,lightMat,[5,-1.7,z]);
- interiorBox('corridor_rail_'+z,'Corrimão interno do corredor',68,.18,.16,wallMat,[5,-2.45,z]);
+function roomLabel(text,x,z){label3D(text,[x,4.7,z],1.65)}
+// Corredor principal e ramificações pressurizadas.
+interiorBox('main_corridor_floor','Corredor longitudinal principal — 2,4 m de largura',104,.35,2.4,floorMat,[-3,-5.3,0]);
+interiorBox('main_corridor_ceiling','Teto técnico do corredor principal',104,.22,2.4,roomMat,[-3,-1.5,0]);
+for(const z of [-1.15,1.15]){
+ interiorBox('corridor_light_'+z,'Iluminação linear do corredor',100,.1,.1,lightMat,[-3,-3.5,z]);
+ interiorBox('corridor_rail_'+z,'Corrimão do corredor',100,.12,.12,wallMat,[-3,-4.8,z]);
 }
-const roomDefs=[{x:-17},{x:-5},{x:9},{x:20},{x:31}];
-for(const side of [-1,1]){
- const zc=side*12;
- interiorBox('hab_floor_'+side,'Piso interno da ala habitável',58,.38,6.2,floorMat,[7,-3.05,zc]);
- interiorBox('hab_ceiling_'+side,'Teto interno da ala habitável',58,.22,6.2,roomMat,[7,2.5,zc]);
- for(const z of [zc-3.05,zc+3.05])interiorBox('hab_sidewall_'+side+'_'+z,'Parede longitudinal interna',58,5.4,.22,wallMat,[7,-.2,z]);
- for(let i=0;i<roomDefs.length;i++){
-  const x=roomDefs[i].x;
-  if(i>0)interiorBox('room_partition_'+side+'_'+i,'Divisória entre compartimentos',.28,5.2,6.1,wallMat,[x-5.5,-.2,zc]);
-  if(i===0){for(let k=0;k<2;k++)interiorBox('bunk_'+side+'_'+k,'Beliche de cabine',3,.65,1.8,furnitureMat,[x-2+k*4,-2.05,zc+side*1.1]);interiorBox('locker_'+side,'Armário de cabine',1.1,2.2,1.2,roomMat,[x+3,-.9,zc-side*1.7]);}
-  else if(i===1){interiorBox('lab_bench_'+side,'Bancada de laboratório',5,.8,1.5,furnitureMat,[x,-2.25,zc]);for(let k=0;k<3;k++)interiorBox('lab_console_'+side+'_'+k,'Console de laboratório',1.1,1.2,.55,roomMat,[x-2+k*2,-1.3,zc+side*2]);}
-  else if(i===2){interiorBox('med_bed_'+side,'Leito da enfermaria',3,.5,1.4,furnitureMat,[x,-2.2,zc+side*1.1]);interiorBox('med_station_'+side,'Estação clínica esquemática',1.4,1.4,.6,roomMat,[x+2,-1.4,zc-side*1.7]);}
-  else if(i===3){interiorBox('galley_table_'+side,'Mesa do refeitório',3,.65,2.4,furnitureMat,[x,-2.2,zc]);for(let k=0;k<3;k++)interiorBox('galley_seat_'+side+'_'+k,'Assento do refeitório',.8,.7,.8,roomMat,[x-2+k*2,-2.2,zc+side*2]);}
-  else{interiorBox('life_support_rack_'+side,'Rack de suporte ambiental esquemático',2.4,2.5,2.1,roomMat,[x,-.8,zc]);interiorBox('storage_'+side,'Armário de armazenamento',1.6,2,1.4,furnitureMat,[x+2.5,-1,zc-side*1.5]);}
-  interiorBox('room_door_'+side+'_'+i,'Acesso interno ao corredor',2.2,3.2,.16,lightMat,[x,-.95,side*4.25]);
-  interiorBox('room_connector_'+side+'_'+i,'Passagem entre corredor e compartimento',2.2,.22,6.4,floorMat,[x,-2.8,side*5.8]);
+for(const x of [-27,5,37])for(const s of [-1,1]){
+ interiorBox('branch_floor_'+x+'_'+s,'Passagem transversal pressurizada',2.4,.3,20,floorMat,[x,-5.3,s*12]);
+}
+// 24 cabines duplas distribuídas em quatro módulos: capacidade nominal ilustrativa de 48 leitos.
+const habCenters=[[-27,-25,'A'],[-27,25,'B'],[5,-25,'C'],[5,25,'D']];
+habCenters.forEach(([cx,cz,letter])=>{
+ interiorBox('hab_floor_'+letter,'Piso do módulo habitacional '+letter,20,.35,13,floorMat,[cx,-4.9,cz]);
+ interiorBox('hab_ceiling_'+letter,'Teto do módulo habitacional '+letter,20,.2,13,roomMat,[cx,3.8,cz]);
+ for(let row=0;row<2;row++)for(let col=0;col<3;col++){
+  const x=cx-6.2+col*6.2,z=cz-3.2+row*6.4;
+  interiorBox('cabin_floor_'+letter+'_'+row+'_'+col,'Cabine dupla '+letter+'-'+(row*3+col+1),5.8,.16,6.0,floorMat,[x,-4.55,z]);
+  if(col<2)interiorBox('cabin_partition_x_'+letter+'_'+row+'_'+col,'Divisória de cabine',.16,4.4,6,wallMat,[x+3.1,-2.4,z]);
+  if(row===0)interiorBox('cabin_partition_z_'+letter+'_'+col,'Divisória entre fileiras',5.8,4.4,.16,wallMat,[x,-2.4,z+3.2]);
+  for(let b=0;b<2;b++)interiorBox('bunk_'+letter+'_'+row+'_'+col+'_'+b,'Beliche individual',2.1,.45,.9,furnitureMat,[x-1.1+b*2.2,-3.95,z-1.4]);
+  interiorBox('locker_'+letter+'_'+row+'_'+col,'Armário individual',.65,1.8,.8,roomMat,[x+2.1,-3.7,z+1.8]);
+  roomLabel('CABINE '+letter+'-'+(row*3+col+1),x,z);
  }
+});
+// Laboratório E-192 e laboratório EGAS: espaços separados e identificados.
+for(const [id,cx,cz,title] of [['e192',37,-25,'LAB. E-192'],['egas',37,25,'LAB. EGAS']]){
+ interiorBox(id+'_floor','Piso do '+title,19,.35,13,floorMat,[cx,-4.9,cz]);
+ interiorBox(id+'_ceiling','Teto do '+title,19,.2,13,roomMat,[cx,3.8,cz]);
+ for(const x of [cx-6,cx+6])interiorBox(id+'_bench_'+x,'Bancada científica do '+title,4,.9,2,furnitureMat,[x,-4.1,cz]);
+ for(let k=0;k<3;k++)interiorBox(id+'_console_'+k,'Console científico do '+title,1.2,1.5,.6,roomMat,[cx-3+k*3,-3.6,cz-5.4]);
+ roomLabel(title,cx,cz);
 }
-interiorBox('engine_room_floor','Piso da sala de máquinas',16,.4,16,floorMat,[43,-3.1,0]);
-for(const z of [-7.7,7.7])interiorBox('engine_room_wall_'+z,'Parede da sala de máquinas',16,5.6,.25,wallMat,[43,-.2,z]);
-for(const z of [-4.5,4.5]){interiorBox('engine_console_'+z,'Console de monitoramento do conjunto propulsivo',7,1.5,1.2,furnitureMat,[39,-1.4,z]);interiorBox('engine_status_'+z,'Painel luminoso de status',5,.12,.12,lightMat,[39,-.45,z]);}
-interiorBox('engine_access_floor','Passagem de serviço da sala de máquinas',9,.22,4,roomMat,[34,-2.8,0]);
-
-// EGAS pod: integrated into dorsal centerline, visible in cutaway and separate scale.
-cyl('egas_housing','Carcaça do subsistema EGAS — conceitual','egas',5.8,5.8,22,M.dark,[10,0,0],[0,0,Math.PI/2]);
-for(let x of [0,20])tor('egas_flange_'+x,'Flange do módulo EGAS','egas',5.9,.38,M.edge,[x,0,0]);
-sphere('egas_core','Núcleo hipotético E-192','egas',2.15,M.violet,[10,0,0],40);
-sphere('egas_core_lumen','Centro luminoso esquemático','egas',.85,M.glow,[10,0,0],32);
-for(let i=0;i<5;i++)tor('egas_containment_'+i,'Anel ilustrativo do conjunto EGAS','egas',6.8+i*.75,.16,i%2?M.gold:M.cyan,[10,0,0]);
-for(let i=0;i<16;i++){const a=i*Math.PI/8;rod('egas_brace_'+i,'Suporte radial ilustrativo do EGAS','egas',[10,4.8*Math.cos(a),4.8*Math.sin(a)],[10,7.2*Math.cos(a),7.2*Math.sin(a)],.18,M.edge)}
-// Aft propulsion housings: four compact, nested units integrated into the tail.
-for(let y of [-3.8,3.8])for(let z of [-3.8,3.8]){
- cyl('aft_pod_'+y+'_'+z,'Carcaça externa do conjunto traseiro','propulsion',3.25,4.1,12,M.dark,[53,y,z],[0,0,Math.PI/2]);
- cyl('aft_inner_'+y+'_'+z,'Anel interno do conjunto traseiro','propulsion',2.75,3.25,2.1,M.edge,[60,y,z],[0,0,Math.PI/2]);
- tor('aft_luminous_'+y+'_'+z,'Aro luminoso traseiro','propulsion',2.8,.2,M.cyan,[61.2,y,z]);
- sphere('aft_lens_'+y+'_'+z,'Elemento luminoso ilustrativo','propulsion',1.65,M.glow,[62,y,z],28);
-}
-// Conjuntos motopropulsivos internos: representação visual não funcional.
-for(const y of [-1.6,1.6])for(const z of [-3.1,3.1]){
- cyl('engine_motor_'+y+'_'+z,'Unidade motopropulsiva interna esquemática','propulsion',1.25,1.25,6,M.dark,[47,y,z],[0,0,Math.PI/2],32);
- tor('engine_motor_ring_'+y+'_'+z,'Aro externo do motor ilustrativo','propulsion',1.3,.14,M.cyan,[50.2,y,z]);
- sphere('engine_motor_core_'+y+'_'+z,'Núcleo luminoso do motor ilustrativo','propulsion',.62,M.violet,[50.4,y,z],20);
-}
-
-// Broad heat-radiator leaves, folded along the wing roots.
-for(let s of [-1,1]){
- box('radiator_root_'+s,'Raiz do radiador térmico','radiators',25,.65,2.2,M.dark,[7,4.7,s*18],[0,0,s*.08]);
- for(let j=0;j<5;j++){const x=-6+j*6;box('radiator_fin_'+s+'_'+j,'Aleta do radiador térmico','radiators',4.8,.22,15,M.panel,[x,5.1,s*25]);for(let k=0;k<6;k++)box('radiator_trace_'+s+'_'+j+'_'+k,'Canal de superfície do radiador','radiators',4.2,.05,.1,M.cyan,[x,5.25,s*(19+k*2.3)])}
-}
-// Field visualization rings around EGAS, explicitly diagrammatic.
-for(let i=0;i<3;i++)tor('field_ring_'+i,'Anel de campo hipotético — representação visual','field',11+i*2.4,.16,i===1?M.violet:M.cyan,[10,0,0]);
-for(let i=0;i<12;i++){const a=i*Math.PI/6;sphere('field_node_'+i,'Marcador visual de campo','field',.32,M.glow,[10,14*Math.cos(a),14*Math.sin(a)],16)}
-// Antenna, sensor clusters and dorsal communication mast.
-rod('sensor_mast','Mastro de instrumentação','antenna',[-27,8,0],[-27,18,0],.22,M.edge);
-tor('sensor_dish','Antena de comunicação esquemática','antenna',3.4,.18,M.gold,[-27,18,0],[Math.PI/2,0,0]);
-for(let s of [-1,1]){sphere('nav_sensor_'+s,'Sensor de navegação externo','antenna',.85,M.cyan,[-48,2,s*9]);rod('sensor_boom_'+s,'Suporte de sensor','antenna',[-48,1,s*6],[-48,2,s*9],.16,M.edge)}
-// Landing struts retracted close to the underside.
-for(let s of [-1,1])for(let x of [-25,25]){rod('landing_strut_'+s+'_'+x,'Suporte inferior recolhido','landing',[x,-5,s*4],[x+2,-13,s*7],.48,M.edge);box('landing_pad_'+s+'_'+x,'Base de apoio inferior','landing',5,.8,3.4,M.dark,[x+2,-13,s*7])}
-// Marked access hatches and cyan service lines along the dorsal surface.
-for(let i=0;i<9;i++){const x=-35+i*9;box('service_hatch_'+i,'Tampa de inspeção externa','hull',4.2,.12,2.1,M.gold,[x,7.75,3.1]);box('service_line_'+i,'Linha de serviço luminosa','hull',3.2,.07,.1,M.cyan,[x,7.85,3.1])}
+// Núcleo central: operações, saúde, alimentação, ginásio e suporte de vida.
+interiorBox('hub_floor','Piso do núcleo central de operações',29,.4,23,floorMat,[-1,-5,0]);
+interiorBox('hub_ceiling','Teto técnico do núcleo central',29,.2,23,roomMat,[-1,5,0]);
+const centralRooms=[
+ {id:'ops',name:'CENTRO DE OPERAÇÕES',x:-8,z:0,w:10,d:8},
+ {id:'medical',name:'ENFERMARIA',x:3,z:-7,w:8,d:6},
+ {id:'galley',name:'COZINHA / REFEITÓRIO',x:3,z:7,w:8,d:6},
+ {id:'life',name:'SUPORTE AMBIENTAL',x:9,z:0,w:7,d:8}
+];
+centralRooms.forEach(r=>{
+ interiorBox(r.id+'_floor','Piso — '+r.name,r.w,.18,r.d,floorMat,[r.x,-4.7,r.z]);
+ interiorBox(r.id+'_partition','Divisória — '+r.name,.16,4.4,r.d,wallMat,[r.x+r.w/2,-2.4,r.z]);
+ interiorBox(r.id+'_equipment','Equipamento — '+r.name,Math.min(3,r.w*.45),1.3,1.2,furnitureMat,[r.x,-3.9,r.z]);
+ roomLabel(r.name,r.x,r.z);
+});
+interiorBox('medical_bed','Leito da enfermaria',2.2,.5,1.1,furnitureMat,[3,-4.1,-7]);
+interiorBox('galley_table','Mesa do refeitório',3,.8,2,furnitureMat,[3,-4.2,7]);
+interiorBox('gym_floor','Área de condicionamento físico',8,.18,6,floorMat,[-1,-4.7,12]);
+interiorBox('gym_equipment','Equipamento de exercício resistido',2,2,1.5,furnitureMat,[-1,-3.7,12]);
+roomLabel('CONDICIONAMENTO',-1,12);
+// Ponte e sala técnica de propulsão.
+interiorBox('bridge_floor','Piso da ponte de comando',17,.35,14,floorMat,[-67,-3.1,0]);
+for(let i=0;i<4;i++)interiorBox('bridge_console_'+i,'Console de navegação e comando',2,.9,1.2,furnitureMat,[-73+i*4,-2.5,0]);
+roomLabel('PONTE DE COMANDO',-67,0);
+interiorBox('engine_room_floor','Piso da área de manutenção propulsiva',17,.35,22,floorMat,[57,-8,0]);
+for(const z of [-7,7])interiorBox('engine_service_rack_'+z,'Rack de monitoramento propulsivo',5,2,1.2,furnitureMat,[57,-6.8,z]);
+roomLabel('MANUTENÇÃO PROPULSIVA',57,0);
 
 const atomGroup=new THREE.Group();scene.add(atomGroup);atomGroup.visible=false;
 const atomShell=new THREE.Mesh(new THREE.SphereGeometry(1,64,48),new THREE.MeshBasicMaterial({color:0x70dce8,transparent:true,opacity:.055,side:THREE.BackSide}));atomGroup.add(atomShell);
@@ -261,15 +316,15 @@ renderer.domElement.addEventListener('pointerdown',e=>{
 });
 let interiorMode=false;
 function restoreModuleVisibility(){document.querySelectorAll('[data-module]').forEach(ch=>{groups[ch.dataset.module].visible=ch.checked})}
-function showInterior(){interiorMode=true;restoreModuleVisibility();groups.hull.visible=false;groups.habitat.visible=false;groups.radiators.visible=false;groups.field.visible=false;groups.bridge.visible=false;groups.antenna.visible=false;groups.landing.visible=false;groups.egas.visible=false;groups.interior.visible=true;
+function showInterior(){interiorMode=true;restoreModuleVisibility();groups.interior.visible=true;labelsGroup.visible=true;groups.hull.visible=false;groups.habitat.visible=false;groups.radiators.visible=false;groups.field.visible=false;groups.bridge.visible=false;groups.antenna.visible=false;groups.landing.visible=false;groups.egas.visible=false;groups.interior.visible=true;
  if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=false;
- for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=false;controls.minDistance=20;controls.maxDistance=240;camera.position.set(-4,118,18);controls.target.set(7,-1,0);controls.update();$('selectionLabel').textContent='PLANTA INTERNA / COMPARTIMENTOS';$('selectionInfo').innerHTML='<strong>Configuração interna conceitual</strong>Vista de corte para visualizar corredor central, cabines, laboratório, enfermaria, refeitório, suporte ambiental e sala de máquinas. Os ambientes são esquemáticos, não um projeto habitável validado.';log('Vista interna ativada: compartimentos e circulação expostos.')}
+ for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=false;controls.minDistance=15;controls.maxDistance=280;camera.position.set(-4,118,18);controls.target.set(-2,-1,0);controls.update();$('selectionLabel').textContent='PLANTA INTERNA / COMPARTIMENTOS';$('selectionInfo').innerHTML='<strong>Configuração interna conceitual</strong>Vista de corte para visualizar corredor central, cabines, laboratório, enfermaria, refeitório, suporte ambiental e sala de máquinas. Os ambientes são esquemáticos, não um projeto habitável validado.';log('Vista interna ativada: compartimentos e circulação expostos.')}
 function cameraPreset(v){
- interiorMode=false;restoreModuleVisibility();
+ interiorMode=false;restoreModuleVisibility();groups.interior.visible=false;labelsGroup.visible=$('labels').classList.contains('active');
  if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=true;
  for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=true;
  controls.minDistance=18;controls.maxDistance=420;
- const p={iso:[-112,86,148],front:[-175,28,0],side:[0,32,195],top:[0,205,4],rear:[175,30,0],interior:[-4,118,18]}[v]||[-105,78,128];
+ const p={iso:[-145,105,170],front:[-205,35,0],side:[0,45,220],top:[0,245,4],rear:[205,35,0],interior:[-4,118,18]}[v]||[-145,105,170];
  camera.position.set(...p);controls.target.set(0,0,0);controls.update()
 }
 function engineCamera(){controls.minDistance=2.5;controls.maxDistance=100;camera.position.set(28,21,34);controls.target.set(10,0,0);controls.update()}
@@ -278,7 +333,7 @@ function setScale(mode){
  scaleMode=mode;root.visible=mode!=='atom';atomGroup.visible=mode==='atom';atomNote.style.display=mode==='atom'?'block':'none';
  document.querySelectorAll('[data-scale]').forEach(b=>b.classList.toggle('active',b.dataset.scale===mode));
  $('scaleTag').textContent=mode==='ship'?'ESCALA 10² m':mode==='engine'?'ESCALA 10¹ m':'ESCALA 10⁻¹⁰ m';
- $('scaleHelp').textContent=mode==='atom'?'VISTA MICROSCÓPICA · ESCALA ATÔMICA · NÚCLEO EM PROPORÇÃO':mode==='engine'?'SUBSISTEMA EGAS · VISTA LOCAL':'NAVE COMPLETA · DIMENSÕES DE REFERÊNCIA EM METROS';
+ $('scaleHelp').textContent=mode==='atom'?'VISTA MICROSCÓPICA · ESCALA ATÔMICA · NÚCLEO EM PROPORÇÃO':mode==='engine'?'SUBSISTEMA EGAS · VISTA LOCAL':'NAVE COMPLETA · 160 × 96 × 48 m · 50 TRIPULANTES';
  $('selectionLabel').textContent=mode==='atom'?'MODELO ATÔMICO ESQUEMÁTICO':mode==='engine'?'SUBSISTEMA EGAS':'VISÃO GERAL';
  if(mode==='atom'){atomCamera();$('selectionInfo').innerHTML='<strong>Visualização atômica de referência</strong>Diâmetro atômico típico da ordem de 10⁻¹⁰ m. O núcleo está desenhado em proporção muito menor e quase não é visível. A distribuição eletrônica é esquemática; não representa configuração confirmada do elemento 192.'}
  else if(mode==='engine'){engineCamera();$('selectionInfo').innerHTML='<strong>EGAS — conjunto conceitual</strong>Vista aproximada do módulo central. O núcleo E-192 é hipotético e a geometria não demonstra funcionamento.'}
@@ -289,9 +344,9 @@ document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click',()=>{if(scaleMode==='ship'){if(b.dataset.camera==='interior')showInterior();else cameraPreset(b.dataset.camera)}}));
 $('resetCamera').onclick=()=>scaleMode==='atom'?atomCamera():scaleMode==='engine'?engineCamera():cameraPreset('iso');
 $('fit').onclick=()=>$('resetCamera').click();
-function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/120,H/28,W/68);$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
+function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/160,H/48,W/96);$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
 ['len','wid','hei'].forEach(id=>$(id).addEventListener('input',setDims));
-$('resetDims').onclick=()=>{$('len').value=120;$('wid').value=36;$('hei').value=28;setDims()};
+$('resetDims').onclick=()=>{$('len').value=160;$('wid').value=96;$('hei').value=48;setDims()};
 function updateCount(){const n=Object.keys(groups).filter(k=>document.querySelector('[data-module="'+k+'"]')?.checked).length;$('statMods').textContent=n+' / '+Object.keys(groups).length}
 document.querySelectorAll('[data-module]').forEach(ch=>ch.addEventListener('change',()=>{groups[ch.dataset.module].visible=ch.checked;updateCount();log('Visibilidade atualizada: '+ch.parentElement.textContent.trim())}));
 function explode(v){const t=v/100;const dirs={hull:[0,0,0],bridge:[-1,1,0],egas:[0,0,0],propulsion:[1,0,0],radiators:[0,1,1],habitat:[0,-1,1],field:[0,0,-1],antenna:[-1,1,0],landing:[0,-1,0],interior:[0,0,0]};Object.entries(groups).forEach(([k,g])=>g.position.set(dirs[k][0]*t*19,dirs[k][1]*t*15,dirs[k][2]*t*20));$('explodeOut').textContent=Math.round(v)+'%';$('statState').textContent=t?'EXPLODIDA':'MONTADA';exploded=t>0}
@@ -302,8 +357,8 @@ $('modeCut').onclick=()=>{cut=!cut;groups.hull.visible=!cut&&document.querySelec
 $('opacity').addEventListener('input',e=>{const v=+e.target.value/100;$('opacityOut').textContent=e.target.value+'%';M.hull.transparent=v<1;M.hull.opacity=v;M.hull.depthWrite=v>.7;M.armor.transparent=v<1;M.armor.opacity=v;M.armor.depthWrite=v>.7});
 $('autoRotate').onclick=()=>{auto=!auto;controls.autoRotate=auto;controls.autoRotateSpeed=.38;$('autoRotate').classList.toggle('active',auto)};
 $('wire').onclick=()=>{wire=!wire;Object.values(M).forEach(m=>{if('wireframe'in m)m.wireframe=wire});$('wire').classList.toggle('active',wire)};
-$('labels').onclick=()=>{$('labels').classList.toggle('active');$('renderStatus').textContent=$('labels').classList.contains('active')?'MODO DE IDENTIFICAÇÃO ATIVO':'RENDER 3D / PRONTO';log('Identificação visual '+($('labels').classList.contains('active')?'ativada':'desativada'))};
-$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'04.0',classification:'Conceitual / não funcional',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
+$('labels').onclick=()=>{$('labels').classList.toggle('active');labelsGroup.visible=$('labels').classList.contains('active')||interiorMode;$('renderStatus').textContent=$('labels').classList.contains('active')?'MODO DE IDENTIFICAÇÃO ATIVO':'RENDER 3D / PRONTO';log('Identificação visual '+($('labels').classList.contains('active')?'ativada':'desativada'))};
+$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'05.0',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 2 flexible medical berths',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
 $('resetCamera').click();
 function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(viewport);resize();setDims();updateCount();
