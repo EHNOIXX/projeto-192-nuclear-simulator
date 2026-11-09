@@ -22,7 +22,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <body>
 <header><a class="brand" href="../index.html"><b>S.</b><span>S.P.E.C.T.R.A.<small>FLIGHT SYSTEMS / CONCEPT LAB</small></span></a><nav class="headlinks"><a href="../index.html">E-192 ↗</a><a href="../egas/">EGAS ↗</a><a href="../">CENTRAL</a></nav><span class="live">● SIMULAÇÃO LOCAL ATIVA</span></header>
 <main>
-<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 07.0 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 06.0 · Modelo dimensional conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
+<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 08.0 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 06.0 · Modelo dimensional conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
 <section class="workspace">
 <aside class="stack leftstack">
 <div class="panel"><div class="paneltitle">01 / GEOMETRIA GLOBAL</div><div class="panelbody">
@@ -43,7 +43,13 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <label><input type="checkbox" data-module="landing" checked> Suportes inferiores</label>
 <label><input type="checkbox" data-module="interior"> Compartimentos internos e corredores</label>
 </div></div>
-<div class="panel"><div class="paneltitle">03 / FERRAMENTAS DE CENA</div><div class="panelbody">
+<div class="panel"><div class="paneltitle">04 / MANIPULAÇÃO DE COMPONENTES</div><div class="panelbody">
+<label class="field" for="pieceSelect">Componente individual</label><select id="pieceSelect"><option value="">Selecione uma peça na lista ou clique nela na nave</option></select>
+<div class="btnrow"><button class="btn" id="hidePiece">OCULTAR PEÇA SELECIONADA</button><button class="btn" id="restorePieces">RESTAURAR PEÇAS</button></div>
+<label class="field">Eixo do corte</label><select id="sectionAxis"><option value="x">Longitudinal · X</option><option value="y">Vertical · Y</option><option value="z">Transversal · Z</option></select>
+<label class="field">Posição do plano de corte <output id="sectionOut">0 m</output></label><input id="sectionRange" type="range" min="-80" max="80" value="0" step="1">
+<p class="hint">Selecione uma peça para ocultá-la isoladamente. O plano de corte remove visualmente a parte de um lado do plano; não altera a geometria original.</p>
+</div></div><div class="panel"><div class="paneltitle">05 / FERRAMENTAS DE CENA</div><div class="panelbody">
 <div class="btnrow"><button class="btn active" id="modeAssembled">MONTADA</button><button class="btn" id="modeExploded">EXPLODIDA</button><button class="btn" id="modeCut">CORTE</button></div>
 <label class="field">Intensidade da vista explodida <output id="explodeOut">0%</output></label><input id="explode" type="range" min="0" max="100" value="0">
 <label class="field">Transparência da carenagem <output id="opacityOut">100%</output></label><input id="opacity" type="range" min="10" max="100" value="100">
@@ -57,14 +63,14 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <div class="stagefoot"><div class="legend"><span><i style="background:#79d8df"></i>Estrutura</span><span><i style="background:#a48bff"></i>EGAS conceitual</span><span><i style="background:#e5b46d"></i>Instrumentação</span></div><span id="renderStatus">RENDER 3D / PRONTO</span></div>
 </section>
 <aside class="stack rightstack">
-<div class="panel"><div class="paneltitle">04 / INSPEÇÃO DE COMPONENTE</div><div class="panelbody selectedInfo" id="selectionInfo"><strong>Nenhum componente selecionado</strong>Clique em uma parte da nave para consultar sua descrição e categoria.<span class="tag">SELEÇÃO 3D</span></div></div>
-<div class="panel"><div class="paneltitle">05 / TELEMETRIA DO MODELO</div><div class="readout">
+<div class="panel"><div class="paneltitle">06 / INSPEÇÃO DE COMPONENTE</div><div class="panelbody selectedInfo" id="selectionInfo"><strong>Nenhum componente selecionado</strong>Clique em uma parte da nave para consultar sua descrição e categoria.<span class="tag">SELEÇÃO 3D</span></div></div>
+<div class="panel"><div class="paneltitle">07 / TELEMETRIA DO MODELO</div><div class="readout">
 <div class="stat"><span>COMPRIMENTO</span><b id="statLen">160 m</b></div><div class="stat"><span>LARGURA</span><b id="statWid">96 m</b></div>
 <div class="stat"><span>ALTURA</span><b id="statHei">48 m</b></div><div class="stat"><span>MÓDULOS ATIVOS</span><b id="statMods">9 / 10</b></div>
 <div class="stat"><span>ESTADO DA CENA</span><b id="statState">MONTADA</b></div><div class="stat"><span>MODELO</span><b>CONCEITUAL</b></div>
 </div></div>
-<div class="panel warning"><div class="paneltitle">06 / INTEGRIDADE CIENTÍFICA</div><div class="panelbody">A nave e sua arquitetura de propulsão são hipóteses de pesquisa. A existência do E-192 não foi confirmada e o EGAS não é um motor demonstrado. O simulador não calcula desempenho, sustentação, radiação, proteção, energia ou trajetórias reais.<br><br>Os componentes são formas 3D de comunicação visual, sem tolerâncias ou instruções construtivas.</div></div>
-<div class="panel"><div class="paneltitle">07 / REGISTRO DE SESSÃO</div><div class="panelbody selectedInfo" id="sessionLog">07:00:00 — Cena inicializada.<br>Geometria conceitual carregada.<br>Controles interativos disponíveis.</div></div>
+<div class="panel warning"><div class="paneltitle">08 / INTEGRIDADE CIENTÍFICA</div><div class="panelbody">A nave e sua arquitetura de propulsão são hipóteses de pesquisa. A existência do E-192 não foi confirmada e o EGAS não é um motor demonstrado. O simulador não calcula desempenho, sustentação, radiação, proteção, energia ou trajetórias reais.<br><br>Os componentes são formas 3D de comunicação visual, sem tolerâncias ou instruções construtivas.</div></div>
+<div class="panel"><div class="paneltitle">09 / REGISTRO DE SESSÃO</div><div class="panelbody selectedInfo" id="sessionLog">07:00:00 — Cena inicializada.<br>Geometria conceitual carregada.<br>Controles interativos disponíveis.</div></div>
 </aside>
 </section>
 <div class="bottomgrid"><article class="panel infoPanel"><h3>ARQUITETURA INTEGRADA</h3><p>O módulo EGAS aparece como subsistema conceitual integrado ao núcleo estrutural central da nave. A representação não presume que seus princípios de operação sejam fisicamente realizáveis.</p></article><article class="panel infoPanel"><h3>CONTROLES DE NAVEGAÇÃO</h3><p>Arraste para orbitar, use a roda para aproximar ou afastar e selecione componentes diretamente no viewport. Em telas sensíveis ao toque, os gestos padrão do navegador são utilizados pelo controle de órbita.</p></article></div>
@@ -83,7 +89,7 @@ const $=id=>document.getElementById(id), viewport=$('viewport');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x050a12);scene.fog=new THREE.Fog(0x050a12,190,390);
 const camera=new THREE.PerspectiveCamera(34,1,.01,1000);camera.position.set(-132,92,154);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;viewport.appendChild(renderer.domElement);
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.localClippingEnabled=true;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;viewport.appendChild(renderer.domElement);
 const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(900,600),.08,.28,.92));composer.addPass(new OutputPass());
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.target.set(0,0,0);controls.minDistance=25;controls.maxDistance=520;controls.autoRotateSpeed=.35;
 scene.add(new THREE.HemisphereLight(0xdce8ef,0x26303a,2.1));
@@ -111,8 +117,9 @@ const M={
  white:new THREE.MeshStandardMaterial({color:0xd2dbe0,metalness:.7,roughness:.27})
 };
 const pickables=[],named={};
+const sectionPlane=new THREE.Plane(new THREE.Vector3(1,0,0),0);
 function add(id,label,group,geo,mat,pos=[0,0,0],rot=[0,0,0],target=pickables){
- const o=new THREE.Mesh(geo,mat);o.name=id;o.userData={label,group};o.position.set(...pos);o.rotation.set(...rot);o.castShadow=true;o.receiveShadow=true;groups[group].add(o);target.push(o);named[id]=o;return o;
+ const o=new THREE.Mesh(geo,mat);o.name=id;o.userData={label,group,userHidden:false};o.position.set(...pos);o.rotation.set(...rot);o.castShadow=true;o.receiveShadow=true;groups[group].add(o);target.push(o);named[id]=o;return o;
 }
 function box(id,label,g,w,h,d,mat,p,r=[0,0,0]){const bevel=Math.max(.008,Math.min(.7,Math.min(w,h,d)*.22));return add(id,label,g,new RoundedBoxGeometry(w,h,d,3,bevel),mat,p,r)}
 function cyl(id,label,g,r1,r2,len,mat,p,r=[0,0,0],n=40){return add(id,label,g,new THREE.CylinderGeometry(r1,r2,len,n),mat,p,r)}
@@ -344,13 +351,14 @@ const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
 function log(s){const el=$('sessionLog');if(el){el.innerHTML=s+'<br>'+el.innerHTML;el.innerHTML=el.innerHTML.split('<br>').slice(0,5).join('<br>')}}
 function choose(o){
  selected=o;
+ const pieceSelect=$('pieceSelect');if(pieceSelect&&o)pieceSelect.value=o.name;
  if(!o){$('selectionInfo').innerHTML='<strong>Nenhum componente selecionado</strong>Clique em um componente da nave para inspecionar sua função visual.';$('selectionLabel').textContent=scaleMode==='ship'?'VISÃO GERAL':'SUBSISTEMA EGAS';return}
  const label=o.userData.label||o.name;$('selectionInfo').innerHTML='<strong>'+label+'</strong>Elemento da arquitetura conceitual. A geometria é ilustrativa e não representa especificação de fabricação ou validação funcional.<span class="tag">'+o.userData.group.toUpperCase()+'</span><span class="tag">MODELO 3D</span>';$('selectionLabel').textContent=label.toUpperCase();log('Componente selecionado: '+label)
 }
 renderer.domElement.addEventListener('pointerdown',e=>{
  if(scaleMode==='atom')return;
  const r=renderer.domElement.getBoundingClientRect();pointer.x=(e.clientX-r.left)/r.width*2-1;pointer.y=-(e.clientY-r.top)/r.height*2+1;raycaster.setFromCamera(pointer,camera);
- const hits=raycaster.intersectObjects(pickables.filter(o=>o.visible&&o.parent.visible),false);choose(hits.length?hits[0].object:null)
+ const hits=raycaster.intersectObjects(pickables.filter(o=>o.visible&&o.parent.visible&&!o.userData.userHidden),false);choose(hits.length?hits[0].object:null)
 });
 let interiorMode=false;
 function restoreModuleVisibility(){document.querySelectorAll('[data-module]').forEach(ch=>{groups[ch.dataset.module].visible=ch.checked})}
@@ -391,15 +399,33 @@ function explode(v){const t=v/100;const dirs={hull:[0,0,0],bridge:[-1,1,0],egas:
 $('explode').addEventListener('input',e=>{explode(+e.target.value);$('modeExploded').classList.toggle('active',+e.target.value>0);$('modeAssembled').classList.toggle('active',+e.target.value===0)});
 $('modeAssembled').onclick=()=>{$('explode').value=0;explode(0);$('modeAssembled').classList.add('active');$('modeExploded').classList.remove('active');$('modeCut').classList.remove('active');cut=false;groups.hull.visible=document.querySelector('[data-module="hull"]').checked};
 $('modeExploded').onclick=()=>{$('explode').value=68;explode(68);$('modeExploded').classList.add('active');$('modeAssembled').classList.remove('active');$('modeCut').classList.remove('active')};
-$('modeCut').onclick=()=>{cut=!cut;groups.hull.visible=!cut&&document.querySelector('[data-module="hull"]').checked;$('modeCut').classList.toggle('active',cut);$('statState').textContent=cut?'CORTE':'MONTADA';log(cut?'Carenagem externa ocultada.':'Carenagem restaurada.')};
+function applySection(){
+ const axis=$('sectionAxis').value,offset=+$('sectionRange').value;
+ sectionPlane.normal.set(axis==='x'?1:0,axis==='y'?1:0,axis==='z'?1:0);
+ sectionPlane.constant=-offset;
+ $('sectionOut').textContent=offset+' m';
+}
+Object.values(M).forEach(mat=>{mat.clippingPlanes=[sectionPlane];mat.clipShadows=true});
+$('sectionAxis').addEventListener('change',applySection);
+$('sectionRange').addEventListener('input',applySection);
+$('modeCut').onclick=()=>{cut=!cut;Object.values(M).forEach(mat=>{mat.clippingPlanes=cut?[sectionPlane]:[]});$('modeCut').classList.toggle('active',cut);$('statState').textContent=cut?'CORTE AJUSTÁVEL':'MONTADA';if(cut)applySection();log(cut?'Plano de corte ajustável ativado.':'Plano de corte desativado.')};
+function populatePieceSelect(){
+ const sel=$('pieceSelect');if(!sel)return;
+ const sorted=[...pickables].sort((a,b)=>(a.userData.label||a.name).localeCompare(b.userData.label||b.name,'pt-BR'));
+ sorted.forEach(o=>{const op=document.createElement('option');op.value=o.name;op.textContent=(o.userData.label||o.name)+' · '+o.userData.group;sel.appendChild(op)});
+}
+$('pieceSelect').addEventListener('change',e=>{const o=named[e.target.value];if(o){choose(o);const p=o.getWorldPosition(new THREE.Vector3());controls.target.copy(p);}});
+$('hidePiece').onclick=()=>{if(!selected){log('Selecione uma peça antes de ocultá-la.');return}selected.userData.userHidden=true;selected.visible=false;log('Peça ocultada individualmente: '+(selected.userData.label||selected.name));choose(null);$('pieceSelect').value=''};
+$('restorePieces').onclick=()=>{pickables.forEach(o=>{o.userData.userHidden=false;o.visible=true});document.querySelectorAll('[data-module]').forEach(ch=>{groups[ch.dataset.module].visible=ch.checked});log('Visibilidade individual das peças restaurada.');choose(null)};
+
 $('opacity').addEventListener('input',e=>{const v=+e.target.value/100;$('opacityOut').textContent=e.target.value+'%';M.hull.transparent=v<1;M.hull.opacity=v;M.hull.depthWrite=v>.7;M.armor.transparent=v<1;M.armor.opacity=v;M.armor.depthWrite=v>.7});
 $('autoRotate').onclick=()=>{auto=!auto;controls.autoRotate=auto;controls.autoRotateSpeed=.38;$('autoRotate').classList.toggle('active',auto)};
 $('wire').onclick=()=>{wire=!wire;Object.values(M).forEach(m=>{if('wireframe'in m)m.wireframe=wire});$('wire').classList.toggle('active',wire)};
 $('labels').onclick=()=>{$('labels').classList.toggle('active');labelsGroup.visible=$('labels').classList.contains('active')||interiorMode;$('renderStatus').textContent=$('labels').classList.contains('active')?'MODO DE IDENTIFICAÇÃO ATIVO':'RENDER 3D / PRONTO';log('Identificação visual '+($('labels').classList.contains('active')?'ativada':'desativada'))};
-$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'07.0',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
+$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'08.0',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
 $('resetCamera').click();
 function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
-new ResizeObserver(resize).observe(viewport);resize();setDims();updateCount();
+new ResizeObserver(resize).observe(viewport);resize();setDims();updateCount();populatePieceSelect();
 function animate(){requestAnimationFrame(animate);controls.update();composer.render()}animate();
 window.addEventListener('error',e=>{$('renderStatus').textContent='ERRO DE RENDERIZAÇÃO';console.error(e)});
 </script>
