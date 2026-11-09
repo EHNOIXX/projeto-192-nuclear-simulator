@@ -22,7 +22,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <body>
 <header><a class="brand" href="../index.html"><b>S.</b><span>S.P.E.C.T.R.A.<small>FLIGHT SYSTEMS / CONCEPT LAB</small></span></a><nav class="headlinks"><a href="../index.html">E-192 ↗</a><a href="../egas/">EGAS ↗</a><a href="../">CENTRAL</a></nav><span class="live">● SIMULAÇÃO LOCAL ATIVA</span></header>
 <main>
-<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 09.0 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 09.0 · Modelo dimensional conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
+<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 10.0 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 09.0 · Modelo dimensional conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
 <section class="workspace">
 <aside class="stack leftstack">
 <div class="panel"><div class="paneltitle">01 / GEOMETRIA GLOBAL</div><div class="panelbody">
@@ -35,8 +35,8 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <label><input type="checkbox" data-module="hull" checked> Estrutura e carenagem</label>
 <label><input type="checkbox" data-module="bridge" checked> Módulo de comando</label>
 <label><input type="checkbox" data-module="egas" checked> Módulo EGAS conceitual</label>
-<label><input type="checkbox" data-module="power" checked> Geradores nucleares RTG</label>
-<label><input type="checkbox" data-module="propulsion" checked> Conjunto propulsivo visual</label>
+
+<label><input type="checkbox" data-module="propulsion" checked> Propulsão + núcleo energético integrado</label>
 <label><input type="checkbox" data-module="radiators" checked> Painéis radiadores</label>
 <label><input type="checkbox" data-module="habitat" checked> Módulos habitáveis</label>
 <label><input type="checkbox" data-module="field" checked> Anéis de campo ilustrativos</label>
@@ -289,28 +289,29 @@ function hullSurface(){
  }
  box('aft_service_deck','Convés de manutenção dos sistemas propulsivos','hull',16,1,22,M.armor,[54,-8,0]);
  label3D('CONJUNTOS PROPULSIVOS',[73,9,0],2.4);
- // Sistema elétrico de radioisótopos: três RTGs externos, inspirado na arquitetura da Voyager.
- // São geradores termoelétricos, não um reator de fissão; a geometria é ilustrativa.
- // A lança e sua raiz ficam no grupo do casco para preservar a conexão visual.
- rod('rtg_boom_root','Raiz integrada da lança dos geradores RTG','hull',[29,5,0],[43,11,0],1.05,M.armor);
- rod('rtg_boom_main','Lança estrutural dos geradores de radioisótopos','hull',[43,11,-15],[43,11,15],.78,M.edge);
- for(const z of [-11,0,11]){
-  rod('rtg_mount_'+z,'Berço de fixação do gerador RTG','hull',[43,11,z],[43,8,z],.62,M.armor);
-  cyl('rtg_body_'+z,'Gerador termoelétrico de radioisótopos · RTG','power',2.65,2.65,8.5,M.armor,[43,5,z],[Math.PI/2,0,0],56);
-  for(const end of [-1,1]){
-   tor('rtg_endcap_'+z+'_'+end,'Tampa de extremidade do RTG','power',2.58,.24,M.edge,[43,5,z+end*4.05],[Math.PI/2,0,0]);
+ // Núcleo termoelétrico integrado aos quatro conjuntos propulsivos.
+ // Referência conceitual: conversão termoelétrica por radioisótopos (RTG).
+ // Não é um reator de fissão nem um motor demonstrado; a integração é visual e hipotética.
+ for(const y of [-5,5])for(const z of [-8,8]){
+  const id='integrated_power_'+y+'_'+z;
+  // Câmara energética interna, coaxial com a carcaça do motor.
+  cyl(id+'_thermal_chamber','Câmara termoelétrica integrada ao conjunto propulsivo','propulsion',1.82,1.82,7.2,M.armor,[66.2,y,z],[0,0,Math.PI/2],56);
+  cyl(id+'_isotope_core','Núcleo térmico conceitual de radioisótopos','propulsion',1.08,1.08,4.8,M.gold,[66.2,y,z],[0,0,Math.PI/2],48);
+  for(const x of [62.7,69.7]){
+   tor(id+'_containment_'+x,'Anel de contenção térmica interno','propulsion',1.76,.18,M.edge,[x,y,z],[0,Math.PI/2,0]);
   }
   for(let k=0;k<12;k++){
    const a=k*Math.PI/6;
-   rod('rtg_fin_'+z+'_'+k,'Aleta dissipadora externa do RTG','power',[43+Math.cos(a)*2.35,5+Math.sin(a)*2.35,z-3.1],[43+Math.cos(a)*3.25,5+Math.sin(a)*3.25,z+3.1],.16,M.edge);
+   rod(id+'_thermoelectric_fin_'+k,'Aleta de transferência térmica interna','propulsion',[66.2,y+Math.cos(a)*1.15,z+Math.sin(a)*1.15],[66.2,y+Math.cos(a)*2.35,z+Math.sin(a)*2.35],.12,M.cyan);
   }
-  cyl('rtg_neck_'+z,'Pescoço de conexão térmica e estrutural do RTG','hull',.82,.82,3.2,M.gold,[43,8.6,z],[0,0,0],32);
+  cyl(id+'_converter','Conversor termoelétrico integrado','propulsion',1.42,1.42,1.5,M.dark,[71.1,y,z],[0,0,Math.PI/2],48);
+  tor(id+'_converter_ring','Aro do conversor termoelétrico','propulsion',1.42,.16,M.cyan,[71.9,y,z],[0,Math.PI/2,0]);
  }
- box('rtg_bus','Unidade de condicionamento e distribuição elétrica dos RTGs','power',7,3,9,M.dark,[34,3,0]);
- for(const side of [-1,1]){
-  rod('rtg_cable_trunk_'+side,'Linha protegida de distribuição elétrica','hull',[34,3,side*3],[25,0,side*5],.22,M.cyan);
+ box('integrated_power_bus','Barramento de condicionamento elétrico integrado à seção propulsiva','propulsion',8,2.4,13,M.dark,[56,0,0]);
+ for(const y of [-5,5])for(const z of [-8,8]){
+  rod('integrated_power_link_'+y+'_'+z,'Conexão elétrica blindada entre conversor e barramento','propulsion',[57,y*.55,z*.55],[62,y,z],.16,M.gold);
  }
- label3D('GERADORES ELÉTRICOS RTG',[43,16,0],2.5);
+ label3D('NÚCLEO TERMOELÉTRICO INTEGRADO',[62,12,0],2.4);
  // Antena de comunicação e sensores externos.
  rod('sensor_mast','Mastro de instrumentação','antenna',[-45,7,0],[-45,20,0],.2,M.edge);
  tor('sensor_dish','Antena de comunicação','antenna',3,.16,M.gold,[-45,20,0],[Math.PI/2,0,0]);
@@ -484,7 +485,7 @@ $('opacity').addEventListener('input',e=>{const v=+e.target.value/100;$('opacity
 $('autoRotate').onclick=()=>{auto=!auto;controls.autoRotate=auto;controls.autoRotateSpeed=.38;$('autoRotate').classList.toggle('active',auto)};
 $('wire').onclick=()=>{wire=!wire;Object.values(M).forEach(m=>{if('wireframe'in m)m.wireframe=wire});$('wire').classList.toggle('active',wire)};
 $('labels').onclick=()=>{$('labels').classList.toggle('active');labelsGroup.visible=$('labels').classList.contains('active')||interiorMode;$('renderStatus').textContent=$('labels').classList.contains('active')?'MODO DE IDENTIFICAÇÃO ATIVO':'RENDER 3D / PRONTO';log('Identificação visual '+($('labels').classList.contains('active')?'ativada':'desativada'))};
-$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'09.0',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
+$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'10.0',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
 $('resetCamera').click();
 function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(viewport);resize();setDims();updateCount();populatePieceSelect();
