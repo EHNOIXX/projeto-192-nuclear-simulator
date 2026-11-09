@@ -201,6 +201,13 @@ for(let y of [-3.8,3.8])for(let z of [-3.8,3.8]){
  tor('aft_luminous_'+y+'_'+z,'Aro luminoso traseiro','propulsion',2.8,.2,M.cyan,[61.2,y,z]);
  sphere('aft_lens_'+y+'_'+z,'Elemento luminoso ilustrativo','propulsion',1.65,M.glow,[62,y,z],28);
 }
+// Conjuntos motopropulsivos internos: representação visual não funcional.
+for(const y of [-1.6,1.6])for(const z of [-3.1,3.1]){
+ cyl('engine_motor_'+y+'_'+z,'Unidade motopropulsiva interna esquemática','propulsion',1.25,1.25,6,M.dark,[47,y,z],[0,0,Math.PI/2],32);
+ tor('engine_motor_ring_'+y+'_'+z,'Aro externo do motor ilustrativo','propulsion',1.3,.14,M.cyan,[50.2,y,z]);
+ sphere('engine_motor_core_'+y+'_'+z,'Núcleo luminoso do motor ilustrativo','propulsion',.62,M.violet,[50.4,y,z],20);
+}
+
 // Broad heat-radiator leaves, folded along the wing roots.
 for(let s of [-1,1]){
  box('radiator_root_'+s,'Raiz do radiador térmico','radiators',25,.65,2.2,M.dark,[7,4.7,s*18],[0,0,s*.08]);
@@ -246,6 +253,8 @@ function showInterior(){interiorMode=true;restoreModuleVisibility();groups.hull.
  for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=false;controls.minDistance=20;controls.maxDistance=240;camera.position.set(-4,118,18);controls.target.set(7,-1,0);controls.update();$('selectionLabel').textContent='PLANTA INTERNA / COMPARTIMENTOS';$('selectionInfo').innerHTML='<strong>Configuração interna conceitual</strong>Vista de corte para visualizar corredor central, cabines, laboratório, enfermaria, refeitório, suporte ambiental e sala de máquinas. Os ambientes são esquemáticos, não um projeto habitável validado.';log('Vista interna ativada: compartimentos e circulação expostos.')}
 function cameraPreset(v){
  interiorMode=false;restoreModuleVisibility();
+ if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=true;
+ for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=true;
  controls.minDistance=18;controls.maxDistance=420;
  const p={iso:[-105,78,128],front:[-170,20,0],side:[0,25,180],top:[0,190,4],rear:[170,24,0],interior:[-4,118,18]}[v]||[-105,78,128];
  camera.position.set(...p);controls.target.set(0,0,0);controls.update()
