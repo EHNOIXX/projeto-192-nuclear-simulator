@@ -114,7 +114,7 @@ const pickables=[],named={};
 function add(id,label,group,geo,mat,pos=[0,0,0],rot=[0,0,0],target=pickables){
  const o=new THREE.Mesh(geo,mat);o.name=id;o.userData={label,group};o.position.set(...pos);o.rotation.set(...rot);o.castShadow=true;o.receiveShadow=true;groups[group].add(o);target.push(o);named[id]=o;return o;
 }
-function box(id,label,g,w,h,d,mat,p,r=[0,0,0]){const bevel=Math.max(.06,Math.min(.7,Math.min(w,h,d)*.12));return add(id,label,g,new RoundedBoxGeometry(w,h,d,3,bevel),mat,p,r)}
+function box(id,label,g,w,h,d,mat,p,r=[0,0,0]){const bevel=Math.max(.008,Math.min(.7,Math.min(w,h,d)*.22));return add(id,label,g,new RoundedBoxGeometry(w,h,d,3,bevel),mat,p,r)}
 function cyl(id,label,g,r1,r2,len,mat,p,r=[0,0,0],n=40){return add(id,label,g,new THREE.CylinderGeometry(r1,r2,len,n),mat,p,r)}
 function tor(id,label,g,r,t,mat,p,rot=[0,Math.PI/2,0]){return add(id,label,g,new THREE.TorusGeometry(r,t,12,96),mat,p,rot)}
 function rod(id,label,g,a,b,r,mat){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A);const o=add(id,label,g,new THREE.CylinderGeometry(r,r,d.length(),12),mat,A.clone().add(B).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());return o}
