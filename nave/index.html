@@ -22,7 +22,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <body>
 <header><a class="brand" href="../index.html"><b>S.</b><span>S.P.E.C.T.R.A.<small>FLIGHT SYSTEMS / CONCEPT LAB</small></span></a><nav class="headlinks"><a href="../index.html">E-192 ↗</a><a href="../egas/">EGAS ↗</a><a href="../">CENTRAL</a></nav><span class="live">● SIMULAÇÃO LOCAL ATIVA</span></header>
 <main>
-<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 14.1 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 14.0 · Arquitetura de exploração espacial conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
+<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 14.1 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 14.1 · Arquitetura de exploração espacial conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
 <section class="workspace">
 <aside class="stack leftstack">
 <div class="panel"><div class="paneltitle">01 / GEOMETRIA GLOBAL</div><div class="panelbody">
@@ -509,7 +509,8 @@ function cameraPreset(v){
  const p={iso:[-218,142,218],front:[-250,50,0],side:[0,70,260],top:[0,300,4],rear:[250,50,0],interior:[-4,118,18]}[v]||[-218,142,218];
  camera.position.set(...p);controls.target.set(0,0,0);controls.update()
 }
-function engineCamera(){interiorMode=false;restoreModuleVisibility();groups.interior.visible=false;controls.minDistance=8;controls.maxDistance=110;camera.position.set(104,38,72);controls.target.set(70,0,0);controls.update()}\nfunction atomCamera(){controls.minDistance=120000;controls.maxDistance=520000;camera.position.set(250000,180000,300000);controls.target.set(0,0,0);controls.update();e192Nucleus.visible=true;e192Cloud.visible=true}
+function engineCamera(){interiorMode=false;restoreModuleVisibility();groups.interior.visible=false;controls.minDistance=8;controls.maxDistance=110;camera.position.set(104,38,72);controls.target.set(70,0,0);controls.update()}
+function atomCamera(){controls.minDistance=120000;controls.maxDistance=520000;camera.position.set(250000,180000,300000);controls.target.set(0,0,0);controls.update();e192Nucleus.visible=true;e192Cloud.visible=true}
 function setScale(mode){
  scaleMode=mode;root.visible=mode!=='atom';atomGroup.visible=mode==='atom';atomNote.style.display=mode==='atom'?'block':'none';
  document.querySelectorAll('[data-scale]').forEach(b=>b.classList.toggle('active',b.dataset.scale===mode));
