@@ -179,6 +179,7 @@ for(const side of [-1,1]){
   else if(i===3){interiorBox('galley_table_'+side,'Mesa do refeitório',3,.65,2.4,furnitureMat,[x,-2.2,zc]);for(let k=0;k<3;k++)interiorBox('galley_seat_'+side+'_'+k,'Assento do refeitório',.8,.7,.8,roomMat,[x-2+k*2,-2.2,zc+side*2]);}
   else{interiorBox('life_support_rack_'+side,'Rack de suporte ambiental esquemático',2.4,2.5,2.1,roomMat,[x,-.8,zc]);interiorBox('storage_'+side,'Armário de armazenamento',1.6,2,1.4,furnitureMat,[x+2.5,-1,zc-side*1.5]);}
   interiorBox('room_door_'+side+'_'+i,'Acesso interno ao corredor',2.2,3.2,.16,lightMat,[x,-.95,side*4.25]);
+  interiorBox('room_connector_'+side+'_'+i,'Passagem entre corredor e compartimento',2.2,.22,6.4,floorMat,[x,-2.8,side*5.8]);
  }
 }
 interiorBox('engine_room_floor','Piso da sala de máquinas',16,.4,16,floorMat,[43,-3.1,0]);
@@ -240,7 +241,9 @@ renderer.domElement.addEventListener('pointerdown',e=>{
 });
 let interiorMode=false;
 function restoreModuleVisibility(){document.querySelectorAll('[data-module]').forEach(ch=>{groups[ch.dataset.module].visible=ch.checked})}
-function showInterior(){interiorMode=true;restoreModuleVisibility();groups.hull.visible=false;groups.habitat.visible=false;groups.radiators.visible=false;groups.field.visible=false;groups.interior.visible=true;controls.minDistance=20;controls.maxDistance=240;camera.position.set(-4,118,18);controls.target.set(7,-1,0);controls.update();$('selectionLabel').textContent='PLANTA INTERNA / COMPARTIMENTOS';$('selectionInfo').innerHTML='<strong>Configuração interna conceitual</strong>Vista de corte para visualizar corredor central, cabines, laboratório, enfermaria, refeitório, suporte ambiental e sala de máquinas. Os ambientes são esquemáticos, não um projeto habitável validado.';log('Vista interna ativada: compartimentos e circulação expostos.')}
+function showInterior(){interiorMode=true;restoreModuleVisibility();groups.hull.visible=false;groups.habitat.visible=false;groups.radiators.visible=false;groups.field.visible=false;groups.bridge.visible=false;groups.antenna.visible=false;groups.landing.visible=false;groups.egas.visible=false;groups.interior.visible=true;
+ if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=false;
+ for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=false;controls.minDistance=20;controls.maxDistance=240;camera.position.set(-4,118,18);controls.target.set(7,-1,0);controls.update();$('selectionLabel').textContent='PLANTA INTERNA / COMPARTIMENTOS';$('selectionInfo').innerHTML='<strong>Configuração interna conceitual</strong>Vista de corte para visualizar corredor central, cabines, laboratório, enfermaria, refeitório, suporte ambiental e sala de máquinas. Os ambientes são esquemáticos, não um projeto habitável validado.';log('Vista interna ativada: compartimentos e circulação expostos.')}
 function cameraPreset(v){
  interiorMode=false;restoreModuleVisibility();
  controls.minDistance=18;controls.maxDistance=420;
