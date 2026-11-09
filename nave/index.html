@@ -207,7 +207,7 @@ function hullSurface(){
   cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',3.1,3.5,13,M.dark,[68,y,z],[0,0,Math.PI/2]);
   tor('aft_engine_ring_'+y+'_'+z,'Aro externo da unidade propulsiva','propulsion',3,.2,M.cyan,[74.7,y,z]);
   sphere('aft_engine_core_'+y+'_'+z,'Elemento visual da unidade propulsiva','propulsion',1.5,M.violet,[75,y,z],28);
-  rod('engine_mount_'+y+'_'+z,'Suporte estrutural da unidade propulsiva',[68,y,z],[56,y,z],.5,M.edge);
+  rod('engine_mount_'+y+'_'+z,'Suporte estrutural da unidade propulsiva','propulsion',[68,y,z],[56,y,z],.5,M.edge);
  }
  box('aft_service_deck','Convés de manutenção dos sistemas propulsivos','hull',18,1.2,25,M.armor,[54,-7,0]);
  label3D('CONJUNTOS PROPULSIVOS',[70,7,0],2.6);
