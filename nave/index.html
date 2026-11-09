@@ -22,7 +22,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <body>
 <header><a class="brand" href="../index.html"><b>S.</b><span>S.P.E.C.T.R.A.<small>FLIGHT SYSTEMS / CONCEPT LAB</small></span></a><nav class="headlinks"><a href="../index.html">E-192 ↗</a><a href="../egas/">EGAS ↗</a><a href="../">CENTRAL</a></nav><span class="live">● SIMULAÇÃO LOCAL ATIVA</span></header>
 <main>
-<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 12.0 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 09.0 · Modelo dimensional conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
+<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 12.1 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 09.0 · Modelo dimensional conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
 <section class="workspace">
 <aside class="stack leftstack">
 <div class="panel"><div class="paneltitle">01 / GEOMETRIA GLOBAL</div><div class="panelbody">
@@ -420,6 +420,12 @@ const e192Outer=new THREE.Mesh(new THREE.SphereGeometry(e192R*1.08,40,32),new TH
 const e192Halo=new THREE.Mesh(new THREE.SphereGeometry(e192R*1.22,40,32),new THREE.MeshBasicMaterial({color:0x6b83c9,wireframe:true,transparent:true,opacity:.035}));e192Nucleus.add(e192Halo);
 const e192Contours=new THREE.MeshBasicMaterial({color:0x8cebea,wireframe:true,transparent:true,opacity:.075});
 [.48,.72,.94].forEach((fraction,index)=>{const mesh=new THREE.Mesh(new THREE.SphereGeometry(e192R*fraction,28,20),e192Contours);mesh.rotation.set(index*.31,index*.47,index*.19);e192Nucleus.add(mesh)});
+// Instâncias microscópicas do núcleo E-192 dentro das quatro unidades propulsivas.
+const engineNuclei=[];
+for(const y of [-5,5])for(const z of [-8,8]){
+ const instance=e192Nucleus.clone(true);instance.name='e192_engine_nucleus_'+y+'_'+z;
+ instance.scale.setScalar(.28);instance.position.set(66.2,y,z);root.add(instance);engineNuclei.push(instance);
+}
 const e192Cloud=new THREE.Group();atomGroup.add(e192Cloud);
 const cloudPositions=[];
 for(let i=0;i<1100;i++){const u=Math.random(),v=Math.random(),theta=2*Math.PI*u,phi=Math.acos(2*v-1),r=1.8+Math.random()*.75;cloudPositions.push(r*Math.sin(phi)*Math.cos(theta),r*Math.sin(phi)*Math.sin(theta),r*Math.cos(phi))}
@@ -519,7 +525,7 @@ $('opacity').addEventListener('input',e=>{const v=+e.target.value/100;$('opacity
 $('autoRotate').onclick=()=>{auto=!auto;controls.autoRotate=auto;controls.autoRotateSpeed=.38;$('autoRotate').classList.toggle('active',auto)};
 $('wire').onclick=()=>{wire=!wire;Object.values(M).forEach(m=>{if('wireframe'in m)m.wireframe=wire});$('wire').classList.toggle('active',wire)};
 $('labels').onclick=()=>{$('labels').classList.toggle('active');labelsGroup.visible=$('labels').classList.contains('active')||interiorMode;$('renderStatus').textContent=$('labels').classList.contains('active')?'MODO DE IDENTIFICAÇÃO ATIVO':'RENDER 3D / PRONTO';log('Identificação visual '+($('labels').classList.contains('active')?'ativada':'desativada'))};
-$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'12.0',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
+$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'12.1',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
 $('resetCamera').click();
 function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(viewport);resize();setDims();updateCount();populatePieceSelect();
