@@ -26,7 +26,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <section class="workspace">
 <aside class="stack leftstack">
 <div class="panel"><div class="paneltitle">01 / GEOMETRIA GLOBAL</div><div class="panelbody">
-<label class="field">Comprimento de referência <output id="lenOut">160 m</output></label><input id="len" type="range" min="70" max="180" value="160">
+<label class="field">Comprimento de referência <output id="lenOut">160 m</output></label><input id="len" type="range" min="120" max="200" value="160">
 <label class="field">Largura máxima <output id="widOut">96 m</output></label><input id="wid" type="range" min="50" max="120" value="96">
 <label class="field">Altura máxima <output id="heiOut">48 m</output></label><input id="hei" type="range" min="25" max="70" value="48">
 <div class="btnrow" style="margin-top:13px"><button class="btn" id="resetDims">RESTAURAR DIMENSÕES</button><button class="btn" id="fit">ENQUADRAR</button></div>
@@ -59,8 +59,8 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <aside class="stack rightstack">
 <div class="panel"><div class="paneltitle">04 / INSPEÇÃO DE COMPONENTE</div><div class="panelbody selectedInfo" id="selectionInfo"><strong>Nenhum componente selecionado</strong>Clique em uma parte da nave para consultar sua descrição e categoria.<span class="tag">SELEÇÃO 3D</span></div></div>
 <div class="panel"><div class="paneltitle">05 / TELEMETRIA DO MODELO</div><div class="readout">
-<div class="stat"><span>COMPRIMENTO</span><b id="statLen">120 m</b></div><div class="stat"><span>LARGURA</span><b id="statWid">36 m</b></div>
-<div class="stat"><span>ALTURA</span><b id="statHei">28 m</b></div><div class="stat"><span>MÓDULOS ATIVOS</span><b id="statMods">9 / 9</b></div>
+<div class="stat"><span>COMPRIMENTO</span><b id="statLen">160 m</b></div><div class="stat"><span>LARGURA</span><b id="statWid">96 m</b></div>
+<div class="stat"><span>ALTURA</span><b id="statHei">48 m</b></div><div class="stat"><span>MÓDULOS ATIVOS</span><b id="statMods">9 / 10</b></div>
 <div class="stat"><span>ESTADO DA CENA</span><b id="statState">MONTADA</b></div><div class="stat"><span>MODELO</span><b>CONCEITUAL</b></div>
 </div></div>
 <div class="panel warning"><div class="paneltitle">06 / INTEGRIDADE CIENTÍFICA</div><div class="panelbody">A nave e sua arquitetura de propulsão são hipóteses de pesquisa. A existência do E-192 não foi confirmada e o EGAS não é um motor demonstrado. O simulador não calcula desempenho, sustentação, radiação, proteção, energia ou trajetórias reais.<br><br>Os componentes são formas 3D de comunicação visual, sem tolerâncias ou instruções construtivas.</div></div>
@@ -68,7 +68,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 </aside>
 </section>
 <div class="bottomgrid"><article class="panel infoPanel"><h3>ARQUITETURA INTEGRADA</h3><p>O módulo EGAS aparece como subsistema conceitual integrado ao núcleo estrutural central da nave. A representação não presume que seus princípios de operação sejam fisicamente realizáveis.</p></article><article class="panel infoPanel"><h3>CONTROLES DE NAVEGAÇÃO</h3><p>Arraste para orbitar, use a roda para aproximar ou afastar e selecione componentes diretamente no viewport. Em telas sensíveis ao toque, os gestos padrão do navegador são utilizados pelo controle de órbita.</p></article></div>
-<footer class="footer"><span>S.P.E.C.T.R.A. / FLIGHT SYSTEMS LAB</span><span>SIMULADOR CONCEITUAL · REV 04.0 · 2026</span></footer>
+<footer class="footer"><span>S.P.E.C.T.R.A. / FLIGHT SYSTEMS LAB</span><span>SIMULADOR CONCEITUAL · REV 05.0 · 2026</span></footer>
 </main>
 <script type="module">
 import * as THREE from 'three';
@@ -233,11 +233,12 @@ const furnitureMat=new THREE.MeshStandardMaterial({color:0x344d60,metalness:.2,r
 function interiorBox(id,label,w,h,d,mat,p){return box(id,label,'interior',w,h,d,mat,p)}
 function roomLabel(text,x,z){label3D(text,[x,4.7,z],1.65)}
 // Corredor principal e ramificações pressurizadas.
-interiorBox('main_corridor_floor','Corredor longitudinal principal — 2,4 m de largura',104,.35,2.4,floorMat,[-3,-5.3,0]);
-interiorBox('main_corridor_ceiling','Teto técnico do corredor principal',104,.22,2.4,roomMat,[-3,-1.5,0]);
+interiorBox('main_corridor_floor','Corredor longitudinal principal — 2,4 m de largura',120,.35,2.4,floorMat,[4,-5.3,0]);
+interiorBox('main_corridor_ceiling','Teto técnico do corredor principal',120,.22,2.4,roomMat,[4,-2.7,0]);
 for(const z of [-1.15,1.15]){
- interiorBox('corridor_light_'+z,'Iluminação linear do corredor',100,.1,.1,lightMat,[-3,-3.5,z]);
- interiorBox('corridor_rail_'+z,'Corrimão do corredor',100,.12,.12,wallMat,[-3,-4.8,z]);
+ interiorBox('corridor_light_'+z,'Iluminação linear do corredor',116,.1,.1,lightMat,[4,-3.5,z]);
+ interiorBox('corridor_rail_'+z,'Corrimão do corredor',116,.12,.12,wallMat,[4,-4.8,z]);
+ interiorBox('corridor_wall_'+z,'Parede lateral do corredor',120,2.5,.16,wallMat,[4,-4.0,z*1.18]);
 }
 for(const x of [-27,5,37])for(const s of [-1,1]){
  interiorBox('branch_floor_'+x+'_'+s,'Passagem transversal pressurizada',2.4,.3,20,floorMat,[x,-5.3,s*12]);
@@ -280,13 +281,15 @@ centralRooms.forEach(r=>{
  interiorBox(r.id+'_equipment','Equipamento — '+r.name,Math.min(3,r.w*.45),1.3,1.2,furnitureMat,[r.x,-3.9,r.z]);
  roomLabel(r.name,r.x,r.z);
 });
-interiorBox('medical_bed','Leito da enfermaria',2.2,.5,1.1,furnitureMat,[3,-4.1,-7]);
+interiorBox('medical_bed_1','Leito da enfermaria 1',2.2,.5,1.1,furnitureMat,[1.8,-4.1,-7]);
+interiorBox('medical_bed_2','Leito da enfermaria 2',2.2,.5,1.1,furnitureMat,[4.5,-4.1,-7]);
 interiorBox('galley_table','Mesa do refeitório',3,.8,2,furnitureMat,[3,-4.2,7]);
 interiorBox('gym_floor','Área de condicionamento físico',8,.18,6,floorMat,[-1,-4.7,12]);
 interiorBox('gym_equipment','Equipamento de exercício resistido',2,2,1.5,furnitureMat,[-1,-3.7,12]);
 roomLabel('CONDICIONAMENTO',-1,12);
 // Ponte e sala técnica de propulsão.
 interiorBox('bridge_floor','Piso da ponte de comando',17,.35,14,floorMat,[-67,-3.1,0]);
+interiorBox('bridge_connector','Passagem pressurizada ponte–corredor',7,.3,3,floorMat,[-57,-5.3,0]);
 for(let i=0;i<4;i++)interiorBox('bridge_console_'+i,'Console de navegação e comando',2,.9,1.2,furnitureMat,[-73+i*4,-2.5,0]);
 roomLabel('PONTE DE COMANDO',-67,0);
 interiorBox('engine_room_floor','Piso da área de manutenção propulsiva',17,.35,22,floorMat,[57,-8,0]);
@@ -318,7 +321,7 @@ let interiorMode=false;
 function restoreModuleVisibility(){document.querySelectorAll('[data-module]').forEach(ch=>{groups[ch.dataset.module].visible=ch.checked})}
 function showInterior(){interiorMode=true;restoreModuleVisibility();groups.interior.visible=true;labelsGroup.visible=true;groups.hull.visible=false;groups.habitat.visible=false;groups.radiators.visible=false;groups.field.visible=false;groups.bridge.visible=false;groups.antenna.visible=false;groups.landing.visible=false;groups.egas.visible=false;groups.interior.visible=true;
  if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=false;
- for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=false;controls.minDistance=15;controls.maxDistance=280;camera.position.set(-4,118,18);controls.target.set(-2,-1,0);controls.update();$('selectionLabel').textContent='PLANTA INTERNA / COMPARTIMENTOS';$('selectionInfo').innerHTML='<strong>Configuração interna conceitual</strong>Vista de corte para visualizar corredor central, cabines, laboratório, enfermaria, refeitório, suporte ambiental e sala de máquinas. Os ambientes são esquemáticos, não um projeto habitável validado.';log('Vista interna ativada: compartimentos e circulação expostos.')}
+ for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=false;controls.minDistance=15;controls.maxDistance=280;camera.position.set(-4,118,18);controls.target.set(-2,-1,0);controls.update();$('selectionLabel').textContent='PLANTA INTERNA / COMPARTIMENTOS';$('selectionInfo').innerHTML='<strong>Configuração interna conceitual</strong>Planta de corte da arquitetura de 50 tripulantes: 24 cabines duplas, ponte, centro de operações, laboratórios E-192/EGAS, enfermaria, refeitório, suporte ambiental e manutenção propulsiva. Modelo conceitual, não projeto habitável validado.';log('Vista interna ativada: compartimentos e circulação expostos.')}
 function cameraPreset(v){
  interiorMode=false;restoreModuleVisibility();groups.interior.visible=false;labelsGroup.visible=$('labels').classList.contains('active');
  if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=true;
