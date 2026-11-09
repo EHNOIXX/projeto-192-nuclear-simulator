@@ -169,19 +169,19 @@ function modulePod(id,label,center,dims,material=M.hull){
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
  const primary=add('primary_pressure_hull','Casco pressurizado elipsoidal principal — SPECTRA-AXIS','hull',new THREE.SphereGeometry(1,72,48),M.hull,[-2,0,0]);
- primary.scale.set(78,23.5,47);
+ primary.scale.set(78,14.5,18.5);
  const dorsal=add('dorsal_service_spine','Carenagem dorsal de serviços e distribuição','hull',new THREE.CapsuleGeometry(4.2,78,8,32),M.armor,[-3,8.2,0]);
  dorsal.rotation.z=Math.PI/2;dorsal.scale.z=1.12;
  const ventral=add('ventral_keel','Quilha inferior de proteção e manutenção','hull',new THREE.CapsuleGeometry(3.1,72,8,32),M.dark,[5,-8.2,0]);
  ventral.rotation.z=Math.PI/2;ventral.scale.z=1.2;
 
  // AXIS — estrutura central longitudinal integrada à superfície dorsal do casco.
- rod('spectra_axis_beam','AXIS — longarina estrutural longitudinal central','hull',[-68,22.9,0],[68,22.9,0],.82,M.dark);
- rod('spectra_axis_light','AXIS — guia óptica azul longitudinal','hull',[-65,23.55,0],[65,23.55,0],.16,M.cyan);
+ rod('spectra_axis_beam','AXIS — longarina estrutural longitudinal central','hull',[-68,14.1,0],[68,14.1,0],.82,M.dark);
+ rod('spectra_axis_light','AXIS — guia óptica azul longitudinal','hull',[-65,14.75,0],[65,14.75,0],.16,M.cyan);
  for(const x of [-58,-42,-26,-10,6,22,38,54]){
-  box('axis_marker_'+x,'Marcador luminoso azul da estrutura AXIS','hull',1.1,.22,2.2,M.cyan,[x,23.62,0]);
+  box('axis_marker_'+x,'Marcador luminoso azul da estrutura AXIS','hull',1.1,.22,2.2,M.cyan,[x,14.82,0]);
  }
- label3D('SPECTRA · AXIS',[-4,27,0],2.2);
+ label3D('SPECTRA · AXIS',[-4,18,0],2.2);
  // Anéis de união do casco e painéis de acesso.
  for(const x of [-48,-32,-16,0,16,32,48]){
   tor('hull_frame_'+x,'Anel estrutural de reforço do casco','hull',9.9,.22,M.edge,[x,0,0],[0,0,Math.PI/2]);
