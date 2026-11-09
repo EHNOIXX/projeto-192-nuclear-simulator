@@ -359,7 +359,7 @@ function hullSurface(){
  }
  for(let i=0;i<ringCount-1;i++)for(let j=0;j<sideCount;j++){
   const a=i*sideCount+j,b=i*sideCount+(j+1)%sideCount,c=(i+1)*sideCount+(j+1)%sideCount,d=(i+1)*sideCount+j;
-  indices.push(a,b,d,b,c,d);
+  indices.push(a,d,b,d,c,b);
  }
  shellGeo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
  shellGeo.setIndex(indices);shellGeo.computeVertexNormals();
