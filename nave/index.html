@@ -222,6 +222,27 @@ function hullSurface(){
  box('science_platform','Plataforma de instrumentação científica','hull',18,1,16,M.dark,[25,-8,0]);
  for(let i=0;i<4;i++)box('science_instrument_'+i,'Instrumento científico externo','antenna',3,3,3,M.gold,[19+i*4,-6,0]);
  label3D('INSTRUMENTAÇÃO',[25,-1,0],2.2);
+ // Interfaces físicas de conexão entre casco, extensões e painéis solares.
+ // As bases começam dentro do volume do casco e terminam nos suportes das asas.
+ for(const side of [-1,1]){
+  const z=side;
+  // Caixa de raiz integrada à carenagem lateral.
+  box('wing_root_box_'+side,'Caixa estrutural integrada da extensão solar','radiators',12,3.2,7,M.armor,[8,5,z*10]);
+  // Braço principal em duas longarinas, com travessas e articulações aparentes.
+  rod('wing_root_neck_'+side,'Pescoço estrutural da extensão solar','radiators',[8,5,z*7],[8,7,z*20],1.05,M.armor);
+  rod('wing_spar_front_'+side,'Longarina frontal contínua da extensão','radiators',[8,7,z*17],[8,7,z*48],.62,M.edge);
+  rod('wing_spar_rear_'+side,'Longarina traseira contínua da extensão','radiators',[32,7,z*17],[32,7,z*48],.62,M.edge);
+  for(const x of [8,20,32]){
+   rod('wing_rib_'+side+'_'+x,'Travessa estrutural da extensão','radiators',[x,7,z*19],[x,7,z*47],.34,M.armor);
+  }
+  // Juntas e suportes de articulação nos dois extremos da asa.
+  for(const x of [8,32]){
+   cyl('wing_hinge_'+side+'_'+x,'Junta articulada da extensão solar','radiators',1.15,1.15,3,M.edge,[x,7,z*18],[Math.PI/2,0,0],32);
+   tor('wing_hinge_ring_'+side+'_'+x,'Aro da articulação da extensão','radiators',1.18,.16,M.gold,[x,7,z*18],[Math.PI/2,0,0]);
+  }
+  // Chicote de serviço acompanha a longarina até os painéis.
+  rod('wing_service_conduit_'+side,'Conduíte de energia e dados da extensão','radiators',[8,8.3,z*18],[8,8.3,z*47],.16,M.cyan);
+ }
  // Radiadores segmentados com estrutura de suporte mais discreta.
  for(const side of [-1,1]){
   // A longarina principal começa dentro da zona estrutural do casco e alcança a raiz dos radiadores.
