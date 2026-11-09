@@ -52,7 +52,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <section class="panel stage">
 <div class="stagehead"><span>3D VIEWPORT / <b>VESSEL ASSEMBLY</b></span><span id="selectionLabel">VISÃO GERAL</span></div>
 <div class="toolbar"><button class="btn" id="autoRotate">ÓRBITA AUTOMÁTICA</button><button class="btn" id="wire">MALHA TÉCNICA</button><button class="btn" id="labels">ETIQUETAS</button><button class="btn" id="resetCamera">CENTRALIZAR CÂMERA</button><button class="btn primary" id="export">EXPORTAR RELATÓRIO</button></div>
-<div class="camera"><span>ESCALA FÍSICA</span><button class="btn active" data-scale="ship">NAVE · 10² m</button><button class="btn" data-scale="engine">EGAS · 10¹ m</button><button class="btn" data-scale="atom">ÁTOMO · 10⁻¹⁰ m</button></div><div class="camera"><span>CÂMERA</span><button class="btn" data-camera="iso">ISOMÉTRICA</button><button class="btn" data-camera="front">FRENTE</button><button class="btn" data-camera="side">LATERAL</button><button class="btn" data-camera="top">SUPERIOR</button><button class="btn" data-camera="rear">TRASEIRA</button><button class="btn primary" data-camera="interior">INTERIOR</button></div>
+<div class="camera"><span>ESCALA FÍSICA</span><button class="btn active" data-scale="ship">NAVE · 10² m</button><button class="btn" data-scale="engine">MOTOR · 10¹ m</button><button class="btn" data-scale="atom">ÁTOMO · 10⁻¹⁰ m</button></div><div class="camera"><span>CÂMERA</span><button class="btn" data-camera="iso">ISOMÉTRICA</button><button class="btn" data-camera="front">FRENTE</button><button class="btn" data-camera="side">LATERAL</button><button class="btn" data-camera="top">SUPERIOR</button><button class="btn" data-camera="rear">TRASEIRA</button><button class="btn primary" data-camera="interior">INTERIOR</button></div>
 <div id="viewport"><div class="viewtag">SPECTRA / MOBILE ORBITAL RESEARCH VESSEL <span id="scaleTag">ESCALA 10² m</span></div><div class="axis">X / LONGITUDINAL<br>Y / VERTICAL<br>Z / TRANSVERSAL</div><div class="help" id="scaleHelp">ESCALA DA NAVE · DIMENSÕES EM METROS · ARRASTE PARA ORBITAR</div></div>
 <div class="stagefoot"><div class="legend"><span><i style="background:#79d8df"></i>Estrutura</span><span><i style="background:#a48bff"></i>EGAS conceitual</span><span><i style="background:#e5b46d"></i>Instrumentação</span></div><span id="renderStatus">RENDER 3D / PRONTO</span></div>
 </section>
@@ -334,16 +334,16 @@ function cameraPreset(v){
  const p={iso:[-145,105,170],front:[-205,35,0],side:[0,45,220],top:[0,245,4],rear:[205,35,0],interior:[-4,118,18]}[v]||[-145,105,170];
  camera.position.set(...p);controls.target.set(0,0,0);controls.update()
 }
-function engineCamera(){controls.minDistance=2.5;controls.maxDistance=100;camera.position.set(28,21,34);controls.target.set(10,0,0);controls.update()}
+function engineCamera(){controls.minDistance=3;controls.maxDistance=110;camera.position.set(91,25,43);controls.target.set(68,0,0);controls.update()}
 function atomCamera(){controls.minDistance=.15;controls.maxDistance=8;camera.position.set(2.5,1.8,3);controls.target.set(0,0,0);controls.update()}
 function setScale(mode){
  scaleMode=mode;root.visible=mode!=='atom';atomGroup.visible=mode==='atom';atomNote.style.display=mode==='atom'?'block':'none';
  document.querySelectorAll('[data-scale]').forEach(b=>b.classList.toggle('active',b.dataset.scale===mode));
  $('scaleTag').textContent=mode==='ship'?'ESCALA 10² m':mode==='engine'?'ESCALA 10¹ m':'ESCALA 10⁻¹⁰ m';
- $('scaleHelp').textContent=mode==='atom'?'VISTA MICROSCÓPICA · ESCALA ATÔMICA · NÚCLEO EM PROPORÇÃO':mode==='engine'?'SUBSISTEMA EGAS · VISTA LOCAL':'NAVE COMPLETA · 160 × 96 × 48 m · 50 TRIPULANTES';
- $('selectionLabel').textContent=mode==='atom'?'MODELO ATÔMICO ESQUEMÁTICO':mode==='engine'?'SUBSISTEMA EGAS':'VISÃO GERAL';
+ $('scaleHelp').textContent=mode==='atom'?'VISTA MICROSCÓPICA · ESCALA ATÔMICA · NÚCLEO EM PROPORÇÃO':mode==='engine'?'CONJUNTO PROPULSIVO · VISTA LOCAL':'NAVE COMPLETA · 160 × 96 × 48 m · 50 TRIPULANTES';
+ $('selectionLabel').textContent=mode==='atom'?'MODELO ATÔMICO ESQUEMÁTICO':mode==='engine'?'CONJUNTO PROPULSIVO':'VISÃO GERAL';
  if(mode==='atom'){atomCamera();$('selectionInfo').innerHTML='<strong>Visualização atômica de referência</strong>Diâmetro atômico típico da ordem de 10⁻¹⁰ m. O núcleo está desenhado em proporção muito menor e quase não é visível. A distribuição eletrônica é esquemática; não representa configuração confirmada do elemento 192.'}
- else if(mode==='engine'){engineCamera();$('selectionInfo').innerHTML='<strong>EGAS — conjunto conceitual</strong>Vista aproximada do módulo central. O núcleo E-192 é hipotético e a geometria não demonstra funcionamento.'}
+ else if(mode==='engine'){engineCamera();$('selectionInfo').innerHTML='<strong>Conjunto propulsivo — escala local</strong>Vista aproximada das quatro unidades ilustrativas na extremidade traseira. A representação não especifica nem demonstra um motor funcional; EGAS permanece uma hipótese separada.'}
  else{cameraPreset('iso');$('selectionInfo').innerHTML='<strong>Nenhum componente selecionado</strong>Clique em um componente da nave para inspecionar sua função visual.'}
  log('Escala alterada: '+mode.toUpperCase())
 }
