@@ -51,8 +51,8 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <section class="panel stage">
 <div class="stagehead"><span>3D VIEWPORT / <b>VESSEL ASSEMBLY</b></span><span id="selectionLabel">VISÃO GERAL</span></div>
 <div class="toolbar"><button class="btn" id="autoRotate">ÓRBITA AUTOMÁTICA</button><button class="btn" id="wire">MALHA TÉCNICA</button><button class="btn" id="labels">ETIQUETAS</button><button class="btn" id="resetCamera">CENTRALIZAR CÂMERA</button><button class="btn primary" id="export">EXPORTAR RELATÓRIO</button></div>
-<div class="camera"><span>CÂMERA</span><button class="btn" data-camera="iso">ISOMÉTRICA</button><button class="btn" data-camera="front">FRENTE</button><button class="btn" data-camera="side">LATERAL</button><button class="btn" data-camera="top">SUPERIOR</button><button class="btn" data-camera="rear">TRASEIRA</button></div>
-<div id="viewport"><div class="viewtag">SPECTRA / HULL MODEL <span>REV 01.3</span></div><div class="axis">X / LONGITUDINAL<br>Y / VERTICAL<br>Z / TRANSVERSAL</div><div class="help">ARRASTE PARA ORBITAR · SCROLL PARA ZOOM · CLIQUE PARA INSPECIONAR</div></div>
+<div class="camera"><span>ESCALA FÍSICA</span><button class="btn active" data-scale="ship">NAVE · 10² m</button><button class="btn" data-scale="engine">EGAS · 10¹ m</button><button class="btn" data-scale="atom">ÁTOMO · 10⁻¹⁰ m</button></div><div class="camera"><span>CÂMERA</span><button class="btn" data-camera="iso">ISOMÉTRICA</button><button class="btn" data-camera="front">FRENTE</button><button class="btn" data-camera="side">LATERAL</button><button class="btn" data-camera="top">SUPERIOR</button><button class="btn" data-camera="rear">TRASEIRA</button></div>
+<div id="viewport"><div class="viewtag">SPECTRA / MULTISCALE LAB <span id="scaleTag">ESCALA 10² m</span></div><div class="axis">X / LONGITUDINAL<br>Y / VERTICAL<br>Z / TRANSVERSAL</div><div class="help" id="scaleHelp">ESCALA DA NAVE · DIMENSÕES EM METROS · ARRASTE PARA ORBITAR</div></div>
 <div class="stagefoot"><div class="legend"><span><i style="background:#79d8df"></i>Estrutura</span><span><i style="background:#a48bff"></i>EGAS conceitual</span><span><i style="background:#e5b46d"></i>Instrumentação</span></div><span id="renderStatus">RENDER 3D / PRONTO</span></div>
 </section>
 <aside class="stack rightstack">
@@ -72,11 +72,15 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 const $=id=>document.getElementById(id), viewport=$('viewport');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x080f19);scene.fog=new THREE.Fog(0x080f19,170,360);
 const camera=new THREE.PerspectiveCamera(36,1,.1,1000);camera.position.set(112,76,126);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;viewport.appendChild(renderer.domElement);
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;viewport.appendChild(renderer.domElement);const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));const bloom=new UnrealBloomPass(new THREE.Vector2(900,600),.18,.42,.86);composer.addPass(bloom);composer.addPass(new OutputPass());
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.minDistance=28;controls.maxDistance=420;controls.target.set(0,0,0);
 scene.add(new THREE.HemisphereLight(0xc9e4f5,0x172231,1.6));
 const key=new THREE.DirectionalLight(0xffe5c9,3.1);key.position.set(65,90,70);key.castShadow=true;scene.add(key);
@@ -99,6 +103,7 @@ const mats={
 const modules={hull:new THREE.Group(),bridge:new THREE.Group(),egas:new THREE.Group(),propulsion:new THREE.Group(),radiators:new THREE.Group(),habitat:new THREE.Group(),field:new THREE.Group(),antenna:new THREE.Group(),landing:new THREE.Group()};
 Object.values(modules).forEach(g=>root.add(g));
 const pickables=[];const named={};
+const atomGroup=new THREE.Group();scene.add(atomGroup);atomGroup.visible=false;
 function mesh(id,label,group,geo,material,pos=[0,0,0],rot=[0,0,0],scale=[1,1,1]){
  const o=new THREE.Mesh(geo,material);o.name=id;o.userData={label,group:id.split('_')[0]};o.position.set(...pos);o.rotation.set(...rot);o.scale.set(...scale);o.castShadow=true;o.receiveShadow=true;modules[group].add(o);pickables.push(o);named[id]=o;return o;
 }
@@ -144,6 +149,19 @@ tor('antenna_dish','Antena parabólica esquemática','antenna',4,.28,mats.gold,[
 for(let s of [-1,1]){beam('sensor_boom_'+s,'Braço de sensor','antenna',[28,4,0],[28,13,s*10],.22,mats.trim);sphere('sensor_'+s,'Sensor externo','antenna',1,mats.cyan,[28,13,s*10])}
 // Landing/support struts: non-operational visual geometry.
 for(let s of [-1,1])for(let x of [-25,30]){beam('landing_leg_'+s+'_'+x,'Suporte inferior ilustrativo','landing',[x, -5,s*5],[x+ (x<0?-3:3),-24,s*10],.75,mats.trim);box('landing_foot_'+s+'_'+x,'Base de apoio ilustrativa','landing',8,1.2,5,mats.dark,[x+(x<0?-3:3),-24,s*10]);}
+
+const atomCloud=new THREE.Mesh(new THREE.SphereGeometry(1,48,32),new THREE.MeshBasicMaterial({color:0x4b9eaf,transparent:true,opacity:.10,wireframe:true}));atomGroup.add(atomCloud);
+const atomShell=new THREE.Mesh(new THREE.SphereGeometry(.985,48,32),new THREE.MeshBasicMaterial({color:0x70dce8,transparent:true,opacity:.07,side:THREE.BackSide}));atomGroup.add(atomShell);
+const nucleusGroup=new THREE.Group();atomGroup.add(nucleusGroup);
+const nucMat=new THREE.MeshStandardMaterial({color:0x9874d9,metalness:.28,roughness:.3,emissive:0x321c65,emissiveIntensity:.65});
+const protonMat=new THREE.MeshStandardMaterial({color:0xe4ad6c,metalness:.15,roughness:.38});
+const neutronMat=new THREE.MeshStandardMaterial({color:0x8299ad,metalness:.15,roughness:.4});
+nucleusGroup.add(new THREE.Mesh(new THREE.SphereGeometry(.012,24,16),nucMat));
+for(let i=0;i<12;i++){const a=i*2.399963,r=.016+(.012*(i%4)/4),p=new THREE.Mesh(new THREE.SphereGeometry(.006,12,8),i%2?protonMat:neutronMat);p.position.set(Math.cos(a)*r,Math.sin(a)*r,((i%3)-1)*.009);nucleusGroup.add(p)}
+for(let i=0;i<3;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.72+i*.12,.004,8,100),new THREE.MeshBasicMaterial({color:i===1?0xa38bff:0x78e7e5,transparent:true,opacity:.55}));ring.rotation.set(i*.75,i*.42,0);atomGroup.add(ring)}
+for(let i=0;i<16;i++){const a=i*2.399963,b=Math.acos(1-2*(i+.5)/16),dot=new THREE.Mesh(new THREE.SphereGeometry(.018,12,8),new THREE.MeshBasicMaterial({color:0x9af2ff}));dot.position.set(.91*Math.sin(b)*Math.cos(a),.91*Math.cos(b),.91*Math.sin(b)*Math.sin(a));atomGroup.add(dot)}
+const atomNote=document.createElement('div');atomNote.style.cssText='position:absolute;right:14px;bottom:14px;max-width:270px;padding:10px 12px;background:#07111be8;border:1px solid #705d98;border-radius:4px;color:#c6badf;font:8px/1.65 var(--mono);pointer-events:none;display:none';atomNote.innerHTML='<b style="color:#c3aaff">MODELO ATÔMICO HIPOTÉTICO · Z=192</b><br>Escala atômica de referência: ~10⁻¹⁰ m<br>Núcleo ampliado para inspeção (fora de escala nesta vista)<br>Nuvem eletrônica ilustrativa, não validada.';viewport.appendChild(atomNote);
+
 const original={};Object.entries(modules).forEach(([k,g])=>{original[k]=g.position.clone()});
 const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let selected=null,exploded=false,cut=false,wire=false,labels=false,auto=false;
 function log(msg){const el=$('sessionLog');el.innerHTML=msg+'<br>'+el.innerHTML;el.innerHTML=el.innerHTML.split('<br>').slice(0,5).join('<br>')}
@@ -152,7 +170,24 @@ const label=o.userData.label||o.name;$('selectionInfo').innerHTML='<strong>'+lab
 renderer.domElement.addEventListener('pointerdown',e=>{const r=renderer.domElement.getBoundingClientRect();pointer.x=((e.clientX-r.left)/r.width)*2-1;pointer.y=-((e.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(pickables.filter(o=>o.visible),false);choose(hits.length?hits[0].object:null)});
 function setCamera(v){const p={iso:[112,76,126],front:[0,22,175],side:[175,18,0],top:[0,185,5],rear:[-175,24,0]}[v];if(!p)return;camera.position.set(...p);controls.target.set(0,0,0);controls.update()}
 document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click',()=>setCamera(b.dataset.camera)));
-$('resetCamera').onclick=()=>setCamera('iso');$('fit').onclick=()=>setCamera('iso');
+
+let scaleMode='ship';
+function setAtomCamera(){camera.position.set(2.8,1.9,3.4);controls.target.set(0,0,0);controls.minDistance=1.25;controls.maxDistance=12;controls.update()}
+function setEngineCamera(){camera.position.set(32,22,34);controls.target.set(8,0,0);controls.minDistance=4;controls.maxDistance=110;controls.update()}
+function setScale(mode){
+ scaleMode=mode;root.visible=mode!=='atom';atomGroup.visible=mode==='atom';atomNote.style.display=mode==='atom'?'block':'none';
+ document.querySelectorAll('[data-scale]').forEach(b=>b.classList.toggle('active',b.dataset.scale===mode));
+ $('scaleTag').textContent=mode==='ship'?'ESCALA 10² m':mode==='engine'?'ESCALA 10¹ m':'ESCALA 10⁻¹⁰ m';
+ $('scaleHelp').textContent=mode==='atom'?'MODELO ATÔMICO ESQUEMÁTICO · NÚCLEO AMPLIADO E IDENTIFICADO':mode==='engine'?'SUBSISTEMA EGAS · DIMENSÕES VISUAIS EM METROS':'ESCALA DA NAVE · DIMENSÕES DE REFERÊNCIA EM METROS';
+ $('selectionLabel').textContent=mode==='atom'?'MODELO ATÔMICO HIPOTÉTICO':mode==='engine'?'SUBSISTEMA EGAS':'VISÃO GERAL';
+ if(mode==='atom'){setAtomCamera();$('selectionInfo').innerHTML='<strong>Modelo atômico hipotético — Z = 192</strong>Representação didática de escala atômica. A existência do elemento 192 não foi confirmada; a nuvem eletrônica não representa uma configuração validada. O núcleo está ampliado para inspeção.'}
+ else if(mode==='engine'){setEngineCamera();$('selectionInfo').innerHTML='<strong>EGAS — subsistema conceitual</strong>Conjunto visual associado ao núcleo hipotético E-192. Dimensões são referências do modelo, não especificações de engenharia.'}
+ else {setCamera('iso');$('selectionInfo').innerHTML='<strong>Nenhum componente selecionado</strong>Clique em uma parte da nave para consultar sua descrição e categoria.'}
+ log('Escala de visualização alterada: '+mode.toUpperCase());
+}
+document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',()=>setScale(b.dataset.scale)));
+$('resetCamera').onclick=()=>{if(scaleMode==='atom')setAtomCamera();else if(scaleMode==='engine')setEngineCamera();else setCamera('iso')};$('fit').onclick=()=>$('resetCamera').click();
+
 function setDim(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;const sx=L/120,sy=H/28,sz=W/36;root.scale.set(sx,sy,sz);$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
 ['len','wid','hei'].forEach(id=>$(id).addEventListener('input',setDim));$('resetDims').onclick=()=>{$('len').value=120;$('wid').value=36;$('hei').value=28;setDim()};
 function moduleCount(){const active=Object.entries(modules).filter(([k])=>document.querySelector('[data-module="'+k+'"]').checked).length;$('statMods').textContent=active+' / 9'}
@@ -168,9 +203,9 @@ $('wire').onclick=()=>{wire=!wire;Object.values(mats).forEach(m=>{if('wireframe'
 $('labels').onclick=()=>{labels=!labels;$('labels').classList.toggle('active',labels);$('renderStatus').textContent=labels?'MODO DE ETIQUETAS ATIVO':'RENDER 3D / PRONTO';log(labels?'Modo de identificação ativado.':'Modo de identificação desativado.')};
 $('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'01.3',classification:'Conceitual / não funcional',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(modules).filter(([k,g])=>g.visible).map(([k])=>k),view_state:$('statState').textContent,scientific_note:'Geometrias ilustrativas; não representam especificações ou desempenho.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
 $('resetCamera').click();
-function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(viewport);resize();setDim();moduleCount();
-function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}animate();
+function animate(){requestAnimationFrame(animate);controls.update();composer.render()}animate();
 window.addEventListener('error',e=>{$('renderStatus').textContent='ERRO DE RENDERIZAÇÃO';console.error(e)});
 </script>
 </body></html>
