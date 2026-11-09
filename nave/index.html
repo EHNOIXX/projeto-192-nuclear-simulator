@@ -146,7 +146,7 @@ for(let s of [-1,1]){rod('canopy_frame_'+s,'Arco de sustentação da cúpula','b
 for(let i=0;i<8;i++){const x=-50+i*3.1;box('canopy_louver_'+i,'Divisória externa do cockpit','bridge',.16,.3,8,M.cyan,[x,10.5,0])}
 // Central habitable spine and side crew modules.
 for(let s of [-1,1]){
- const pod=cyl('habitat_pod_'+s,'Módulo habitável lateral','habitat',4.3,4.3,31,M.hull,[0,0,s*12],[Math.PI/2,0,0]);pod.rotation.z=Math.PI/2;
+ const pod=cyl('habitat_pod_'+s,'Módulo habitável lateral','habitat',4.3,4.3,31,M.hull,[0,0,s*12],[0,0,Math.PI/2]);
  for(let x of [-13,-6,1,8,15]){box('hab_window_'+s+'_'+x,'Janela técnica do módulo habitável','habitat',2.1,1.4,.18,M.glass,[x,3.2,s*16],[0,0,0])}
  for(let x of [-15,15])tor('hab_collar_'+s+'_'+x,'Anel de acoplamento do módulo','habitat',4.4,.25,M.cyan,[x,0,s*12],[Math.PI/2,0,0]);
 }
@@ -156,7 +156,7 @@ for(let x of [0,20])tor('egas_flange_'+x,'Flange do módulo EGAS','egas',5.9,.38
 sphere('egas_core','Núcleo hipotético E-192','egas',2.15,M.violet,[10,0,0],40);
 sphere('egas_core_lumen','Centro luminoso esquemático','egas',.85,M.glow,[10,0,0],32);
 for(let i=0;i<5;i++)tor('egas_containment_'+i,'Anel ilustrativo do conjunto EGAS','egas',6.8+i*.75,.16,i%2?M.gold:M.cyan,[10,0,0]);
-for(let i=0;i<16;i++){const a=i*Math.PI/8;rod('egas_brace_'+i,'Suporte radial ilustrativo do EGAS',[10,4.8*Math.cos(a),4.8*Math.sin(a)],[10,7.2*Math.cos(a),7.2*Math.sin(a)],.18,M.edge)}
+for(let i=0;i<16;i++){const a=i*Math.PI/8;rod('egas_brace_'+i,'Suporte radial ilustrativo do EGAS','egas',[10,4.8*Math.cos(a),4.8*Math.sin(a)],[10,7.2*Math.cos(a),7.2*Math.sin(a)],.18,M.edge)}
 // Aft propulsion housings: four compact, nested units integrated into the tail.
 for(let y of [-3.8,3.8])for(let z of [-3.8,3.8]){
  cyl('aft_pod_'+y+'_'+z,'Carcaça externa do conjunto traseiro','propulsion',3.25,4.1,12,M.dark,[53,y,z],[0,0,Math.PI/2]);
@@ -224,7 +224,7 @@ document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click',()=>{if(scaleMode==='ship')cameraPreset(b.dataset.camera)}));
 $('resetCamera').onclick=()=>scaleMode==='atom'?atomCamera():scaleMode==='engine'?engineCamera():cameraPreset('iso');
 $('fit').onclick=()=>$('resetCamera').click();
-function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/120,W/68,H/28);$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
+function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/120,H/28,W/68);$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
 ['len','wid','hei'].forEach(id=>$(id).addEventListener('input',setDims));
 $('resetDims').onclick=()=>{$('len').value=120;$('wid').value=36;$('hei').value=28;setDims()};
 function updateCount(){const n=Object.keys(groups).filter(k=>document.querySelector('[data-module="'+k+'"]').checked).length;$('statMods').textContent=n+' / 9'}
