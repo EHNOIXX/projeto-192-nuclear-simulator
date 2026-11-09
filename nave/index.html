@@ -22,7 +22,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <body>
 <header><a class="brand" href="../index.html"><b>S.</b><span>S.P.E.C.T.R.A.<small>FLIGHT SYSTEMS / CONCEPT LAB</small></span></a><nav class="headlinks"><a href="../index.html">E-192 ↗</a><a href="../egas/">EGAS ↗</a><a href="../">CENTRAL</a></nav><span class="live">● SIMULAÇÃO LOCAL ATIVA</span></header>
 <main>
-<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 06.0 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 06.0 · Modelo dimensional conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
+<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 07.0 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 06.0 · Modelo dimensional conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
 <section class="workspace">
 <aside class="stack leftstack">
 <div class="panel"><div class="paneltitle">01 / GEOMETRIA GLOBAL</div><div class="panelbody">
@@ -83,14 +83,14 @@ const $=id=>document.getElementById(id), viewport=$('viewport');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x050a12);scene.fog=new THREE.Fog(0x050a12,190,390);
 const camera=new THREE.PerspectiveCamera(34,1,.01,1000);camera.position.set(-132,92,154);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;viewport.appendChild(renderer.domElement);
-const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(900,600),.2,.42,.86));composer.addPass(new OutputPass());
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;viewport.appendChild(renderer.domElement);
+const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(900,600),.08,.28,.92));composer.addPass(new OutputPass());
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.target.set(0,0,0);controls.minDistance=25;controls.maxDistance=520;controls.autoRotateSpeed=.35;
-scene.add(new THREE.HemisphereLight(0xcce7fa,0x172333,1.65));
-const key=new THREE.DirectionalLight(0xffe8ce,3.8);key.position.set(-65,100,75);key.castShadow=true;key.shadow.mapSize.set(2048,2048);scene.add(key);
-const fill=new THREE.DirectionalLight(0x62c9df,2.8);fill.position.set(75,28,-85);scene.add(fill);
-const rim=new THREE.PointLight(0x55dce8,220,300);rim.position.set(-5,30,-100);scene.add(rim);
-const warm=new THREE.PointLight(0xb18cff,115,190);warm.position.set(45,-8,25);scene.add(warm);
+scene.add(new THREE.HemisphereLight(0xdce8ef,0x26303a,2.1));
+const key=new THREE.DirectionalLight(0xfff1dc,4.4);key.position.set(-65,100,75);key.castShadow=true;key.shadow.mapSize.set(2048,2048);scene.add(key);
+const fill=new THREE.DirectionalLight(0x9abac8,3.2);fill.position.set(75,28,-85);scene.add(fill);
+const rim=new THREE.PointLight(0x8ab9c7,90,300);rim.position.set(-5,30,-100);scene.add(rim);
+const warm=new THREE.PointLight(0x9b8aab,35,190);warm.position.set(45,-8,25);scene.add(warm);
 const grid=new THREE.GridHelper(300,60,0x24445a,0x102438);grid.position.y=-34;grid.material.transparent=true;grid.material.opacity=.42;scene.add(grid);
 // Campo estelar discreto para dar profundidade sem competir com a silhueta.
 const starGeo=new THREE.BufferGeometry(),starPos=[];for(let i=0;i<520;i++){const u=Math.random()*Math.PI*2,v=Math.acos(2*Math.random()-1),r=260+Math.random()*100;starPos.push(r*Math.sin(v)*Math.cos(u),r*Math.cos(v),r*Math.sin(v)*Math.sin(u))}starGeo.setAttribute('position',new THREE.Float32BufferAttribute(starPos,3));const stars=new THREE.Points(starGeo,new THREE.PointsMaterial({color:0x91c8dc,size:.65,transparent:true,opacity:.65,sizeAttenuation:true}));scene.add(stars);
@@ -98,16 +98,16 @@ const root=new THREE.Group();scene.add(root);
 const groups={hull:new THREE.Group(),bridge:new THREE.Group(),egas:new THREE.Group(),propulsion:new THREE.Group(),radiators:new THREE.Group(),habitat:new THREE.Group(),field:new THREE.Group(),antenna:new THREE.Group(),landing:new THREE.Group(),interior:new THREE.Group()};
 Object.values(groups).forEach(g=>root.add(g));
 const M={
- hull:new THREE.MeshStandardMaterial({color:0x8296a9,metalness:.82,roughness:.27}),
- armor:new THREE.MeshStandardMaterial({color:0x34495b,metalness:.82,roughness:.31}),
- edge:new THREE.MeshStandardMaterial({color:0xc1cbd2,metalness:.91,roughness:.2}),
- dark:new THREE.MeshStandardMaterial({color:0x172635,metalness:.8,roughness:.34}),
- cyan:new THREE.MeshStandardMaterial({color:0x58c4ce,metalness:.62,roughness:.24,emissive:0x124b54,emissiveIntensity:.7}),
+ hull:new THREE.MeshStandardMaterial({color:0x9ba9b5,metalness:.48,roughness:.42}),
+ armor:new THREE.MeshStandardMaterial({color:0x526474,metalness:.58,roughness:.4}),
+ edge:new THREE.MeshStandardMaterial({color:0x9eabb5,metalness:.72,roughness:.32}),
+ dark:new THREE.MeshStandardMaterial({color:0x263441,metalness:.58,roughness:.48}),
+ cyan:new THREE.MeshStandardMaterial({color:0x78bfc4,metalness:.38,roughness:.38,emissive:0x0a2428,emissiveIntensity:.28}),
  glass:new THREE.MeshPhysicalMaterial({color:0x56b6d2,metalness:.08,roughness:.08,transparent:true,opacity:.46,transmission:.35,thickness:.5,side:THREE.DoubleSide,depthWrite:false}),
- violet:new THREE.MeshStandardMaterial({color:0x9270db,metalness:.48,roughness:.22,emissive:0x3a216b,emissiveIntensity:1}),
+ violet:new THREE.MeshStandardMaterial({color:0x756d9b,metalness:.35,roughness:.38,emissive:0x171324,emissiveIntensity:.3}),
  glow:new THREE.MeshBasicMaterial({color:0xa88aff}),
  gold:new THREE.MeshStandardMaterial({color:0xc58c50,metalness:.84,roughness:.24}),
- panel:new THREE.MeshStandardMaterial({color:0x183d5a,metalness:.5,roughness:.28,emissive:0x102c48,emissiveIntensity:.65}),
+ panel:new THREE.MeshStandardMaterial({color:0x23485e,metalness:.42,roughness:.46,emissive:0x081b29,emissiveIntensity:.3}),
  white:new THREE.MeshStandardMaterial({color:0xd2dbe0,metalness:.7,roughness:.27})
 };
 const pickables=[],named={};
@@ -120,7 +120,7 @@ function tor(id,label,g,r,t,mat,p,rot=[0,Math.PI/2,0]){return add(id,label,g,new
 function rod(id,label,g,a,b,r,mat){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A);const o=add(id,label,g,new THREE.CylinderGeometry(r,r,d.length(),12),mat,A.clone().add(B).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());return o}
 function sphere(id,label,g,r,mat,p,seg=24){return add(id,label,g,new THREE.SphereGeometry(r,seg,Math.max(12,Math.floor(seg*.65))),mat,p)}
 
-// REV 05.0 — arquitetura modular dimensionada para missão de 50 tripulantes.
+// REV 07.0 — arquitetura modular dimensionada para missão de 50 tripulantes.
 // Coordenadas do modelo em metros: X longitudinal, Y vertical, Z transversal.
 const labelsGroup=new THREE.Group();root.add(labelsGroup);labelsGroup.visible=false;
 function label3D(text,pos,size=3){
@@ -133,53 +133,69 @@ function label3D(text,pos,size=3){
  sp.position.set(...pos);sp.scale.set(size*3.8,size,1);labelsGroup.add(sp);return sp;
 }
 function modulePod(id,label,center,dims,material=M.hull){
- const [x,y,z]=center,[w,h,d]=dims;
- // Casco pressurizado com volumes arredondados e uma segunda camada de proteção.
- box(id,label,'habitat',w,h,d,material,[x,y,z]);
- box(id+'_keel',label+' — blindagem inferior','hull',w*.82,.8,d*.82,M.dark,[x,y-h*.48,z]);
- box(id+'_roof',label+' — cobertura técnica','hull',w*.88,.9,d*.88,M.armor,[x,y+h/2+.25,z]);
- box(id+'_roofline',label+' — faixa superior de serviço','hull',w*.72,.22,d*.7,M.edge,[x,y+h/2+.78,z]);
- for(const side of [-1,1]){rod(id+'_spine_'+side,label+' — longarina lateral','hull',[x-w*.42,y,z+side*d*.43],[x+w*.42,y,z+side*d*.43],.22,M.edge)}
- // Faixa de janelas voltada para as laterais externas.
+ const [x,y,z]=center,[w,h,d]=dims,r=Math.min(h,d)*.48,len=Math.max(1,w-2*r);
+ // Cápsula pressurizada: elimina o aspecto de contêiner retangular.
+ const pod=add(id,label,'habitat',new THREE.CapsuleGeometry(r,len,8,32),material,[x,y,z]);
+ pod.rotation.z=Math.PI/2;pod.scale.z=d/(r*2);
+ const bandMat=M.edge;
+ for(const xx of [-w*.34,w*.34]){
+  const band=tor(id+'_pressure_band_'+xx,label+' — cinta estrutural','habitat',r*.98,.16,bandMat,[x+xx,y,z],[0,0,Math.PI/2]);
+  band.scale.set(1,d/(r*2),1);
+ }
+ // Janelas laterais embutidas na superfície externa do módulo.
  for(let i=0;i<6;i++){
-  const xx=x-w*.38+i*w*.152;
-  box(id+'_window_'+i,'Janela pressurizada do módulo','habitat',2.0,1.05,.18,M.glass,[xx,y,z+Math.sign(z)*d/2]);
-  box(id+'_windowframe_'+i,'Aro de proteção da janela','habitat',2.25,1.28,.22,M.edge,[xx,y,z+Math.sign(z)*(d/2+.08)]);
+  const xx=x-w*.34+i*w*.136;
+  const win=add(id+'_window_'+i,'Janela pressurizada do módulo','habitat',new THREE.SphereGeometry(1,20,12),M.glass,[xx,y,z+Math.sign(z)*(d*.49)]);
+  win.scale.set(1.05,.72,.16);
+  const frame=add(id+'_window_frame_'+i,'Aro de proteção da janela','habitat',new THREE.TorusGeometry(.82,.09,8,32),M.edge,[xx,y,z+Math.sign(z)*(d*.5)]);
+  frame.scale.set(1.3,.9,1);
  }
  for(const xx of [x-w*.36,x+w*.36]){
-  rod(id+'_mount_'+xx,'Suporte de acoplamento do módulo','hull',[xx,-3,z*.55],[xx,-3,z],.38,M.edge);
+  rod(id+'_mount_'+xx,label+' — acoplamento estrutural','hull',[xx,-3,z*.48],[xx,-3,z*.88],.32,M.edge);
  }
- label3D(label,[x,y+h/2+5,z],2.4);
+ // Escotilha de serviço na face interna voltada ao corredor.
+ const hatch=add(id+'_hatch',label+' — escotilha de acesso','habitat',new THREE.CylinderGeometry(1.25,1.25,.22,32),M.dark,[x,y,z-Math.sign(z)*(d*.48)],[Math.PI/2,0,0]);
+ tor(id+'_hatch_rim',label+' — aro da escotilha','habitat',1.3,.12,M.edge,[x,y,z-Math.sign(z)*(d*.5)],[Math.PI/2,0,0]);
+ label3D(label,[x,y+h/2+3,z],2.1);
 }
 function hullSurface(){
- // Treliça central aberta em forma de espinha, sem casco contínuo.
- for(const y of [-4.5,4.5])for(const z of [-6,6]){
-  rod('spine_rail_'+y+'_'+z,'Longarina principal da treliça','hull',[-62,y,z],[57,y,z],.48,M.edge);
+ // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
+ const primary=add('primary_pressure_hull','Casco pressurizado principal de arquitetura integrada','hull',new THREE.CapsuleGeometry(10,102,10,48),M.hull,[-2,0,0]);
+ primary.rotation.z=Math.PI/2;primary.scale.z=1.08;
+ const dorsal=add('dorsal_service_spine','Carenagem dorsal de serviços e distribuição','hull',new THREE.CapsuleGeometry(4.2,78,8,32),M.armor,[-3,8.2,0]);
+ dorsal.rotation.z=Math.PI/2;dorsal.scale.z=1.12;
+ const ventral=add('ventral_keel','Quilha inferior de proteção e manutenção','hull',new THREE.CapsuleGeometry(3.1,72,8,32),M.dark,[5,-8.2,0]);
+ ventral.rotation.z=Math.PI/2;ventral.scale.z=1.2;
+ // Anéis de união do casco e painéis de acesso.
+ for(const x of [-48,-32,-16,0,16,32,48]){
+  tor('hull_frame_'+x,'Anel estrutural de reforço do casco','hull',9.9,.22,M.edge,[x,0,0],[0,0,Math.PI/2]);
+  box('service_panel_'+x,'Painel de inspeção do casco','hull',5,.16,3.2,M.dark,[x,9.1,0]);
  }
- for(let x=-58;x<=54;x+=8){
-  for(const z of [-6,6])rod('truss_cross_'+x+'_'+z,'Travessa da treliça central','hull',[x,-4.5,z],[x,4.5,z],.32,M.cyan);
-  for(const y of [-4.5,4.5])rod('truss_diag_'+x+'_'+y,'Diagonal estrutural','hull',[x,y,-6],[x+8,-y,6],.22,M.edge);
+ // Janelas de observação e iluminação de serviço em faixas laterais.
+ for(const side of [-1,1])for(let i=0;i<9;i++){
+  const x=-42+i*10.5;
+  const w=add('hull_viewport_'+side+'_'+i,'Janela de observação blindada','bridge',new THREE.SphereGeometry(1,20,12),M.glass,[x,1.6,side*9.8]);
+  w.scale.set(1.5,.72,.18);
+  tor('hull_viewport_rim_'+side+'_'+i,'Aro de janela blindada','hull',.9,.09,M.edge,[x,1.6,side*9.92],[Math.PI/2,0,0]);
  }
- box('central_keel','Quilha central de integração','hull',116,3.2,5.2,M.dark,[-2,0,0]);
- // Carenagem dorsal contínua: dá unidade visual aos módulos e à espinha estrutural.
- box('spinal_fairing','Carenagem dorsal longitudinal de serviços','hull',94,4.8,10,M.armor,[-3,5.2,0]);
- box('spinal_glass','Faixa de inspeção e iluminação do eixo central','bridge',72,.28,6.8,M.cyan,[-3,7.72,0]);
- for(const x of [-42,-24,-6,12,30,48]){box('spine_access_'+x,'Painel de acesso técnico da espinha','hull',5,.35,7,M.dark,[x,7.8,0]);}
- // Hub central de operações: volume compacto e identificável.
- box('central_hub','Núcleo central pressurizado de operações','hull',32,12,25,M.hull,[-1,0,0]);
- box('hub_lower','Blindagem inferior do núcleo central','hull',27,1.4,21,M.dark,[-1,-6.1,0]);
- box('hub_roof','Cobertura técnica do núcleo central','hull',29,1.1,22,M.armor,[-1,6.2,0]);
- for(const z of [-12.8,12.8])box('hub_sideband_'+z,'Faixa lateral de serviço do núcleo','hull',25,1.1,.45,M.edge,[-1,0,z]);
- for(let s of [-1,1])for(let x of [-10,8]){
-  box('hub_window_'+s+'_'+x,'Janela do centro de operações','bridge',3,2,.16,M.glass,[x,1,s*12.12]);
+ // Núcleo operacional integrado ao casco.
+ const hub=add('central_hub','Núcleo central pressurizado de operações','hull',new THREE.CapsuleGeometry(6.3,20,8,32),M.armor,[-1,0,0]);
+ hub.rotation.z=Math.PI/2;hub.scale.z=1.72;
+ for(const side of [-1,1])for(let i=0;i<4;i++){
+  const x=-10+i*6.5;
+  box('hub_window_'+side+'_'+x,'Janela do centro de operações','bridge',2.6,1.5,.22,M.glass,[x,1.5,side*10.8]);
  }
- label3D('NÚCLEO CENTRAL',[0,10,0],3.1);
- // Ponte de comando destacada na extremidade frontal.
- box('bridge_base','Base pressurizada da ponte de comando','bridge',18,8,16,M.hull,[-67,1,0]);
- const canopy=sphere('command_canopy','Cúpula panorâmica da ponte de comando','bridge',1,M.glass,[-67,6,0],40);canopy.scale.set(9,3.2,7.5);
- box('bridge_dock','Acesso estrutural da ponte ao eixo central','hull',10,3,5,M.dark,[-56,-1,0]);
- label3D('PONTE DE COMANDO',[-67,12,0],2.8);
- // Quatro módulos habitacionais independentes — capacidade conceitual para 48 leitos.
+ label3D('NÚCLEO DE OPERAÇÕES',[0,13,0],2.6);
+ // Ponte de comando com cápsula frontal e canopy panorâmico.
+ const bridge=add('bridge_base','Módulo pressurizado da ponte de comando','bridge',new THREE.CapsuleGeometry(5.2,11,8,32),M.armor,[-66,1,0]);
+ bridge.rotation.z=Math.PI/2;bridge.scale.z=1.28;
+ const canopy=sphere('command_canopy','Cúpula panorâmica da ponte de comando','bridge',1,M.glass,[-66,5.3,0],48);canopy.scale.set(7.8,2.8,6.2);
+ for(const side of [-1,1])for(let i=0;i<3;i++){
+  const x=-70+i*3.5;
+  box('bridge_glazing_'+side+'_'+i,'Painel de observação da ponte','bridge',2.6,1.6,.18,M.glass,[x,2.4,side*5.9]);
+ }
+ label3D('PONTE DE COMANDO',[-66,10,0],2.6);
+ // Módulos habitacionais e laboratórios: cápsulas conectadas por túneis curtos.
  const habs=[
   {id:'hab_nw',name:'HABITAÇÃO A',p:[-27,0,-25]},
   {id:'hab_sw',name:'HABITAÇÃO B',p:[-27,0,25]},
@@ -187,52 +203,53 @@ function hullSurface(){
   {id:'hab_se',name:'HABITAÇÃO D',p:[5,0,25]}
  ];
  habs.forEach(h=>modulePod(h.id,h.name,h.p,[21,8,14]));
- // Laboratórios externos pressurizados, conectados ao núcleo por braços.
  modulePod('lab_e192','LABORATÓRIO E-192',[37,0,-25],[20,8,14],M.armor);
  modulePod('lab_egas','LABORATÓRIO EGAS',[37,0,25],[20,8,14],M.armor);
- for(const x of [-27,5,37])for(const s of [-1,1]){
-  rod('radial_connector_'+x+'_'+s,'Braço estrutural de conexão modular','hull',[x,-2,s*6],[x,-2,s*17],.62,M.edge);
-  tor('dock_ring_'+x+'_'+s,'Anel de acoplamento pressurizado','hull',2.4,.22,M.cyan,[x,-2,s*17],[Math.PI/2,0,0]);
-  box('access_tunnel_'+x+'_'+s,'Túnel pressurizado de acesso','hull',5,4,10,M.dark,[x,-1,s*12]);
+ for(const x of [-27,5,37])for(const side of [-1,1]){
+  const z=side*17;
+  cyl('access_tunnel_'+x+'_'+side,'Túnel pressurizado de acesso','hull',2.1,2.1,10,M.armor,[x,-1,z],[Math.PI/2,0,0],32);
+  tor('dock_ring_'+x+'_'+side,'Anel de acoplamento pressurizado','hull',2.15,.16,M.edge,[x,-1,side*21.8],[Math.PI/2,0,0]);
  }
- // Laboratório científico geral e módulo médico/logístico no núcleo traseiro.
- box('science_platform','Plataforma de instrumentação científica','hull',20,1,18,M.dark,[25,-7,0]);
- for(let i=0;i<4;i++)box('science_instrument_'+i,'Instrumento científico externo','antenna',3,4,3,M.gold,[19+i*4,-4,0]);
- label3D('INSTRUMENTAÇÃO',[25,-1,0],2.3);
- // Radiadores em painéis longitudinais independentes, fora dos módulos habitáveis.
- for(const s of [-1,1]){
-  box('radiator_boom_'+s,'Longarina do radiador térmico','radiators',46,.7,2,M.dark,[10,8,s*43]);
+ // Plataforma científica compacta sob o eixo central.
+ box('science_platform','Plataforma de instrumentação científica','hull',18,1,16,M.dark,[25,-8,0]);
+ for(let i=0;i<4;i++)box('science_instrument_'+i,'Instrumento científico externo','antenna',3,3,3,M.gold,[19+i*4,-6,0]);
+ label3D('INSTRUMENTAÇÃO',[25,-1,0],2.2);
+ // Radiadores segmentados com estrutura de suporte mais discreta.
+ for(const side of [-1,1]){
+  rod('radiator_boom_'+side,'Longarina do radiador térmico','radiators',[10,8,side*12],[10,8,side*43],.42,M.edge);
   for(let j=0;j<4;j++){
    const x=-10+j*13;
-   box('radiator_panel_'+s+'_'+j,'Painel radiador segmentado','radiators',11,.22,14,M.panel,[x,8.6,s*43]);
-   for(let k=0;k<5;k++)box('radiator_channel_'+s+'_'+j+'_'+k,'Canal térmico superficial','radiators',10,.06,.12,M.cyan,[x,8.78,s*(37.8+k*2.6)]);
+   box('radiator_panel_'+side+'_'+j,'Painel radiador segmentado','radiators',11,.22,14,M.panel,[x,8.6,side*43]);
+   for(let k=0;k<5;k++)box('radiator_channel_'+side+'_'+j+'_'+k,'Canal térmico superficial','radiators',10,.06,.12,M.cyan,[x,8.78,side*(37.8+k*2.6)]);
   }
-  for(const x of [-10,10,30])rod('radiator_support_'+s+'_'+x,'Suporte estrutural do radiador','radiators',[x,4,s*10],[x,8,s*43],.28,M.edge);
+  for(const x of [-10,10,30])rod('radiator_support_'+side+'_'+x,'Suporte estrutural do radiador','radiators',[x,4,side*10],[x,8,side*43],.22,M.edge);
  }
- label3D('RADIADORES TÉRMICOS',[10,12,43],2.5);
- // EGAS no compartimento central, com volume marcado como hipótese.
+ label3D('RADIADORES TÉRMICOS',[10,12,43],2.3);
+ // Compartimento EGAS é mostrado como equipamento científico hipotético, não como motor validado.
  cyl('egas_housing','Compartimento conceitual EGAS','egas',4.5,4.5,18,M.dark,[18,0,0],[0,0,Math.PI/2]);
- for(const x of [9,27])tor('egas_flange_'+x,'Flange estrutural do compartimento EGAS','egas',4.6,.32,M.edge,[x,0,0]);
+ for(const x of [9,27])tor('egas_flange_'+x,'Flange estrutural do compartimento EGAS','egas',4.6,.28,M.edge,[x,0,0]);
  sphere('egas_core','Representação hipotética do núcleo E-192','egas',1.7,M.violet,[18,0,0],40);
- for(let i=0;i<4;i++)tor('egas_ring_'+i,'Anel esquemático do EGAS','egas',5.3+i*.55,.14,i%2?M.gold:M.cyan,[18,0,0]);
- label3D('EGAS · CONCEITUAL',[18,8,0],2.6);
- // Propulsão visual distribuída na extremidade de serviço, sem alegação de funcionamento.
+ for(let i=0;i<4;i++)tor('egas_ring_'+i,'Anel esquemático do EGAS','egas',5.3+i*.55,.12,i%2?M.gold:M.cyan,[18,0,0]);
+ label3D('EGAS · CONCEITUAL',[18,8,0],2.4);
+ // Quatro unidades propulsivas com bocais em sino e anéis concêntricos, sem brilho excessivo.
  for(const y of [-5,5])for(const z of [-8,8]){
   cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',3.1,3.5,13,M.dark,[68,y,z],[0,0,Math.PI/2]);
-  tor('aft_engine_ring_'+y+'_'+z,'Aro externo da unidade propulsiva','propulsion',3,.2,M.cyan,[74.7,y,z]);
-  sphere('aft_engine_core_'+y+'_'+z,'Elemento visual da unidade propulsiva','propulsion',1.5,M.violet,[75,y,z],28);
-  rod('engine_mount_'+y+'_'+z,'Suporte estrutural da unidade propulsiva','propulsion',[68,y,z],[56,y,z],.5,M.edge);
+  const nozzle=add('engine_nozzle_'+y+'_'+z,'Bocal externo ilustrativo','propulsion',new THREE.CylinderGeometry(2.1,3.5,5,48,1,true),M.armor,[76,y,z],[0,0,Math.PI/2]);
+  tor('aft_engine_ring_'+y+'_'+z,'Aro externo da unidade propulsiva','propulsion',3.05,.18,M.edge,[74.7,y,z]);
+  tor('engine_inner_ring_'+y+'_'+z,'Aro interno do bocal','propulsion',2.1,.12,M.cyan,[78.6,y,z]);
+  sphere('aft_engine_core_'+y+'_'+z,'Elemento visual da unidade propulsiva','propulsion',.85,M.violet,[79,y,z],32);
+  rod('engine_mount_'+y+'_'+z,'Suporte estrutural da unidade propulsiva','propulsion',[68,y,z],[56,y,z],.38,M.edge);
  }
- box('aft_service_deck','Convés de manutenção dos sistemas propulsivos','hull',18,1.2,25,M.armor,[54,-7,0]);
- label3D('CONJUNTOS PROPULSIVOS',[70,7,0],2.6);
- // Sensores e comunicação na região frontal.
- rod('sensor_mast','Mastro de instrumentação','antenna',[-45,7,0],[-45,20,0],.25,M.edge);
- tor('sensor_dish','Antena de comunicação','antenna',3,.2,M.gold,[-45,20,0],[Math.PI/2,0,0]);
- for(const s of [-1,1])sphere('nav_sensor_'+s,'Sensor de navegação externo','antenna',.8,M.cyan,[-76,0,s*10]);
- // Estrutura de proteção e suportes de serviço inferiores.
- for(const x of [-40,0,40])for(const s of [-1,1]){
-  rod('service_strut_'+x+'_'+s,'Suporte de serviço inferior','landing',[x,-5,s*5],[x,-14,s*9],.35,M.edge);
-  box('service_pad_'+x+'_'+s,'Plataforma de manutenção','landing',6,.6,5,M.dark,[x,-14,s*9]);
+ box('aft_service_deck','Convés de manutenção dos sistemas propulsivos','hull',16,1,22,M.armor,[54,-8,0]);
+ label3D('CONJUNTOS PROPULSIVOS',[73,9,0],2.4);
+ // Antena de comunicação e sensores externos.
+ rod('sensor_mast','Mastro de instrumentação','antenna',[-45,7,0],[-45,20,0],.2,M.edge);
+ tor('sensor_dish','Antena de comunicação','antenna',3,.16,M.gold,[-45,20,0],[Math.PI/2,0,0]);
+ for(const side of [-1,1])sphere('nav_sensor_'+side,'Sensor de navegação externo','antenna',.65,M.cyan,[-76,0,side*10]);
+ // Apoios retráteis de manutenção, sem pernas expostas dominando a silhueta.
+ for(const x of [-40,0,40])for(const side of [-1,1]){
+  rod('service_strut_'+x+'_'+side,'Suporte de serviço inferior','landing',[x,-7,side*5],[x,-13,side*8],.26,M.edge);
+  box('service_pad_'+x+'_'+side,'Plataforma de manutenção','landing',4,.5,4,M.dark,[x,-13,side*8]);
  }
 }
 hullSurface();
@@ -379,7 +396,7 @@ $('opacity').addEventListener('input',e=>{const v=+e.target.value/100;$('opacity
 $('autoRotate').onclick=()=>{auto=!auto;controls.autoRotate=auto;controls.autoRotateSpeed=.38;$('autoRotate').classList.toggle('active',auto)};
 $('wire').onclick=()=>{wire=!wire;Object.values(M).forEach(m=>{if('wireframe'in m)m.wireframe=wire});$('wire').classList.toggle('active',wire)};
 $('labels').onclick=()=>{$('labels').classList.toggle('active');labelsGroup.visible=$('labels').classList.contains('active')||interiorMode;$('renderStatus').textContent=$('labels').classList.contains('active')?'MODO DE IDENTIFICAÇÃO ATIVO':'RENDER 3D / PRONTO';log('Identificação visual '+($('labels').classList.contains('active')?'ativada':'desativada'))};
-$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'06.0',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
+$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'07.0',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
 $('resetCamera').click();
 function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(viewport);resize();setDims();updateCount();
