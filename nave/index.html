@@ -397,8 +397,8 @@ function updateCount(){const n=Object.keys(groups).filter(k=>document.querySelec
 document.querySelectorAll('[data-module]').forEach(ch=>ch.addEventListener('change',()=>{groups[ch.dataset.module].visible=ch.checked;updateCount();log('Visibilidade atualizada: '+ch.parentElement.textContent.trim())}));
 function explode(v){const t=v/100;const dirs={hull:[0,0,0],bridge:[-1,1,0],egas:[0,0,0],propulsion:[1,0,0],radiators:[0,1,1],habitat:[0,-1,1],field:[0,0,-1],antenna:[-1,1,0],landing:[0,-1,0],interior:[0,0,0]};Object.entries(groups).forEach(([k,g])=>g.position.set(dirs[k][0]*t*19,dirs[k][1]*t*15,dirs[k][2]*t*20));$('explodeOut').textContent=Math.round(v)+'%';$('statState').textContent=t?'EXPLODIDA':'MONTADA';exploded=t>0}
 $('explode').addEventListener('input',e=>{explode(+e.target.value);$('modeExploded').classList.toggle('active',+e.target.value>0);$('modeAssembled').classList.toggle('active',+e.target.value===0)});
-$('modeAssembled').onclick=()=>{$('explode').value=0;explode(0);$('modeAssembled').classList.add('active');$('modeExploded').classList.remove('active');$('modeCut').classList.remove('active');cut=false;groups.hull.visible=document.querySelector('[data-module="hull"]').checked};
-$('modeExploded').onclick=()=>{$('explode').value=68;explode(68);$('modeExploded').classList.add('active');$('modeAssembled').classList.remove('active');$('modeCut').classList.remove('active')};
+$('modeAssembled').onclick=()=>{$('explode').value=0;explode(0);$('modeAssembled').classList.add('active');$('modeExploded').classList.remove('active');$('modeCut').classList.remove('active');cut=false;Object.values(M).forEach(mat=>{mat.clippingPlanes=[]});groups.hull.visible=document.querySelector('[data-module="hull"]').checked};
+$('modeExploded').onclick=()=>{$('explode').value=68;explode(68);$('modeExploded').classList.add('active');$('modeAssembled').classList.remove('active');$('modeCut').classList.remove('active');cut=false;Object.values(M).forEach(mat=>{mat.clippingPlanes=[]})};
 function applySection(){
  const axis=$('sectionAxis').value,offset=+$('sectionRange').value;
  sectionPlane.normal.set(axis==='x'?1:0,axis==='y'?1:0,axis==='z'?1:0);
