@@ -284,7 +284,9 @@ function hullSurface(){
   const nozzle=add('engine_nozzle_'+y+'_'+z,'Bocal externo ilustrativo','propulsion',new THREE.CylinderGeometry(2.1,3.5,5,48,1,true),M.armor,[76,y,z],[0,0,Math.PI/2]);
   tor('aft_engine_ring_'+y+'_'+z,'Aro externo da unidade propulsiva','propulsion',3.05,.18,M.edge,[74.7,y,z]);
   tor('engine_inner_ring_'+y+'_'+z,'Aro interno do bocal','propulsion',2.1,.12,M.cyan,[78.6,y,z]);
-  sphere('aft_engine_core_'+y+'_'+z,'Elemento visual da unidade propulsiva','propulsion',.85,M.violet,[79,y,z],32);
+  sphere('aft_engine_core_'+y+'_'+z,'Núcleo visível do conjunto termoelétrico-propulsivo','propulsion',1.12,M.gold,[79,y,z],40);
+  tor('integrated_energy_aperture_'+y+'_'+z,'Aro emissivo de inspeção do núcleo integrado','propulsion',1.52,.16,M.cyan,[78.85,y,z],[0,Math.PI/2,0]);
+  tor('integrated_energy_inner_'+y+'_'+z,'Anel interno do conversor termoelétrico','propulsion',.92,.10,M.gold,[79.05,y,z],[0,Math.PI/2,0]);
   rod('engine_mount_'+y+'_'+z,'Suporte estrutural da unidade propulsiva','propulsion',[68,y,z],[56,y,z],.38,M.edge);
  }
  box('aft_service_deck','Convés de manutenção dos sistemas propulsivos','hull',16,1,22,M.armor,[54,-8,0]);
