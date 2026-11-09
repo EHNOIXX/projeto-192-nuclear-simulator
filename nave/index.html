@@ -355,7 +355,9 @@ function hullSurface(){
   for(let j=0;j<sideCount;j++){
    const a=2*Math.PI*j/sideCount;
    const fullness=1-.075*Math.cos(2*a);
-   const yShape=Math.sin(a),zShape=Math.cos(a);\n   // Seção oval levemente achatada no dorso/ventre, com ombros largos para abrigar os módulos.\n   verts.push(x,.15+yShape*ry*fullness,zShape*rz*fullness);
+   const yShape=Math.sin(a),zShape=Math.cos(a);
+   // Seção oval levemente achatada no dorso/ventre, com ombros largos para abrigar os módulos.
+   verts.push(x,.15+yShape*ry*fullness,zShape*rz*fullness);
   }
  }
  for(let i=0;i<ringCount-1;i++)for(let j=0;j<sideCount;j++){
