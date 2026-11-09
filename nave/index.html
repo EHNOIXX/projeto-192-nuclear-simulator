@@ -22,7 +22,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <body>
 <header><a class="brand" href="../index.html"><b>S.</b><span>S.P.E.C.T.R.A.<small>FLIGHT SYSTEMS / CONCEPT LAB</small></span></a><nav class="headlinks"><a href="../index.html">E-192 ↗</a><a href="../egas/">EGAS ↗</a><a href="../">CENTRAL</a></nav><span class="live">● SIMULAÇÃO LOCAL ATIVA</span></header>
 <main>
-<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 12.2 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 09.0 · Modelo dimensional conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
+<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 13.0 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 09.0 · Modelo dimensional conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
 <section class="workspace">
 <aside class="stack leftstack">
 <div class="panel"><div class="paneltitle">01 / GEOMETRIA GLOBAL</div><div class="panelbody">
@@ -75,7 +75,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 </aside>
 </section>
 <div class="bottomgrid"><article class="panel infoPanel"><h3>ARQUITETURA INTEGRADA</h3><p>O módulo EGAS aparece como subsistema conceitual integrado ao núcleo estrutural central da nave. A representação não presume que seus princípios de operação sejam fisicamente realizáveis.</p></article><article class="panel infoPanel"><h3>CONTROLES DE NAVEGAÇÃO</h3><p>Arraste para orbitar, use a roda para aproximar ou afastar e selecione componentes diretamente no viewport. Em telas sensíveis ao toque, os gestos padrão do navegador são utilizados pelo controle de órbita.</p></article></div>
-<footer class="footer"><span>S.P.E.C.T.R.A. / FLIGHT SYSTEMS LAB</span><span>SIMULADOR CONCEITUAL · REV 06.0 · 2026</span></footer>
+<footer class="footer"><span>S.P.E.C.T.R.A. / FLIGHT SYSTEMS LAB</span><span>SIMULADOR CONCEITUAL · REV 13.0 · 2026</span></footer>
 </main>
 <script type="module">
 import * as THREE from 'three';
@@ -476,16 +476,31 @@ let engineCutaway=false;
 function setEngineCutaway(on){
  engineCutaway=!!on;
  for(const y of [-5,5])for(const z of [-8,8]){
-  const shell=named['aft_engine_'+y+'_'+z],nozzle=named['engine_nozzle_'+y+'_'+z];
-  if(shell)shell.visible=!engineCutaway;
-  if(nozzle)nozzle.visible=!engineCutaway;
-  const outer=named['aft_engine_ring_'+y+'_'+z];if(outer)outer.visible=!engineCutaway;
+  const prefix='integrated_power_'+y+'_'+z;
+  // O corte precisa retirar TODAS as camadas que envolvem o núcleo, não apenas o bocal externo.
+  const obstructionNames=[
+   'aft_engine_'+y+'_'+z,'engine_nozzle_'+y+'_'+z,'aft_engine_ring_'+y+'_'+z,
+   'engine_inner_ring_'+y+'_'+z,prefix+'_thermal_chamber',
+   prefix+'_containment_62.7',prefix+'_containment_69.7',
+   ...Array.from({length:12},(_,k)=>prefix+'_thermoelectric_fin_'+k),
+   prefix+'_converter',prefix+'_converter_ring'
+  ];
+  obstructionNames.forEach(name=>{if(named[name])named[name].visible=!engineCutaway});
  }
  const b=$('engineCutaway');if(b){b.classList.toggle('active',engineCutaway);b.textContent=engineCutaway?'FECHAR MOTOR / CARCAÇA':'ABRIR MOTOR / INTERNO'}
- log(engineCutaway?'Corte local do motor ativado: carcaças removidas da vista para revelar o núcleo interno.':'Carcaças externas do motor restauradas.');
+ log(engineCutaway?'Corte interno completo ativado: câmara, conversor e carcaças ocultados para expor o núcleo E-192.':'Conjunto propulsivo restaurado.');
 }
-$('engineCutaway').addEventListener('click',()=>{if(scaleMode!=='engine')setScale('engine');else engineCamera();setEngineCutaway(!engineCutaway);engineCamera()});
-function engineCamera(){controls.minDistance=1.2;controls.maxDistance=32;camera.position.set(81,12,9);controls.target.set(68,0,0);controls.update()}
+$('engineCutaway').addEventListener('click',()=>{if(scaleMode!=='engine')setScale('engine');setEngineCutaway(!engineCutaway);engineCamera(engineCutaway)});
+function engineCamera(focusCore=false){
+ controls.minDistance=focusCore?.35:2;controls.maxDistance=focusCore?12:42;
+ if(focusCore){
+  // Enquadra uma unidade isolada em vez de apontar para o espaço vazio entre os quatro motores.
+  camera.position.set(82.5,5.9,9.1);controls.target.set(66.2,5,8);
+ }else{
+  camera.position.set(88,12,15);controls.target.set(68,0,0);
+ }
+ controls.update()
+}
 function atomCamera(){controls.minDistance=.15;controls.maxDistance=8;camera.position.set(2.5,1.8,3);controls.target.set(0,0,0);controls.update();e192Nucleus.visible=true;e192Cloud.visible=false}
 function setScale(mode){
  if(mode!=='engine'&&engineCutaway)setEngineCutaway(false);
@@ -495,7 +510,7 @@ function setScale(mode){
  $('scaleHelp').textContent=mode==='atom'?'VISTA MICROSCÓPICA · ESCALA ATÔMICA · NÚCLEO EM PROPORÇÃO':mode==='engine'?'CONJUNTO PROPULSIVO · VISTA LOCAL':'NAVE COMPLETA · 160 × 96 × 48 m · 50 TRIPULANTES';
  $('selectionLabel').textContent=mode==='atom'?'MODELO ATÔMICO ESQUEMÁTICO':mode==='engine'?'CONJUNTO PROPULSIVO':'VISÃO GERAL';
  if(mode==='atom'){atomCamera();$('selectionInfo').innerHTML='<strong>Visualização atômica de referência</strong>Diâmetro atômico típico da ordem de 10⁻¹⁰ m. O núcleo está desenhado em proporção muito menor e quase não é visível. A distribuição eletrônica é esquemática; não representa configuração confirmada do elemento 192.'}
- else if(mode==='engine'){engineCamera();$('selectionInfo').innerHTML='<strong>Conjunto propulsivo — escala local</strong>Vista aproximada das quatro unidades ilustrativas na extremidade traseira. A representação não especifica nem demonstra um motor funcional; EGAS permanece uma hipótese separada.'}
+ else if(mode==='engine'){engineCamera(false);$('selectionInfo').innerHTML='<strong>Conjunto propulsivo — escala local</strong>Vista aproximada das quatro unidades ilustrativas na extremidade traseira. A representação não especifica nem demonstra um motor funcional; EGAS permanece uma hipótese separada.'}
  else{cameraPreset('iso');$('selectionInfo').innerHTML='<strong>Nenhum componente selecionado</strong>Clique em um componente da nave para inspecionar sua função visual.'}
  log('Escala alterada: '+mode.toUpperCase())
 }
@@ -535,7 +550,7 @@ $('opacity').addEventListener('input',e=>{const v=+e.target.value/100;$('opacity
 $('autoRotate').onclick=()=>{auto=!auto;controls.autoRotate=auto;controls.autoRotateSpeed=.38;$('autoRotate').classList.toggle('active',auto)};
 $('wire').onclick=()=>{wire=!wire;Object.values(M).forEach(m=>{if('wireframe'in m)m.wireframe=wire});$('wire').classList.toggle('active',wire)};
 $('labels').onclick=()=>{$('labels').classList.toggle('active');labelsGroup.visible=$('labels').classList.contains('active')||interiorMode;$('renderStatus').textContent=$('labels').classList.contains('active')?'MODO DE IDENTIFICAÇÃO ATIVO':'RENDER 3D / PRONTO';log('Identificação visual '+($('labels').classList.contains('active')?'ativada':'desativada'))};
-$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'12.1',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
+$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'13.0',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
 $('resetCamera').click();
 function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(viewport);resize();setDims();updateCount();populatePieceSelect();
