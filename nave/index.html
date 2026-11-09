@@ -22,7 +22,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <body>
 <header><a class="brand" href="../index.html"><b>S.</b><span>S.P.E.C.T.R.A.<small>FLIGHT SYSTEMS / CONCEPT LAB</small></span></a><nav class="headlinks"><a href="../index.html">E-192 ↗</a><a href="../egas/">EGAS ↗</a><a href="../">CENTRAL</a></nav><span class="live">● SIMULAÇÃO LOCAL ATIVA</span></header>
 <main>
-<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 15.0 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 15.0 · Arquitetura de exploração espacial conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
+<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 12.2 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 09.0 · Modelo dimensional conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
 <section class="workspace">
 <aside class="stack leftstack">
 <div class="panel"><div class="paneltitle">01 / GEOMETRIA GLOBAL</div><div class="panelbody">
@@ -88,13 +88,13 @@ import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 
 const $=id=>document.getElementById(id), viewport=$('viewport');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x050a12);scene.fog=new THREE.Fog(0x050a12,190,390);
-const camera=new THREE.PerspectiveCamera(34,1,.01,1400);camera.position.set(-218,142,218);
+const camera=new THREE.PerspectiveCamera(34,1,.01,1000);camera.position.set(-132,92,154);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.localClippingEnabled=true;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;viewport.appendChild(renderer.domElement);
 const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(900,600),.08,.28,.92));composer.addPass(new OutputPass());
-const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.target.set(0,0,0);controls.minDistance=90;controls.maxDistance=650;controls.autoRotateSpeed=.35;
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.target.set(0,0,0);controls.minDistance=25;controls.maxDistance=520;controls.autoRotateSpeed=.35;
 scene.add(new THREE.HemisphereLight(0xdce8ef,0x26303a,2.1));
-const key=new THREE.DirectionalLight(0xfff1dc,3.2);key.position.set(-65,100,75);key.castShadow=true;key.shadow.mapSize.set(2048,2048);scene.add(key);
+const key=new THREE.DirectionalLight(0xfff1dc,4.4);key.position.set(-65,100,75);key.castShadow=true;key.shadow.mapSize.set(2048,2048);scene.add(key);
 const fill=new THREE.DirectionalLight(0x9abac8,3.2);fill.position.set(75,28,-85);scene.add(fill);
 const rim=new THREE.PointLight(0x8ab9c7,90,300);rim.position.set(-5,30,-100);scene.add(rim);
 const warm=new THREE.PointLight(0x9b8aab,35,190);warm.position.set(45,-8,25);scene.add(warm);
@@ -105,8 +105,8 @@ const root=new THREE.Group();scene.add(root);
 const groups={hull:new THREE.Group(),bridge:new THREE.Group(),egas:new THREE.Group(),propulsion:new THREE.Group(),radiators:new THREE.Group(),habitat:new THREE.Group(),field:new THREE.Group(),antenna:new THREE.Group(),landing:new THREE.Group(),power:new THREE.Group(),interior:new THREE.Group()};
 Object.values(groups).forEach(g=>root.add(g));
 const M={
- hull:new THREE.MeshStandardMaterial({color:0x8d9ba5,metalness:.24,roughness:.58}),
- armor:new THREE.MeshStandardMaterial({color:0x526474,metalness:.38,roughness:.52}),
+ hull:new THREE.MeshStandardMaterial({color:0x9ba9b5,metalness:.48,roughness:.42}),
+ armor:new THREE.MeshStandardMaterial({color:0x526474,metalness:.58,roughness:.4}),
  edge:new THREE.MeshStandardMaterial({color:0x9eabb5,metalness:.72,roughness:.32}),
  dark:new THREE.MeshStandardMaterial({color:0x263441,metalness:.58,roughness:.48}),
  cyan:new THREE.MeshStandardMaterial({color:0x78bfc4,metalness:.38,roughness:.38,emissive:0x0a2428,emissiveIntensity:.28}),
@@ -128,7 +128,7 @@ function tor(id,label,g,r,t,mat,p,rot=[0,Math.PI/2,0]){return add(id,label,g,new
 function rod(id,label,g,a,b,r,mat){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A);const o=add(id,label,g,new THREE.CylinderGeometry(r,r,d.length(),12),mat,A.clone().add(B).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());return o}
 function sphere(id,label,g,r,mat,p,seg=24){return add(id,label,g,new THREE.SphereGeometry(r,seg,Math.max(12,Math.floor(seg*.65))),mat,p)}
 
-// REV 13.0 — carenagem monocoque integrada; arquitetura modular dimensionada para missão de 50 tripulantes.
+// REV 09.0 — arquitetura modular dimensionada para missão de 50 tripulantes.
 // Coordenadas do modelo em metros: X longitudinal, Y vertical, Z transversal.
 const labelsGroup=new THREE.Group();root.add(labelsGroup);labelsGroup.visible=false;
 function label3D(text,pos,size=3){
@@ -195,9 +195,9 @@ function hullSurface(){
  }
  label3D('NÚCLEO DE OPERAÇÕES',[0,13,0],2.6);
  // Ponte de comando com cápsula frontal e canopy panorâmico.
- const bridge=add('bridge_base','Módulo pressurizado da ponte de comando','bridge',new THREE.CapsuleGeometry(5.2,11,8,32),M.armor,[-57,8,0]);
+ const bridge=add('bridge_base','Módulo pressurizado da ponte de comando','bridge',new THREE.CapsuleGeometry(5.2,11,8,32),M.armor,[-66,1,0]);
  bridge.rotation.z=Math.PI/2;bridge.scale.z=1.28;
- const canopy=sphere('command_canopy','Faixa de visores blindados da ponte de comando','bridge',1,M.glass,[-57,12.4,0],48);canopy.scale.set(9.2,1.65,5.6);
+ const canopy=sphere('command_canopy','Cúpula panorâmica da ponte de comando','bridge',1,M.glass,[-66,5.3,0],48);canopy.scale.set(7.8,2.8,6.2);
  for(const side of [-1,1])for(let i=0;i<3;i++){
   const x=-70+i*3.5;
   box('bridge_glazing_'+side+'_'+i,'Painel de observação da ponte','bridge',2.6,1.6,.18,M.glass,[x,2.4,side*5.9]);
@@ -205,18 +205,18 @@ function hullSurface(){
  label3D('PONTE DE COMANDO',[-66,10,0],2.6);
  // Módulos habitacionais e laboratórios: cápsulas conectadas por túneis curtos.
  const habs=[
-  {id:'hab_nw',name:'HABITAÇÃO A',p:[-27,0,-14]},
-  {id:'hab_sw',name:'HABITAÇÃO B',p:[-27,0,14]},
-  {id:'hab_ne',name:'HABITAÇÃO C',p:[5,0,-14]},
-  {id:'hab_se',name:'HABITAÇÃO D',p:[5,0,14]}
+  {id:'hab_nw',name:'HABITAÇÃO A',p:[-27,0,-25]},
+  {id:'hab_sw',name:'HABITAÇÃO B',p:[-27,0,25]},
+  {id:'hab_ne',name:'HABITAÇÃO C',p:[5,0,-25]},
+  {id:'hab_se',name:'HABITAÇÃO D',p:[5,0,25]}
  ];
  habs.forEach(h=>modulePod(h.id,h.name,h.p,[21,8,14]));
- modulePod('lab_e192','LABORATÓRIO E-192',[37,0,-14],[20,8,14],M.armor);
- modulePod('lab_egas','LABORATÓRIO EGAS',[37,0,14],[20,8,14],M.armor);
+ modulePod('lab_e192','LABORATÓRIO E-192',[37,0,-25],[20,8,14],M.armor);
+ modulePod('lab_egas','LABORATÓRIO EGAS',[37,0,25],[20,8,14],M.armor);
  for(const x of [-27,5,37])for(const side of [-1,1]){
-  const z=side*7;
+  const z=side*17;
   cyl('access_tunnel_'+x+'_'+side,'Túnel pressurizado de acesso','hull',2.1,2.1,10,M.armor,[x,-1,z],[Math.PI/2,0,0],32);
-  tor('dock_ring_'+x+'_'+side,'Anel de acoplamento pressurizado','hull',2.15,.16,M.edge,[x,-1,side*9.8],[Math.PI/2,0,0]);
+  tor('dock_ring_'+x+'_'+side,'Anel de acoplamento pressurizado','hull',2.15,.16,M.edge,[x,-1,side*21.8],[Math.PI/2,0,0]);
  }
  // Plataforma científica compacta sob o eixo central.
  box('science_platform','Plataforma de instrumentação científica','hull',18,1,16,M.dark,[25,-8,0]);
@@ -279,15 +279,15 @@ function hullSurface(){
  for(let i=0;i<4;i++)tor('egas_ring_'+i,'Anel esquemático do EGAS','egas',5.3+i*.55,.12,i%2?M.gold:M.cyan,[18,0,0]);
  label3D('EGAS · CONCEITUAL',[18,8,0],2.4);
  // Quatro unidades propulsivas com bocais em sino e anéis concêntricos, sem brilho excessivo.
- for(const y of [-5,5])for(const z of [-7,7]){
-  cyl('aft_engine_'+y+'_'+z,'Carcaça compacta da unidade propulsiva','propulsion',2.7,3.0,10.5,M.dark,[66,y,z],[0,0,Math.PI/2]);
-  const nozzle=add('engine_nozzle_'+y+'_'+z,'Bocal externo ilustrativo','propulsion',new THREE.CylinderGeometry(1.9,3.0,5.2,48,1,true),M.armor,[74,y,z],[0,0,Math.PI/2]);
-  tor('aft_engine_ring_'+y+'_'+z,'Aro externo da unidade propulsiva','propulsion',2.55,.14,M.edge,[72.0,y,z]);
-  tor('engine_inner_ring_'+y+'_'+z,'Aro interno do bocal','propulsion',1.65,.10,M.cyan,[74.2,y,z]);
-  sphere('aft_engine_core_'+y+'_'+z,'Centro visual da unidade propulsiva','propulsion',.16,M.gold,[74.5,y,z],40);
-  tor('integrated_energy_aperture_'+y+'_'+z,'Aro de inspeção do módulo energético','propulsion',.34,.08,M.cyan,[74.35,y,z],[0,Math.PI/2,0]);
-  tor('integrated_energy_inner_'+y+'_'+z,'Anel interno do conversor termoelétrico','propulsion',.19,.06,M.gold,[74.55,y,z],[0,Math.PI/2,0]);
-  rod('engine_mount_'+y+'_'+z,'Suporte estrutural da unidade propulsiva','propulsion',[66,y,z],[57,y,z],.38,M.edge);
+ for(const y of [-5,5])for(const z of [-8,8]){
+  cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',3.1,3.5,13,M.dark,[68,y,z],[0,0,Math.PI/2]);
+  const nozzle=add('engine_nozzle_'+y+'_'+z,'Bocal externo ilustrativo','propulsion',new THREE.CylinderGeometry(2.1,3.5,5,48,1,true),M.armor,[76,y,z],[0,0,Math.PI/2]);
+  tor('aft_engine_ring_'+y+'_'+z,'Aro externo da unidade propulsiva','propulsion',3.05,.18,M.edge,[74.7,y,z]);
+  tor('engine_inner_ring_'+y+'_'+z,'Aro interno do bocal','propulsion',2.1,.12,M.cyan,[78.6,y,z]);
+  sphere('aft_engine_core_'+y+'_'+z,'Abertura de inspeção do conjunto termoelétrico-propulsivo','propulsion',.22,M.gold,[79,y,z],40);
+  tor('integrated_energy_aperture_'+y+'_'+z,'Aro de inspeção do núcleo integrado','propulsion',.48,.10,M.cyan,[78.85,y,z],[0,Math.PI/2,0]);
+  tor('integrated_energy_inner_'+y+'_'+z,'Anel interno do conversor termoelétrico','propulsion',.27,.07,M.gold,[79.05,y,z],[0,Math.PI/2,0]);
+  rod('engine_mount_'+y+'_'+z,'Suporte estrutural da unidade propulsiva','propulsion',[68,y,z],[56,y,z],.38,M.edge);
  }
  box('aft_service_deck','Convés de manutenção dos sistemas propulsivos','hull',16,1,22,M.armor,[54,-8,0]);
  label3D('CONJUNTOS PROPULSIVOS',[73,9,0],2.4);
@@ -297,11 +297,11 @@ function hullSurface(){
  const nucleusProtonMat=new THREE.MeshStandardMaterial({color:0x55e0e5,emissive:0x0b555d,emissiveIntensity:.35,roughness:.24,metalness:.18});
  const nucleusNeutronMat=new THREE.MeshStandardMaterial({color:0x9b8cff,emissive:0x34266f,emissiveIntensity:.3,roughness:.27,metalness:.14});
  const nucleusContourMat=new THREE.MeshBasicMaterial({color:0x8cebea,wireframe:true,transparent:true,opacity:.075});
- for(const y of [-5,5])for(const z of [-7,7]){
+ for(const y of [-5,5])for(const z of [-8,8]){
   const id='integrated_power_'+y+'_'+z;
-  cyl(id+'_thermal_chamber','Câmara termoelétrica integrada ao conjunto propulsivo','propulsion',1.25,1.25,5.4,M.armor,[63.2,y,z],[0,0,Math.PI/2],56);
-  const coreGroup=new THREE.Group();coreGroup.name=id+'_e192_nucleus';coreGroup.userData={label:'Núcleo E-192 · escala nuclear de referência · representação hipotética',group:'propulsion'};
-  coreGroup.position.set(66.2,y,z);coreGroup.scale.setScalar(1e-15);groups.propulsion.add(coreGroup);
+  cyl(id+'_thermal_chamber','Câmara termoelétrica integrada ao conjunto propulsivo','propulsion',1.82,1.82,7.2,M.armor,[66.2,y,z],[0,0,Math.PI/2],56);
+  const coreGroup=new THREE.Group();coreGroup.name=id+'_e192_nucleus';coreGroup.userData={label:'Núcleo E-192 · 192 prótons + 250 nêutrons · representação do simulador nuclear',group:'propulsion'};
+  coreGroup.position.set(66.2,y,z);coreGroup.scale.setScalar(.135);groups.propulsion.add(coreGroup);
   const A=442,rad=1.72;
   for(let i=0;i<A;i++){
    const proton=i<192,phi=Math.acos(1-2*(i+.5)/A),theta=Math.PI*(1+Math.sqrt(5))*i;
@@ -316,13 +316,13 @@ function hullSurface(){
   }
   const glow=new THREE.Mesh(new THREE.SphereGeometry(rad*1.08,40,32),new THREE.MeshBasicMaterial({color:0x54dce2,wireframe:true,transparent:true,opacity:.055}));coreGroup.add(glow);
   coreGroup.traverse(o=>{if(o.isMesh){o.userData={...coreGroup.userData};pickables.push(o)}});
-  for(const x of [60.5,65.9])tor(id+'_containment_'+x,'Anel de contenção térmica interno','propulsion',1.28,.12,M.edge,[x,y,z],[0,Math.PI/2,0]);
-  for(let k=0;k<12;k++){const a=k*Math.PI/6;rod(id+'_thermoelectric_fin_'+k,'Aleta de transferência térmica interna','propulsion',[66.2,y+Math.cos(a)*.85,z+Math.sin(a)*.85],[66.2,y+Math.cos(a)*1.65,z+Math.sin(a)*1.65],.08,M.cyan);}
-  cyl(id+'_converter','Conversor termoelétrico integrado','propulsion',1.05,1.05,1.2,M.dark,[67.2,y,z],[0,0,Math.PI/2],48);
-  tor(id+'_converter_ring','Aro do conversor termoelétrico','propulsion',1.05,.12,M.cyan,[67.9,y,z],[0,Math.PI/2,0]);
+  for(const x of [62.7,69.7])tor(id+'_containment_'+x,'Anel de contenção térmica interno','propulsion',1.76,.18,M.edge,[x,y,z],[0,Math.PI/2,0]);
+  for(let k=0;k<12;k++){const a=k*Math.PI/6;rod(id+'_thermoelectric_fin_'+k,'Aleta de transferência térmica interna','propulsion',[66.2,y+Math.cos(a)*1.15,z+Math.sin(a)*1.15],[66.2,y+Math.cos(a)*2.35,z+Math.sin(a)*2.35],.12,M.cyan);}
+  cyl(id+'_converter','Conversor termoelétrico integrado','propulsion',1.42,1.42,1.5,M.dark,[71.1,y,z],[0,0,Math.PI/2],48);
+  tor(id+'_converter_ring','Aro do conversor termoelétrico','propulsion',1.42,.16,M.cyan,[71.9,y,z],[0,Math.PI/2,0]);
  }
- box('integrated_power_bus','Barramento de condicionamento elétrico integrado à seção propulsiva','propulsion',7,1.8,10,M.dark,[56,0,0]);
- for(const y of [-5,5])for(const z of [-7,7])rod('integrated_power_link_'+y+'_'+z,'Conexão elétrica blindada entre conversor e barramento','propulsion',[57,y*.55,z*.55],[62,y,z],.16,M.gold);
+ box('integrated_power_bus','Barramento de condicionamento elétrico integrado à seção propulsiva','propulsion',8,2.4,13,M.dark,[56,0,0]);
+ for(const y of [-5,5])for(const z of [-8,8])rod('integrated_power_link_'+y+'_'+z,'Conexão elétrica blindada entre conversor e barramento','propulsion',[57,y*.55,z*.55],[62,y,z],.16,M.gold);
  label3D('NÚCLEOS E-192 · SISTEMA TERMOELÉTRICO',[62,12,0],2.4);
  // Antena de comunicação e sensores externos.
  rod('sensor_mast','Mastro de instrumentação','antenna',[-45,7,0],[-45,20,0],.2,M.edge);
@@ -333,56 +333,6 @@ function hullSurface(){
   rod('service_strut_'+x+'_'+side,'Suporte de serviço inferior','landing',[x,-7,side*5],[x,-13,side*8],.26,M.edge);
   box('service_pad_'+x+'_'+side,'Plataforma de manutenção','landing',4,.5,4,M.dark,[x,-13,side*8]);
  }
- // REV 13.0 — carenagem externa monocoque de silhueta aerodinâmica.
- // A superfície contínua envolve os módulos internos sem alterar sua geometria conceitual.
- const shellProfile=[
-  // [X, semi-largura Z, semi-altura Y] — nariz fino, ombros integrados e cauda aberta para os motores.
-  [-80,.15,.15],[-76,2.2,1.8],[-70,5.5,4.2],[-62,9.5,7.0],[-52,14.5,9.5],[-38,18.5,12.0],[-18,21.0,13.5],[8,22.0,14.0],[30,21.0,13.2],[46,18.0,11.0],[56,14.5,9.0],[62,10.0,6.5]
- ];
- const shellGeo=new THREE.BufferGeometry();
- const ringCount=161,sideCount=64,verts=[],indices=[];
- function profileAt(x){
-  let k=0;while(k<shellProfile.length-2&&x>shellProfile[k+1][0])k++;
-  const a=shellProfile[k],b=shellProfile[k+1],t=Math.max(0,Math.min(1,(x-a[0])/(b[0]-a[0])));
-  const u=t*t*(3-2*t);
-  return [a[1]+(b[1]-a[1])*u,a[2]+(b[2]-a[2])*u];
- }
- for(let i=0;i<ringCount;i++){
-  const x=-80+(142*i/(ringCount-1)),[rz,ry]=profileAt(x);
-  for(let j=0;j<sideCount;j++){
-   const a=2*Math.PI*j/sideCount;
-   const fullness=1-.11*Math.cos(2*a);
-   const yShape=Math.sin(a),zShape=Math.cos(a);
-   // Seção oval levemente achatada no dorso/ventre, com ombros largos para abrigar os módulos.
-   verts.push(x,.12+yShape*ry*fullness,zShape*rz*fullness);
-  }
- }
- for(let i=0;i<ringCount-1;i++)for(let j=0;j<sideCount;j++){
-  const a=i*sideCount+j,b=i*sideCount+(j+1)%sideCount,c=(i+1)*sideCount+(j+1)%sideCount,d=(i+1)*sideCount+j;
-  indices.push(a,d,b,d,c,b);
- }
- // Nervuras externas discretas para dar leitura de engenharia fabricada.
-  const seamMat=new THREE.MeshStandardMaterial({color:0x536b7d,metalness:.48,roughness:.46});
-  for(const x of [-48,-24,0,24,46]){
-   const [rz,ry]=profileAt(x);
-   const rib=new THREE.Mesh(new THREE.TorusGeometry(1,.055,8,80),seamMat);
-   rib.rotation.y=Math.PI/2;rib.scale.set(ry*.985,rz*.985,1);rib.position.set(x,.12,0);
-   rib.name='outer_hull_frame_'+x;rib.userData={label:'Nervura externa de reforço do casco',group:'hull',userHidden:false};groups.hull.add(rib);pickables.push(rib);named[rib.name]=rib;
-  }
-  const accentMat=new THREE.LineBasicMaterial({color:0x527f91,transparent:true,opacity:.62});
-  for(const side of [-1,1]){
-   const pts=[];
-   for(let i=0;i<=100;i++){const x=-57+i*1.12,[rz,ry]=profileAt(x);pts.push(new THREE.Vector3(x,.12+ry*.70,side*rz*.70));}
-   const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),accentMat);line.name='hull_longitudinal_accent_'+side;groups.hull.add(line);
-  }
-  shellGeo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
- shellGeo.setIndex(indices);shellGeo.computeVertexNormals();
- const aeroShell=new THREE.Mesh(shellGeo,M.hull);
- aeroShell.name='aerodynamic_monocoque_shell';
- aeroShell.userData={label:'Carenagem externa monocoque aerodinâmica — cobertura integral conceitual',group:'hull',userHidden:false};
- aeroShell.castShadow=true;aeroShell.receiveShadow=true;
- groups.hull.add(aeroShell);pickables.push(aeroShell);named.aerodynamic_monocoque_shell=aeroShell;
-
 }
 hullSurface();
 
@@ -482,18 +432,18 @@ const e192Contours=new THREE.MeshBasicMaterial({color:0x8cebea,wireframe:true,tr
 [.48,.72,.94].forEach((fraction,index)=>{const mesh=new THREE.Mesh(new THREE.SphereGeometry(e192R*fraction,28,20),e192Contours);mesh.rotation.set(index*.31,index*.47,index*.19);e192Nucleus.add(mesh)});
 // Instâncias microscópicas do núcleo E-192 dentro das quatro unidades propulsivas.
 const engineNuclei=[];
-for(const y of [-5,5])for(const z of [-7,7]){
+for(const y of [-5,5])for(const z of [-8,8]){
  const instance=e192Nucleus.clone(true);instance.name='e192_engine_nucleus_'+y+'_'+z;
- instance.scale.setScalar(1e-15);instance.position.set(66.2,y,z);root.add(instance);engineNuclei.push(instance);
+ instance.scale.setScalar(.12);instance.position.set(66.2,y,z);root.add(instance);engineNuclei.push(instance);
 }
 const e192Cloud=new THREE.Group();atomGroup.add(e192Cloud);
 const cloudPositions=[];
-for(let i=0;i<1100;i++){const u=Math.random(),v=Math.random(),theta=2*Math.PI*u,phi=Math.acos(2*v-1),r=70000+Math.random()*30000;cloudPositions.push(r*Math.sin(phi)*Math.cos(theta),r*Math.sin(phi)*Math.sin(theta),r*Math.cos(phi))}
+for(let i=0;i<1100;i++){const u=Math.random(),v=Math.random(),theta=2*Math.PI*u,phi=Math.acos(2*v-1),r=1.8+Math.random()*.75;cloudPositions.push(r*Math.sin(phi)*Math.cos(theta),r*Math.sin(phi)*Math.sin(theta),r*Math.cos(phi))}
 const cloudGeometry=new THREE.BufferGeometry();cloudGeometry.setAttribute('position',new THREE.Float32BufferAttribute(cloudPositions,3));
-e192Cloud.add(new THREE.Points(cloudGeometry,new THREE.PointsMaterial({color:0x6fe7e2,size:900,transparent:true,opacity:.22,sizeAttenuation:true})));
-const e192CloudShell=new THREE.Mesh(new THREE.SphereGeometry(100000,48,32),new THREE.MeshBasicMaterial({color:0x68e0df,wireframe:true,transparent:true,opacity:.045}));e192Cloud.add(e192CloudShell);
+e192Cloud.add(new THREE.Points(cloudGeometry,new THREE.PointsMaterial({color:0x6fe7e2,size:.026,transparent:true,opacity:.22,sizeAttenuation:true})));
+const e192CloudShell=new THREE.Mesh(new THREE.SphereGeometry(2.15,32,24),new THREE.MeshBasicMaterial({color:0x68e0df,wireframe:true,transparent:true,opacity:.045}));e192Cloud.add(e192CloudShell);
 e192Cloud.visible=false;
-const atomNote=document.createElement('div');atomNote.style.cssText='position:absolute;right:14px;bottom:14px;z-index:3;max-width:280px;padding:10px 12px;background:#07111be8;border:1px solid #705d98;border-radius:4px;color:#c6badf;font:8px/1.65 var(--mono);pointer-events:none;display:none';atomNote.innerHTML='<b style="color:#c3aaff">ESCALA DE REFERÊNCIA · 10⁻¹⁰ m</b><br>Raio atômico típico; núcleo na ordem de 10⁻¹⁵ m, em proporção relativa aproximada.<br>O tamanho exato do átomo E-192 é desconhecido; sua existência não foi confirmada.';viewport.appendChild(atomNote);
+const atomNote=document.createElement('div');atomNote.style.cssText='position:absolute;right:14px;bottom:14px;z-index:3;max-width:280px;padding:10px 12px;background:#07111be8;border:1px solid #705d98;border-radius:4px;color:#c6badf;font:8px/1.65 var(--mono);pointer-events:none;display:none';atomNote.innerHTML='<b style="color:#c3aaff">ESCALA ATÔMICA · ~10⁻¹⁰ m</b><br>O ponto central representa o núcleo em proporção aproximada e quase não é visível nesta escala.<br>Distribuição eletrônica esquemática; não é um modelo orbital ou configuração validada para Z=192.';viewport.appendChild(atomNote);
 
 let scaleMode='ship',selected=null,exploded=false,cut=false,wire=false,auto=false;
 const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
@@ -518,19 +468,18 @@ function cameraPreset(v){
  interiorMode=false;restoreModuleVisibility();groups.interior.visible=false;labelsGroup.visible=$('labels').classList.contains('active');
  if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=true;
  for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=true;
- controls.minDistance=90;controls.maxDistance=650;
- const p={iso:[-218,142,218],front:[-250,50,0],side:[0,70,260],top:[0,300,4],rear:[250,50,0],interior:[-4,118,18]}[v]||[-218,142,218];
+ controls.minDistance=18;controls.maxDistance=420;
+ const p={iso:[-145,105,170],front:[-205,35,0],side:[0,45,220],top:[0,245,4],rear:[205,35,0],interior:[-4,118,18]}[v]||[-145,105,170];
  camera.position.set(...p);controls.target.set(0,0,0);controls.update()
 }
-function engineCamera(){interiorMode=false;restoreModuleVisibility();groups.interior.visible=false;controls.minDistance=8;controls.maxDistance=110;camera.position.set(104,38,72);controls.target.set(70,0,0);controls.update()}
-function atomCamera(){controls.minDistance=120000;controls.maxDistance=520000;camera.position.set(250000,180000,300000);controls.target.set(0,0,0);controls.update();e192Nucleus.visible=true;e192Cloud.visible=true}
+function atomCamera(){controls.minDistance=.15;controls.maxDistance=8;camera.position.set(2.5,1.8,3);controls.target.set(0,0,0);controls.update();e192Nucleus.visible=true;e192Cloud.visible=false}
 function setScale(mode){
  scaleMode=mode;root.visible=mode!=='atom';atomGroup.visible=mode==='atom';atomNote.style.display=mode==='atom'?'block':'none';
  document.querySelectorAll('[data-scale]').forEach(b=>b.classList.toggle('active',b.dataset.scale===mode));
  $('scaleTag').textContent=mode==='ship'?'ESCALA 10² m':mode==='engine'?'PROPULSÃO · 10¹ m':'ESCALA 10⁻¹⁰ m';
  $('scaleHelp').textContent=mode==='atom'?'VISTA MICROSCÓPICA · ESCALA ATÔMICA · NÚCLEO EM PROPORÇÃO':mode==='engine'?'CONJUNTO PROPULSIVO · VISTA LOCAL':'NAVE COMPLETA · 160 × 96 × 48 m · 50 TRIPULANTES';
  $('selectionLabel').textContent=mode==='atom'?'MODELO ATÔMICO ESQUEMÁTICO':mode==='engine'?'CONJUNTO PROPULSIVO':'VISÃO GERAL';
- if(mode==='atom'){atomCamera();$('selectionInfo').innerHTML='<strong>Visualização atômica em escala de referência</strong>Átomo típico na ordem de 10⁻¹⁰ m; núcleo na ordem de 10⁻¹⁵ m. O raio atômico específico do E-192 é desconhecido e sua existência não foi confirmada.'}
+ if(mode==='atom'){atomCamera();$('selectionInfo').innerHTML='<strong>Visualização atômica de referência</strong>Diâmetro atômico típico da ordem de 10⁻¹⁰ m. O núcleo está desenhado em proporção muito menor e quase não é visível. A distribuição eletrônica é esquemática; não representa configuração confirmada do elemento 192.'}
  else if(mode==='engine'){engineCamera();$('selectionInfo').innerHTML='<strong>Conjunto propulsivo — escala local</strong>Vista aproximada das quatro unidades ilustrativas na extremidade traseira. A representação não especifica nem demonstra um motor funcional; EGAS permanece uma hipótese separada.'}
  else{cameraPreset('iso');$('selectionInfo').innerHTML='<strong>Nenhum componente selecionado</strong>Clique em um componente da nave para inspecionar sua função visual.'}
  log('Escala alterada: '+mode.toUpperCase())
@@ -539,7 +488,7 @@ document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click',()=>{if(scaleMode==='ship'){if(b.dataset.camera==='interior')showInterior();else cameraPreset(b.dataset.camera)}}));
 $('resetCamera').onclick=()=>scaleMode==='atom'?atomCamera():scaleMode==='engine'?engineCamera():cameraPreset('iso');
 $('fit').onclick=()=>$('resetCamera').click();
-function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/160,H/45,W/96);$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
+function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/157.5,H/37.5,W/100);$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
 ['len','wid','hei'].forEach(id=>$(id).addEventListener('input',setDims));
 $('resetDims').onclick=()=>{$('len').value=160;$('wid').value=96;$('hei').value=48;setDims()};
 function updateCount(){const n=Object.keys(groups).filter(k=>document.querySelector('[data-module="'+k+'"]')?.checked).length;$('statMods').textContent=n+' / '+Object.keys(groups).length}
@@ -571,7 +520,7 @@ $('opacity').addEventListener('input',e=>{const v=+e.target.value/100;$('opacity
 $('autoRotate').onclick=()=>{auto=!auto;controls.autoRotate=auto;controls.autoRotateSpeed=.38;$('autoRotate').classList.toggle('active',auto)};
 $('wire').onclick=()=>{wire=!wire;Object.values(M).forEach(m=>{if('wireframe'in m)m.wireframe=wire});$('wire').classList.toggle('active',wire)};
 $('labels').onclick=()=>{$('labels').classList.toggle('active');labelsGroup.visible=$('labels').classList.contains('active')||interiorMode;$('renderStatus').textContent=$('labels').classList.contains('active')?'MODO DE IDENTIFICAÇÃO ATIVO':'RENDER 3D / PRONTO';log('Identificação visual '+($('labels').classList.contains('active')?'ativada':'desativada'))};
-$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'15.0',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Deep-space and interstellar concept; protected integrated hull with deployable thermal radiators',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
+$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'12.1',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
 $('resetCamera').click();
 function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(viewport);resize();setDims();updateCount();populatePieceSelect();
