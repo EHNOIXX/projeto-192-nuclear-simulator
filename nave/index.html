@@ -22,7 +22,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <body>
 <header><a class="brand" href="../index.html"><b>S.</b><span>S.P.E.C.T.R.A.<small>FLIGHT SYSTEMS / CONCEPT LAB</small></span></a><nav class="headlinks"><a href="../index.html">E-192 ↗</a><a href="../egas/">EGAS ↗</a><a href="../">CENTRAL</a></nav><span class="live">● SIMULAÇÃO LOCAL ATIVA</span></header>
 <main>
-<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 12.2 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 09.0 · Modelo dimensional conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
+<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · REV 16.0 · 50 TRIPULANTES</p><h1>Flight systems <em>visualization.</em></h1><p>Arquitetura modular de referência para 50 tripulantes, com missão conceitual de exploração do Sistema Solar e interestelar. Exterior, planta interna e subsistemas são visualizações coordenadas do mesmo veículo.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>REV 09.0 · Modelo dimensional conceitual para 50 tripulantes. EGAS e E-192 permanecem hipóteses não demonstradas; dimensões não constituem especificação de fabricação.</div></section>
 <section class="workspace">
 <aside class="stack leftstack">
 <div class="panel"><div class="paneltitle">01 / GEOMETRIA GLOBAL</div><div class="panelbody">
@@ -167,13 +167,54 @@ function modulePod(id,label,center,dims,material=M.hull){
  label3D(label,[x,y+h/2+3,z],2.1);
 }
 function hullSurface(){
- // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
- const primary=add('primary_pressure_hull','Casco pressurizado principal de arquitetura integrada','hull',new THREE.CapsuleGeometry(10,102,10,48),M.hull,[-2,0,0]);
- primary.rotation.z=Math.PI/2;primary.scale.z=1.08;
- const dorsal=add('dorsal_service_spine','Carenagem dorsal de serviços e distribuição','hull',new THREE.CapsuleGeometry(4.2,78,8,32),M.armor,[-3,8.2,0]);
- dorsal.rotation.z=Math.PI/2;dorsal.scale.z=1.12;
+ // REV 16.0 — carenagem em cunha inspirada em cruzadores espaciais clássicos,
+ // sem reproduzir uma nave existente. X é o eixo longitudinal; o nariz aponta para -X.
+ // Proa fina, ombros largos e popa reforçada, com superfícies facetadas.
+ const oldCore=add('primary_pressure_hull','Volume pressurizado central sob a carenagem','hull',new THREE.CapsuleGeometry(10,102,10,48),M.hull,[-2,0,0]);
+ oldCore.rotation.z=Math.PI/2;oldCore.scale.z=1.08;oldCore.visible=false;
+ const oldSpine=add('dorsal_service_spine','Espinha técnica protegida sob a carenagem','hull',new THREE.CapsuleGeometry(4.2,78,8,32),M.armor,[-3,8.2,0]);
+ oldSpine.rotation.z=Math.PI/2;oldSpine.scale.z=1.12;oldSpine.visible=false;
+ const oldHub=add('central_hub','Núcleo pressurizado central sob a carenagem','hull',new THREE.CapsuleGeometry(6.3,20,8,32),M.armor,[-1,0,0]);
+ oldHub.rotation.z=Math.PI/2;oldHub.scale.z=1.72;oldHub.visible=false;
  const ventral=add('ventral_keel','Quilha inferior de proteção e manutenção','hull',new THREE.CapsuleGeometry(3.1,72,8,32),M.dark,[5,-8.2,0]);
  ventral.rotation.z=Math.PI/2;ventral.scale.z=1.2;
+ const stations=[
+  [-80,1.0,1.0,0.0,1.0],[-72,5.5,4.2,.8,3.5],[-58,12,7.2,1,5.5],
+  [-38,20,10.5,1,7.2],[-12,27,12.5,.8,8.5],[18,31,13.2,.5,9],
+  [42,30,12.5,.2,8.5],[58,25,10.5,0,7],[69,17,7.5,0,5.2],[77,3,2,0,2]
+ ];
+ const shellVertices=[],shellIndices=[],ringN=8;
+ for(const [x,w,top,sideY,bottom] of stations){
+  const ring=[[0,top,0],[top*.72,w*.72],[sideY,w],[-bottom*.55,w*.72],[-bottom,0],[-bottom*.55,-w*.72],[sideY,-w],[top*.72,-w*.72]];
+  for(const [y,z] of ring)shellVertices.push(x,y,z);
+ }
+ for(let i=0;i<stations.length-1;i++)for(let j=0;j<ringN;j++){
+  const a=i*ringN+j,b=i*ringN+(j+1)%ringN,c=(i+1)*ringN+(j+1)%ringN,d=(i+1)*ringN+j;
+  shellIndices.push(a,b,d,b,c,d);
+ }
+ const shellGeo=new THREE.BufferGeometry();
+ shellGeo.setAttribute('position',new THREE.Float32BufferAttribute(shellVertices,3));
+ shellGeo.setIndex(shellIndices);shellGeo.computeVertexNormals();
+ const shellMat=new THREE.MeshStandardMaterial({color:0x8495a2,metalness:.52,roughness:.4,flatShading:true,side:THREE.DoubleSide});
+ const shellMesh=add('spectra_wedge_carenagem','Carenagem externa facetada em cunha — arquitetura original SPECTRA','hull',shellGeo,shellMat,[0,0,0]);
+ // Superestrutura dorsal de comando e painéis segmentados.
+ box('dorsal_command_base','Base elevada da superestrutura de comando','hull',30,2.2,13,M.armor,[28,12.7,0]);
+ box('dorsal_command_tower','Torre de comando dorsal','hull',15,4.2,8.5,M.dark,[34,15.6,0]);
+ box('dorsal_command_glazing','Faixa de visores da torre de comando','bridge',10,.75,8.7,M.glass,[34,17.4,0]);
+ box('dorsal_spine_forward','Espinha dorsal de instrumentação','hull',48,1,5.5,M.armor,[0,11.6,0]);
+ for(const side of [-1,1]){
+  rod('wedge_edge_rail_'+side,'Longarina de borda da carenagem em cunha','hull',[-69,2,side*10],[55,1.2,side*24],.42,M.edge);
+  for(let i=0;i<4;i++){
+   const x=-35+i*22;
+   box('dorsal_armor_plate_'+side+'_'+i,'Placa segmentada de blindagem dorsal','hull',17,.24,9,M.armor,[x,10.7,side*(8+i*.9)]);
+  }
+  for(let i=0;i<5;i++){
+   const x=-47+i*20;
+   box('side_armor_panel_'+side+'_'+i,'Painel lateral de manutenção da carenagem','hull',12,2.2,.28,M.dark,[x,-1.4,side*(18+i*1.1)]);
+  }
+ }
+ box('forward_sensor_keel','Faixa frontal de sensores e navegação','hull',8,1.2,5,M.dark,[-69,2.4,0]);
+ for(const side of [-1,1])box('forward_sensor_lens_'+side,'Janela blindada do sensor frontal','antenna',3,.65,.22,M.cyan,[-70,2.8,side*2.2]);
  // Anéis de união do casco e painéis de acesso.
  for(const x of [-48,-32,-16,0,16,32,48]){
   tor('hull_frame_'+x,'Anel estrutural de reforço do casco','hull',9.9,.22,M.edge,[x,0,0],[0,0,Math.PI/2]);
@@ -520,7 +561,7 @@ $('opacity').addEventListener('input',e=>{const v=+e.target.value/100;$('opacity
 $('autoRotate').onclick=()=>{auto=!auto;controls.autoRotate=auto;controls.autoRotateSpeed=.38;$('autoRotate').classList.toggle('active',auto)};
 $('wire').onclick=()=>{wire=!wire;Object.values(M).forEach(m=>{if('wireframe'in m)m.wireframe=wire});$('wire').classList.toggle('active',wire)};
 $('labels').onclick=()=>{$('labels').classList.toggle('active');labelsGroup.visible=$('labels').classList.contains('active')||interiorMode;$('renderStatus').textContent=$('labels').classList.contains('active')?'MODO DE IDENTIFICAÇÃO ATIVO':'RENDER 3D / PRONTO';log('Identificação visual '+($('labels').classList.contains('active')?'ativada':'desativada'))};
-$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'12.1',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
+$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'16.0',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
 $('resetCamera').click();
 function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(viewport);resize();setDims();updateCount();populatePieceSelect();
