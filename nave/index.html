@@ -500,7 +500,7 @@ function restoreEngineScene(){
  engineIsolation=false;
  restoreModuleVisibility();
  groups.interior.visible=false;
- groups.propulsion.traverse(o=>{if(o!==groups.propulsion&&o.userData)o.visible=!o.userData.userHidden});
+ groups.propulsion.traverse(o=>{if(o!==groups.propulsion)o.visible=!(o.userData&&o.userData.userHidden)});
  setEngineCutaway(false);
 }
 $('engineCutaway').addEventListener('click',()=>{
