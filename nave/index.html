@@ -22,7 +22,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <body>
 <header><a class="brand" href="../index.html"><b>S.</b><span>S.P.E.C.T.R.A.<small>FLIGHT SYSTEMS / CONCEPT LAB</small></span></a><nav class="headlinks"><a href="../index.html">E-192 ↗</a><a href="../egas/">EGAS ↗</a><a href="../">CENTRAL</a></nav><span class="live">● SIMULAÇÃO LOCAL ATIVA</span></header>
 <main>
-<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · CONFIGURAÇÃO CONCEITUAL</p><h1>Flight systems <em>visualization.</em></h1><p>Ambiente de exploração tridimensional da arquitetura externa e dos módulos conceituais da nave. Selecione componentes, altere dimensões de referência e examine a montagem em tempo real.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>Geometria ilustrativa para estudo e comunicação científica. Não constitui projeto de engenharia, veículo funcional ou especificação de fabricação.</div></section>
+<section class="intro"><div><p class="eyebrow">MÓDULO 03 / NAVE SPECTRA · CONFIGURAÇÃO CONCEITUAL</p><h1>Flight systems <em>visualization.</em></h1><p>Ambiente de exploração tridimensional da arquitetura externa e dos módulos conceituais da nave. Selecione componentes, altere dimensões de referência e examine a montagem em tempo real.</p></div><div class="classify"><b>CLASSIFICAÇÃO DO MODELO</b>Arquitetura aberta e modular ilustrativa para estudo e comunicação científica. Não constitui projeto de engenharia, veículo funcional ou especificação de fabricação.</div></section>
 <section class="workspace">
 <aside class="stack leftstack">
 <div class="panel"><div class="paneltitle">01 / GEOMETRIA GLOBAL</div><div class="panelbody">
@@ -53,7 +53,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <div class="stagehead"><span>3D VIEWPORT / <b>VESSEL ASSEMBLY</b></span><span id="selectionLabel">VISÃO GERAL</span></div>
 <div class="toolbar"><button class="btn" id="autoRotate">ÓRBITA AUTOMÁTICA</button><button class="btn" id="wire">MALHA TÉCNICA</button><button class="btn" id="labels">ETIQUETAS</button><button class="btn" id="resetCamera">CENTRALIZAR CÂMERA</button><button class="btn primary" id="export">EXPORTAR RELATÓRIO</button></div>
 <div class="camera"><span>ESCALA FÍSICA</span><button class="btn active" data-scale="ship">NAVE · 10² m</button><button class="btn" data-scale="engine">EGAS · 10¹ m</button><button class="btn" data-scale="atom">ÁTOMO · 10⁻¹⁰ m</button></div><div class="camera"><span>CÂMERA</span><button class="btn" data-camera="iso">ISOMÉTRICA</button><button class="btn" data-camera="front">FRENTE</button><button class="btn" data-camera="side">LATERAL</button><button class="btn" data-camera="top">SUPERIOR</button><button class="btn" data-camera="rear">TRASEIRA</button><button class="btn primary" data-camera="interior">INTERIOR</button></div>
-<div id="viewport"><div class="viewtag">SPECTRA / DEEP-SPACE EXPLORER <span id="scaleTag">ESCALA 10² m</span></div><div class="axis">X / LONGITUDINAL<br>Y / VERTICAL<br>Z / TRANSVERSAL</div><div class="help" id="scaleHelp">ESCALA DA NAVE · DIMENSÕES EM METROS · ARRASTE PARA ORBITAR</div></div>
+<div id="viewport"><div class="viewtag">SPECTRA / MOBILE ORBITAL RESEARCH VESSEL <span id="scaleTag">ESCALA 10² m</span></div><div class="axis">X / LONGITUDINAL<br>Y / VERTICAL<br>Z / TRANSVERSAL</div><div class="help" id="scaleHelp">ESCALA DA NAVE · DIMENSÕES EM METROS · ARRASTE PARA ORBITAR</div></div>
 <div class="stagefoot"><div class="legend"><span><i style="background:#79d8df"></i>Estrutura</span><span><i style="background:#a48bff"></i>EGAS conceitual</span><span><i style="background:#e5b46d"></i>Instrumentação</span></div><span id="renderStatus">RENDER 3D / PRONTO</span></div>
 </section>
 <aside class="stack rightstack">
@@ -67,8 +67,8 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <div class="panel"><div class="paneltitle">07 / REGISTRO DE SESSÃO</div><div class="panelbody selectedInfo" id="sessionLog">07:00:00 — Cena inicializada.<br>Geometria conceitual carregada.<br>Controles interativos disponíveis.</div></div>
 </aside>
 </section>
-<div class="bottomgrid"><article class="panel infoPanel"><h3>ARQUITETURA INTEGRADA</h3><p>O módulo EGAS aparece como subsistema conceitual associado à região central da nave. A representação não presume que seus princípios de operação sejam fisicamente realizáveis.</p></article><article class="panel infoPanel"><h3>CONTROLES DE NAVEGAÇÃO</h3><p>Arraste para orbitar, use a roda para aproximar ou afastar e selecione componentes diretamente no viewport. Em telas sensíveis ao toque, os gestos padrão do navegador são utilizados pelo controle de órbita.</p></article></div>
-<footer class="footer"><span>S.P.E.C.T.R.A. / FLIGHT SYSTEMS LAB</span><span>SIMULADOR CONCEITUAL · REV 03.0 · 2026</span></footer>
+<div class="bottomgrid"><article class="panel infoPanel"><h3>ARQUITETURA INTEGRADA</h3><p>O módulo EGAS aparece como subsistema conceitual integrado ao núcleo estrutural central da nave. A representação não presume que seus princípios de operação sejam fisicamente realizáveis.</p></article><article class="panel infoPanel"><h3>CONTROLES DE NAVEGAÇÃO</h3><p>Arraste para orbitar, use a roda para aproximar ou afastar e selecione componentes diretamente no viewport. Em telas sensíveis ao toque, os gestos padrão do navegador são utilizados pelo controle de órbita.</p></article></div>
+<footer class="footer"><span>S.P.E.C.T.R.A. / FLIGHT SYSTEMS LAB</span><span>SIMULADOR CONCEITUAL · REV 04.0 · 2026</span></footer>
 </main>
 <script type="module">
 import * as THREE from 'three';
@@ -117,24 +117,32 @@ function tor(id,label,g,r,t,mat,p,rot=[0,Math.PI/2,0]){return add(id,label,g,new
 function rod(id,label,g,a,b,r,mat){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A);const o=add(id,label,g,new THREE.CylinderGeometry(r,r,d.length(),12),mat,A.clone().add(B).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());return o}
 function sphere(id,label,g,r,mat,p,seg=24){return add(id,label,g,new THREE.SphereGeometry(r,seg,Math.max(12,Math.floor(seg*.65))),mat,p)}
 function hullSurface(){
- const sections=[[-58,4.2,6.8],[-55,6.2,9.2],[-49,8.2,11.2],[-38,9.4,12.4],[-20,10.2,13.2],[5,10.4,13.6],[27,9.8,13.2],[43,8.5,11.8],[53,6.5,9.4],[59,4.2,6.8],[62,2.4,4.2]];
- const verts=[],idx=[],N=48;
- for(const [x,ry,rz] of sections)for(let j=0;j<N;j++){const a=j*2*Math.PI/N;verts.push(x,ry*Math.sin(a),rz*Math.cos(a))}
- for(let i=0;i<sections.length-1;i++)for(let j=0;j<N;j++){const a=i*N+j,b=i*N+(j+1)%N,c=(i+1)*N+j,d=(i+1)*N+(j+1)%N;idx.push(a,b,c,b,d,c)}
- const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));g.setIndex(idx);g.computeVertexNormals();
- add('primary_hull','Fuselagem principal monocoque','hull',g,M.hull);
+ // Arquitetura aberta tipo estação móvel: treliças, quilhas e anéis estruturais.
+ // Não existe um casco monocoque contínuo; os módulos ficam separados e conectados.
+ for(const z of [-5.5,5.5])for(const y of [-4.5,4.5]){
+  rod('keel_long_'+y+'_'+z,'Longarina estrutural longitudinal','hull',[-49,y,z],[43,y,z],.62,M.edge);
+  for(let x=-42;x<=36;x+=13)rod('truss_diag_'+y+'_'+z+'_'+x,'Diagonal da treliça principal','hull',[x,y,z],[x+6.5,-y,-z],.24,M.cyan);
+ }
+ for(const x of [-43,-28,-13,2,17,32,44]){
+  for(const a of [0,Math.PI/2])tor('open_frame_'+x+'_'+a,'Pórtico estrutural aberto','hull',a===0?8.2:6.4,.32,M.edge,[x,0,0],[a,Math.PI/2,0]);
+  rod('crossbeam_'+x,'Travessa estrutural do núcleo','hull',[x,-7,0],[x,7,0],.48,M.armor);
+ }
+ box('central_spine','Viga central de integração dos módulos','hull',78,3.2,4.2,M.dark,[0,0,0]);
+ for(const x of [-35,-20,-5,10,25,40])box('service_platform_'+x,'Plataforma técnica aberta','hull',8,.55,13,M.armor,[x,-5.5,0]);
+ // Braços radiais de conexão para os módulos científicos e habitáveis.
+ for(const x of [-24,0,24])for(const s of [-1,1]){
+  rod('radial_arm_'+x+'_'+s,'Braço de conexão modular','hull',[x,0,s*5],[x,0,s*20],.72,M.edge);
+  tor('docking_collar_'+x+'_'+s,'Colar de acoplamento modular','hull',3.4,.28,M.cyan,[x,0,s*19],[Math.PI/2,0,0]);
+ }
 }
 function wing(side){
- // Plataformas laterais largas: silhueta de nave orbital, sem asas delta.
- const pts=side>0?[[-27,8],[19,8],[30,12],[34,18],[34,25],[27,31],[18,34],[-20,34],[-29,29],[-33,23],[-33,15]]:[[-27,-8],[19,-8],[30,-12],[34,-18],[34,-25],[27,-31],[18,-34],[-20,-34],[-29,-29],[-33,-23],[-33,-15]];
- const shape=new THREE.Shape();shape.moveTo(pts[0][0],pts[0][1]);pts.slice(1).forEach(p=>shape.lineTo(p[0],p[1]));shape.closePath();
- const geo=new THREE.ExtrudeGeometry(shape,{depth:2.8,bevelEnabled:true,bevelSegments:4,steps:1,bevelSize:1.1,bevelThickness:.7});geo.rotateX(-Math.PI/2);geo.translate(0,-1.4,0);
- add('orbital_deck_'+side,side>0?'Plataforma orbital lateral de bombordo':'Plataforma orbital lateral de estibordo','hull',geo,M.armor);
- for(let x of [-20,-10,0,10,20]){
-  box('deck_panel_'+side+'_'+x,'Painel modular da plataforma orbital','hull',5,.16,4.2,M.dark,[x,1.15,side*27]);
-  box('deck_window_'+side+'_'+x,'Janela de observação da plataforma','hull',3.4,.12,.22,M.glass,[x,1.25,side*31.7]);
+ // Plataformas de serviço independentes, sem formar uma asa ou casco fechado.
+ box('service_outboard_'+side,side>0?'Plataforma externa de serviço — bombordo':'Plataforma externa de serviço — estibordo','hull',28,.65,13,M.dark,[12,-5.5,side*36]);
+ for(let x of [2,12,22]){
+  box('service_tile_'+side+'_'+x,'Painel de serviço modular','hull',7,.14,9,M.panel,[x,-5.05,side*36]);
+  rod('service_strut_'+side+'_'+x,'Suporte da plataforma externa','hull',[x,-5.5,side*20],[x,-5.5,side*30],.32,M.edge);
  }
- for(let x of [-25,25])tor('deck_docking_ring_'+side+'_'+x,'Anel de acoplamento lateral','hull',2.1,.24,M.cyan,[x,0,side*29],[Math.PI/2,0,0]);
+ for(let x of [2,22])tor('service_dock_'+side+'_'+x,'Anel de acoplamento externo','hull',2.6,.22,M.cyan,[x,-5.1,side*41],[Math.PI/2,0,0]);
 }
 hullSurface();wing(1);wing(-1);
 // Dorsal spine, armored seams and segmented access panels.
@@ -147,11 +155,14 @@ box('bridge_keel','Base estrutural do comando','bridge',25,3.2,17,M.dark,[-39,5.
 box('bridge_observation_deck','Convés frontal de observação','bridge',20,.8,19,M.armor,[-38,3.2,0]);
 for(let s of [-1,1]){rod('canopy_frame_'+s,'Arco de sustentação da cúpula','bridge',[-49,9,s*6],[-28,9,s*6],.2,M.edge)}
 for(let i=0;i<8;i++){const x=-50+i*3.1;box('canopy_louver_'+i,'Divisória externa do cockpit','bridge',.16,.3,8,M.cyan,[x,10.5,0])}
-// Central habitable spine and side crew modules.
+// Módulos habitáveis em blocos independentes, distribuídos em torno da treliça.
 for(let s of [-1,1]){
- const pod=cyl('habitat_pod_'+s,'Módulo habitável lateral','habitat',4.3,4.3,31,M.hull,[0,0,s*12],[0,0,Math.PI/2]);
- for(let x of [-13,-6,1,8,15]){box('hab_window_'+s+'_'+x,'Janela técnica do módulo habitável','habitat',2.1,1.4,.18,M.glass,[x,3.2,s*16],[0,0,0])}
- for(let x of [-15,15])tor('hab_collar_'+s+'_'+x,'Anel de acoplamento do módulo','habitat',4.4,.25,M.cyan,[x,0,s*12],[Math.PI/2,0,0]);
+ for(const x of [-24,0,24]){
+  box('habitat_pod_'+s+'_'+x,'Módulo habitável pressurizado independente','habitat',17,8.5,10,M.hull,[x,2.5,s*25]);
+  box('habitat_roof_'+s+'_'+x,'Cobertura técnica do módulo habitável','habitat',14,.7,8,M.armor,[x,7.1,s*25]);
+  for(let k=-2;k<=2;k++)box('hab_window_'+s+'_'+x+'_'+k,'Janela do módulo habitável','habitat',2.1,1.5,.18,M.glass,[x+k*2.8,3.4,s*30.08]);
+  for(const xx of [x-6,x+6])rod('hab_support_'+s+'_'+x+'_'+xx,'Suporte do módulo habitável','habitat',[xx,-2,s*20],[xx,-2,s*25],.38,M.edge);
+ }
 }
 // INTERIOR CONCEITUAL: corredor longitudinal, compartimentos habitáveis e sala de máquinas.
 const roomMat=new THREE.MeshStandardMaterial({color:0x29465a,metalness:.48,roughness:.55});
@@ -292,7 +303,7 @@ $('opacity').addEventListener('input',e=>{const v=+e.target.value/100;$('opacity
 $('autoRotate').onclick=()=>{auto=!auto;controls.autoRotate=auto;controls.autoRotateSpeed=.38;$('autoRotate').classList.toggle('active',auto)};
 $('wire').onclick=()=>{wire=!wire;Object.values(M).forEach(m=>{if('wireframe'in m)m.wireframe=wire});$('wire').classList.toggle('active',wire)};
 $('labels').onclick=()=>{$('labels').classList.toggle('active');$('renderStatus').textContent=$('labels').classList.contains('active')?'MODO DE IDENTIFICAÇÃO ATIVO':'RENDER 3D / PRONTO';log('Identificação visual '+($('labels').classList.contains('active')?'ativada':'desativada'))};
-$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'03.0',classification:'Conceitual / não funcional',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
+$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'04.0',classification:'Conceitual / não funcional',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
 $('resetCamera').click();
 function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(viewport);resize();setDims();updateCount();
