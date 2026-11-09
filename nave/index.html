@@ -128,7 +128,7 @@ function tor(id,label,g,r,t,mat,p,rot=[0,Math.PI/2,0]){return add(id,label,g,new
 function rod(id,label,g,a,b,r,mat){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A);const o=add(id,label,g,new THREE.CylinderGeometry(r,r,d.length(),12),mat,A.clone().add(B).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());return o}
 function sphere(id,label,g,r,mat,p,seg=24){return add(id,label,g,new THREE.SphereGeometry(r,seg,Math.max(12,Math.floor(seg*.65))),mat,p)}
 
-// REV 09.0 — arquitetura modular dimensionada para missão de 50 tripulantes.
+// REV 13.0 — carenagem monocoque integrada; arquitetura modular dimensionada para missão de 50 tripulantes.
 // Coordenadas do modelo em metros: X longitudinal, Y vertical, Z transversal.
 const labelsGroup=new THREE.Group();root.add(labelsGroup);labelsGroup.visible=false;
 function label3D(text,pos,size=3){
@@ -333,6 +333,42 @@ function hullSurface(){
   rod('service_strut_'+x+'_'+side,'Suporte de serviço inferior','landing',[x,-7,side*5],[x,-13,side*8],.26,M.edge);
   box('service_pad_'+x+'_'+side,'Plataforma de manutenção','landing',4,.5,4,M.dark,[x,-13,side*8]);
  }
+ // REV 13.0 — carenagem externa monocoque de silhueta aerodinâmica.
+ // A superfície contínua envolve os módulos internos sem alterar sua geometria conceitual.
+ const shellProfile=[
+  [-83,.35,.35],[-80,4.5,3.4],[-75,8.8,6.8],[-68,14.2,10.2],
+  [-58,21.5,14.2],[-45,28.5,17.4],[-28,33.5,19.4],[-8,36,20.5],
+  [15,36.5,20.5],[35,34.5,19.2],[50,30.5,17.2],[62,25.5,14.8],
+  [71,19.5,11.5],[78,12.5,7.6],[82,5.5,3.8],[84,.35,.35]
+ ];
+ const shellGeo=new THREE.BufferGeometry();
+ const ringCount=161,sideCount=64,verts=[],indices=[];
+ function profileAt(x){
+  let k=0;while(k<shellProfile.length-2&&x>shellProfile[k+1][0])k++;
+  const a=shellProfile[k],b=shellProfile[k+1],t=Math.max(0,Math.min(1,(x-a[0])/(b[0]-a[0])));
+  const u=t*t*(3-2*t);
+  return [a[1]+(b[1]-a[1])*u,a[2]+(b[2]-a[2])*u];
+ }
+ for(let i=0;i<ringCount;i++){
+  const x=-83+(167*i/(ringCount-1)),[rz,ry]=profileAt(x);
+  for(let j=0;j<sideCount;j++){
+   const a=2*Math.PI*j/sideCount;
+   const fullness=1-.055*Math.cos(2*a);
+   verts.push(x,.25+Math.sin(a)*ry*fullness,Math.cos(a)*rz*fullness);
+  }
+ }
+ for(let i=0;i<ringCount-1;i++)for(let j=0;j<sideCount;j++){
+  const a=i*sideCount+j,b=i*sideCount+(j+1)%sideCount,c=(i+1)*sideCount+(j+1)%sideCount,d=(i+1)*sideCount+j;
+  indices.push(a,b,d,b,c,d);
+ }
+ shellGeo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
+ shellGeo.setIndex(indices);shellGeo.computeVertexNormals();
+ const aeroShell=new THREE.Mesh(shellGeo,M.hull);
+ aeroShell.name='aerodynamic_monocoque_shell';
+ aeroShell.userData={label:'Carenagem externa monocoque aerodinâmica — cobertura integral conceitual',group:'hull',userHidden:false};
+ aeroShell.castShadow=true;aeroShell.receiveShadow=true;
+ groups.hull.add(aeroShell);pickables.push(aeroShell);named.aerodynamic_monocoque_shell=aeroShell;
+
 }
 hullSurface();
 
@@ -520,7 +556,7 @@ $('opacity').addEventListener('input',e=>{const v=+e.target.value/100;$('opacity
 $('autoRotate').onclick=()=>{auto=!auto;controls.autoRotate=auto;controls.autoRotateSpeed=.38;$('autoRotate').classList.toggle('active',auto)};
 $('wire').onclick=()=>{wire=!wire;Object.values(M).forEach(m=>{if('wireframe'in m)m.wireframe=wire});$('wire').classList.toggle('active',wire)};
 $('labels').onclick=()=>{$('labels').classList.toggle('active');labelsGroup.visible=$('labels').classList.contains('active')||interiorMode;$('renderStatus').textContent=$('labels').classList.contains('active')?'MODO DE IDENTIFICAÇÃO ATIVO':'RENDER 3D / PRONTO';log('Identificação visual '+($('labels').classList.contains('active')?'ativada':'desativada'))};
-$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'12.1',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
+$('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'13.0',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
 $('resetCamera').click();
 function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(viewport);resize();setDims();updateCount();populatePieceSelect();
