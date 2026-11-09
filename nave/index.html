@@ -128,7 +128,7 @@ function tor(id,label,g,r,t,mat,p,rot=[0,Math.PI/2,0]){return add(id,label,g,new
 function rod(id,label,g,a,b,r,mat){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A);const o=add(id,label,g,new THREE.CylinderGeometry(r,r,d.length(),12),mat,A.clone().add(B).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());return o}
 function sphere(id,label,g,r,mat,p,seg=24){return add(id,label,g,new THREE.SphereGeometry(r,seg,Math.max(12,Math.floor(seg*.65))),mat,p)}
 
-// REV 07.0 — arquitetura modular dimensionada para missão de 50 tripulantes.
+// REV 09.0 — arquitetura modular dimensionada para missão de 50 tripulantes.
 // Coordenadas do modelo em metros: X longitudinal, Y vertical, Z transversal.
 const labelsGroup=new THREE.Group();root.add(labelsGroup);labelsGroup.visible=false;
 function label3D(text,pos,size=3){
@@ -222,6 +222,16 @@ function hullSurface(){
  box('science_platform','Plataforma de instrumentação científica','hull',18,1,16,M.dark,[25,-8,0]);
  for(let i=0;i<4;i++)box('science_instrument_'+i,'Instrumento científico externo','antenna',3,3,3,M.gold,[19+i*4,-6,0]);
  label3D('INSTRUMENTAÇÃO',[25,-1,0],2.2);
+ // Raízes estruturais permanentes pertencem ao grupo do casco: as asas não ficam visualmente soltas.
+ for(const side of [-1,1]){
+  const z=side;
+  box('integrated_wing_saddle_'+side,'Berço estrutural integrado ao casco para extensão lateral','hull',16,5,9,M.armor,[8,2,z*9]);
+  rod('integrated_wing_pylon_a_'+side,'Pilar de transferência de carga da extensão','hull',[3,1,z*7],[8,7,z*20],1.25,M.edge);
+  rod('integrated_wing_pylon_b_'+side,'Pilar secundário de transferência de carga','hull',[13,1,z*7],[8,7,z*20],1.05,M.armor);
+  cyl('integrated_wing_socket_'+side,'Mancal de conexão da asa ao casco','hull',2.1,2.1,4,M.gold,[8,7,z*17],[Math.PI/2,0,0],40);
+  tor('integrated_wing_socket_ring_'+side,'Anel de retenção da conexão estrutural','hull',2.15,.22,M.edge,[8,7,z*17],[Math.PI/2,0,0]);
+  rod('integrated_wing_power_link_'+side,'Conduíte protegido entre casco e extensão','hull',[8,4,z*8],[8,8,z*22],.24,M.cyan);
+ }
  // Interfaces físicas de conexão entre casco, extensões e painéis solares.
  // As bases começam dentro do volume do casco e terminam nos suportes das asas.
  for(const side of [-1,1]){
@@ -279,24 +289,28 @@ function hullSurface(){
  }
  box('aft_service_deck','Convés de manutenção dos sistemas propulsivos','hull',16,1,22,M.armor,[54,-8,0]);
  label3D('CONJUNTOS PROPULSIVOS',[73,9,0],2.4);
- // Sistema elétrico por radioisótopos inspirado nos RTGs da Voyager.
- // Representação didática de três unidades termoelétricas montadas em uma lança conectada ao casco.
- rod('rtg_boom_root','Base estrutural da lança dos geradores RTG','power',[34,-7,0],[43,-13,0],.8,M.armor);
- rod('rtg_boom_main','Lança de suporte dos geradores de radioisótopos','power',[43,-13,-13],[43,-13,13],.62,M.edge);
- for(const z of [-10,0,10]){
-  rod('rtg_mount_'+z,'Suporte de fixação do gerador RTG','power',[43,-13,z],[43,-16,z],.42,M.edge);
-  cyl('rtg_body_'+z,'Gerador termoelétrico de radioisótopos · RTG','power',2.15,2.15,6.8,M.armor,[43,-18,z],[Math.PI/2,0,0],48);
+ // Sistema elétrico de radioisótopos: três RTGs externos, inspirado na arquitetura da Voyager.
+ // São geradores termoelétricos, não um reator de fissão; a geometria é ilustrativa.
+ // A lança e sua raiz ficam no grupo do casco para preservar a conexão visual.
+ rod('rtg_boom_root','Raiz integrada da lança dos geradores RTG','hull',[29,5,0],[43,11,0],1.05,M.armor);
+ rod('rtg_boom_main','Lança estrutural dos geradores de radioisótopos','hull',[43,11,-15],[43,11,15],.78,M.edge);
+ for(const z of [-11,0,11]){
+  rod('rtg_mount_'+z,'Berço de fixação do gerador RTG','hull',[43,11,z],[43,8,z],.62,M.armor);
+  cyl('rtg_body_'+z,'Gerador termoelétrico de radioisótopos · RTG','power',2.65,2.65,8.5,M.armor,[43,5,z],[Math.PI/2,0,0],56);
   for(const end of [-1,1]){
-   tor('rtg_endcap_'+z+'_'+end,'Tampa de extremidade do RTG','power',2.08,.2,M.edge,[43,-18,z+end*3.25],[Math.PI/2,0,0]);
+   tor('rtg_endcap_'+z+'_'+end,'Tampa de extremidade do RTG','power',2.58,.24,M.edge,[43,5,z+end*4.05],[Math.PI/2,0,0]);
   }
-  for(let k=0;k<8;k++){
-   const a=k*Math.PI/4;
-   rod('rtg_fin_'+z+'_'+k,'Aleta dissipadora do gerador RTG','power',[43+Math.cos(a)*2.0,-18+Math.sin(a)*2.0,z-2.5],[43+Math.cos(a)*3.1,-18+Math.sin(a)*3.1,z+2.5],.13,M.edge);
+  for(let k=0;k<12;k++){
+   const a=k*Math.PI/6;
+   rod('rtg_fin_'+z+'_'+k,'Aleta dissipadora externa do RTG','power',[43+Math.cos(a)*2.35,5+Math.sin(a)*2.35,z-3.1],[43+Math.cos(a)*3.25,5+Math.sin(a)*3.25,z+3.1],.16,M.edge);
   }
-  box('rtg_connector_'+z,'Conector elétrico e térmico do RTG','power',1.2,1.2,1.2,M.gold,[43,-14,z]);
+  cyl('rtg_neck_'+z,'Pescoço de conexão térmica e estrutural do RTG','hull',.82,.82,3.2,M.gold,[43,8.6,z],[0,0,0],32);
  }
- box('rtg_bus','Caixa de distribuição elétrica dos RTGs','power',5,3,7,M.dark,[36,-10,0]);
- label3D('SISTEMA ELÉTRICO RTG',[43,-7,0],2.4);
+ box('rtg_bus','Unidade de condicionamento e distribuição elétrica dos RTGs','power',7,3,9,M.dark,[34,3,0]);
+ for(const side of [-1,1]){
+  rod('rtg_cable_trunk_'+side,'Linha protegida de distribuição elétrica','hull',[34,3,side*3],[25,0,side*5],.22,M.cyan);
+ }
+ label3D('GERADORES ELÉTRICOS RTG',[43,16,0],2.5);
  // Antena de comunicação e sensores externos.
  rod('sensor_mast','Mastro de instrumentação','antenna',[-45,7,0],[-45,20,0],.2,M.edge);
  tor('sensor_dish','Antena de comunicação','antenna',3,.16,M.gold,[-45,20,0],[Math.PI/2,0,0]);
@@ -443,7 +457,7 @@ function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;r
 $('resetDims').onclick=()=>{$('len').value=160;$('wid').value=96;$('hei').value=48;setDims()};
 function updateCount(){const n=Object.keys(groups).filter(k=>document.querySelector('[data-module="'+k+'"]')?.checked).length;$('statMods').textContent=n+' / '+Object.keys(groups).length}
 document.querySelectorAll('[data-module]').forEach(ch=>ch.addEventListener('change',()=>{groups[ch.dataset.module].visible=ch.checked;updateCount();log('Visibilidade atualizada: '+ch.parentElement.textContent.trim())}));
-function explode(v){const t=v/100;const dirs={hull:[0,0,0],bridge:[-1,1,0],egas:[0,0,0],propulsion:[1,0,0],radiators:[0,1,1],habitat:[0,-1,1],field:[0,0,-1],antenna:[-1,1,0],landing:[0,-1,0],power:[1,-1,0],interior:[0,0,0]};Object.entries(groups).forEach(([k,g])=>g.position.set(dirs[k][0]*t*19,dirs[k][1]*t*15,dirs[k][2]*t*20));$('explodeOut').textContent=Math.round(v)+'%';$('statState').textContent=t?'EXPLODIDA':'MONTADA';exploded=t>0}
+function explode(v){const t=v/100;const dirs={hull:[0,0,0],bridge:[-1,1,0],egas:[0,0,0],propulsion:[1,0,0],radiators:[0,1,1],habitat:[0,-1,1],field:[0,0,-1],antenna:[-1,1,0],landing:[0,-1,0],power:[1,1,0],interior:[0,0,0]};Object.entries(groups).forEach(([k,g])=>g.position.set(dirs[k][0]*t*19,dirs[k][1]*t*15,dirs[k][2]*t*20));$('explodeOut').textContent=Math.round(v)+'%';$('statState').textContent=t?'EXPLODIDA':'MONTADA';exploded=t>0}
 $('explode').addEventListener('input',e=>{explode(+e.target.value);$('modeExploded').classList.toggle('active',+e.target.value>0);$('modeAssembled').classList.toggle('active',+e.target.value===0)});
 $('modeAssembled').onclick=()=>{$('explode').value=0;explode(0);$('modeAssembled').classList.add('active');$('modeExploded').classList.remove('active');$('modeCut').classList.remove('active');cut=false;Object.values(M).forEach(mat=>{mat.clippingPlanes=[]});groups.hull.visible=document.querySelector('[data-module="hull"]').checked};
 $('modeExploded').onclick=()=>{$('explode').value=68;explode(68);$('modeExploded').classList.add('active');$('modeAssembled').classList.remove('active');$('modeCut').classList.remove('active');cut=false;Object.values(M).forEach(mat=>{mat.clippingPlanes=[]})};
