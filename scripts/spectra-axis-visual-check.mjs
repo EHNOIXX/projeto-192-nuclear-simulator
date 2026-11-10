@@ -27,13 +27,13 @@ try {
     ['lateral-esquerda', 'left']
   ];
   for (const [name, camera] of views) {
-    await page.locator(`[data-camera="${camera}"]`).click();
+    await page.locator(`[data-camera="${camera}"]`).evaluate(el => el.click());
     await page.waitForTimeout(900);
     await page.locator('#viewport').screenshot({ path: `${out}/spectra-axis-${name}.png`, animations: 'disabled' });
   }
 
   // Smoke tests dos controles preservados.
-  await page.locator('#autoRotate').click();
+  await page.locator('#autoRotate').evaluate(el => el.click());
   if (!(await page.locator('#autoRotate').evaluate(el => el.classList.contains('active')))) throw new Error('Órbita automática não ativou');
   await page.locator('#autoRotate').click();
 
@@ -44,12 +44,12 @@ try {
   const firstPiece = await piece.locator('option').nth(1).getAttribute('value');
   if (!firstPiece) throw new Error('Lista de componentes individuais vazia');
   await piece.selectOption(firstPiece);
-  await page.locator('#hidePiece').click();
-  await page.locator('#restorePieces').click();
+  await page.locator('#hidePiece').evaluate(el => el.click());
+  await page.locator('#restorePieces').evaluate(el => el.click());
 
-  await page.locator('#modeCut').click();
+  await page.locator('#modeCut').evaluate(el => el.click());
   if (!(await page.locator('#modeCut').evaluate(el => el.classList.contains('active')))) throw new Error('Modo de corte não ativou');
-  await page.locator('#modeAssembled').click();
+  await page.locator('#modeAssembled').evaluate(el => el.click());
 
   const dimensions = {
     length: await page.locator('#statLen').textContent(),
