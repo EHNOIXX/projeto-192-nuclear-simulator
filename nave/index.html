@@ -167,12 +167,15 @@ function modulePod(id,label,center,dims,material=M.hull){
  label3D(label,[x,y+h/2+3,z],2.1);
 }
 function axisHullProfile(t){
- // Nariz longo, ombros contidos e cauda contraída antes da seção propulsiva.
+ // Planta longitudinal: proa fina, ombros progressivos, corpo central cheio
+ // e contração traseira gradual para integrar três alojamentos propulsivos.
  const smooth=u=>{u=THREE.MathUtils.clamp(u,0,1);return u*u*(3-2*u)};
- if(t<.29)return Math.pow(Math.sin(smooth(t/.29)*Math.PI/2),.82);
- if(t>.77)return Math.pow(1-smooth((t-.77)/.23),.76);
- const rise=smooth((t-.29)/.13),fall=1-smooth((t-.65)/.12);
- return .88+.12*rise*fall;
+ const keys=[[0,.008],[.07,.105],[.19,.43],[.32,.79],[.43,.94],[.62,1],[.75,.97],[.84,.79],[.92,.48],[.98,.16],[1,.012]];
+ for(let i=0;i<keys.length-1;i++){
+  const [a,va]=keys[i],[b,vb]=keys[i+1];
+  if(t<=b){const u=smooth((t-a)/(b-a));return va+(vb-va)*u;}
+ }
+ return keys[keys.length-1][1];
 }
 function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
  const positions=[],indices=[];
@@ -195,16 +198,16 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
  g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
  g.setIndex(indices);g.computeVertexNormals();return g;
 }
-function hullProfileAtX(x,halfHeight=13.5,length=156){
+function hullProfileAtX(x,halfHeight=16.2,length=160){
  const t=Math.max(0,Math.min(1,x/length+.5));
  return halfHeight*axisHullProfile(t);
 }
 function hullSurfacePoint(x,theta,offset=0){
- const t=Math.max(0,Math.min(1,x/156+.5)),p=axisHullProfile(t);
+ const t=Math.max(0,Math.min(1,x/160+.5)),p=axisHullProfile(t);
  const cs=Math.cos(theta),sn=Math.sin(theta);
- const y=13.5*p*Math.sign(cs)*Math.pow(Math.abs(cs),1.04);
-  const z=28*p*Math.sign(sn)*Math.pow(Math.abs(sn),1.04);
-  const n=new THREE.Vector3(0,cs/13.5,sn/28).normalize();
+ const y=16.2*p*Math.sign(cs)*Math.pow(Math.abs(cs),.90);
+ const z=34.5*p*Math.sign(sn)*Math.pow(Math.abs(sn),.90);
+ const n=new THREE.Vector3(0,cs/16.2,sn/34.5).normalize();
  return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
 }
 function hullArmorPatch(x0,x1,a0,a1){
@@ -223,25 +226,25 @@ function hullSeamCurve(x0,x1,angle){
 }
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
- const primary=add('primary_pressure_hull','Casco pressurizado elipsoidal de curvatura variável — SPECTRA-AXIS','hull',axisHullGeometry(156,13.5,28),M.hull,[0,0,0]);
+ const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,16.2,34.5),M.hull,[0,0,0]);
  // Naceles laterais externas, longas e baixas: silhueta de pods integrados da prancha oficial.
  for(const side of [-1,1]){
-  add('axis_side_pod_'+side,'Nacele lateral longitudinal integrada ao casco','hull',axisHullGeometry(66,3.2,5.2,112,56),M.armor,[29,-1.0,side*34.8]);
+  add('axis_side_pod_'+side,'Nacele lateral de ombro integrada ao monocoque','hull',axisHullGeometry(70,2.7,4.6,112,56),M.armor,[27,-.6,side*40.2]);
   tor('axis_side_pod_frame_'+side,'Aro estrutural da nacele lateral','hull',3.35,.18,M.edge,[51,-1.0,side*34.8],[0,Math.PI/2,0]);
   for(let i=0;i<9;i++){
    const x=8+i*5.6;
-   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.5,.18,.2,M.cyan,[x,1.0,side*40.0]);
+   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.3,.14,.16,M.cyan,[x,.85,side*44.4]);
   }
-  for(const x of [12,27,42,57])box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso da nacele lateral','hull',5,.18,2.5,M.dark,[x,1.8,side*35.2]);
+  for(const x of [12,27,42,57])box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso da nacele lateral','hull',5,.14,2.1,M.dark,[x,1.55,side*40.8]);
  }
 
  // Serviços e proteção ventral embutidos na pele do casco, sem cápsulas longitudinais sobrepostas.
 
  // AXIS — estrutura central longitudinal integrada à superfície dorsal do casco.
  // AXIS em camadas: carenagem elevada, longarinas e interfaces transversais.
- add('spectra_axis_spine','AXIS — carenagem longitudinal central','hull',axisHullGeometry(112,1.45,3.2,112,48),M.armor,[0,13.1,0]);
- rod('axis_upper_rail_left','AXIS — longarina superior esquerda','hull',[-54,14.25,-2.2],[54,14.25,-2.2],.48,M.edge);
- rod('axis_upper_rail_right','AXIS — longarina superior direita','hull',[-54,14.25,2.2],[54,14.25,2.2],.48,M.edge);
+ add('spectra_axis_spine','AXIS — carenagem longitudinal central integrada','hull',axisHullGeometry(112,1.15,2.8,112,48),M.armor,[0,15.65,0]);
+ rod('axis_upper_rail_left','AXIS — longarina superior esquerda','hull',[-54,17.0,-1.9],[54,17.0,-1.9],.34,M.edge);
+ rod('axis_upper_rail_right','AXIS — longarina superior direita','hull',[-54,17.0,1.9],[54,17.0,1.9],.34,M.edge);
  for(const x of [-52,-39,-26,-13,0,13,26,39,52]){const y=hullProfileAtX(x)+.22;box('axis_interface_'+x,'AXIS — interface modular embutida','hull',2.6,.28,1.8,M.panel,[x,y,0])}
  const axisPoints=[];for(let i=0;i<=48;i++){const x=-67+i*(134/48);axisPoints.push(new THREE.Vector3(x,hullProfileAtX(x)+.22,0))}
  const axisCurve=new THREE.CatmullRomCurve3(axisPoints);
@@ -295,7 +298,7 @@ function hullSurface(){
  }
  // Berços e escoras unem as naceles ao casco.
  for(const side of [-1,1])for(const x of [8,27,46]){
-  const z=side*28,podZ=side*34.8;
+  const z=side*34,podZ=side*40.2;
   rod('side_pod_mount_'+side+'_'+x,'Berço estrutural de conexão da nacele lateral','hull',[x,0,z],[x,-1.8,podZ],.72,M.edge);
   rod('side_pod_mount_diag_'+side+'_'+x,'Escora diagonal da nacele lateral','hull',[x-4,-3,z+side*1.5],[x+4,-1.8,podZ-side*1.5],.34,M.dark);
  }
@@ -308,8 +311,8 @@ function hullSurface(){
  }
  // Anéis de união do casco e painéis de acesso.
  for(const x of [-48,-32,-16,0,16,32,48]){
-  tor('hull_frame_'+x,'Anel estrutural de reforço do casco','hull',9.9,.22,M.edge,[x,0,0],[0,0,Math.PI/2]);
-  box('service_panel_'+x,'Painel de inspeção do casco','hull',5,.16,3.2,M.dark,[x,9.1,0]);
+  const y=hullProfileAtX(x,16.2,160)-.8;
+  box('service_panel_'+x,'Painel de inspeção embutido do casco','hull',5,.14,3.2,M.dark,[x,y,0]);
  }
  // Janelas de observação e iluminação de serviço em faixas laterais.
  for(const side of [-1,1])for(let i=0;i<9;i++){
@@ -380,29 +383,16 @@ function hullSurface(){
  sphere('egas_core','Representação hipotética do núcleo E-192','egas',1.7,M.violet,[18,0,0],40);
  for(let i=0;i<4;i++)tor('egas_ring_'+i,'Anel esquemático do EGAS','egas',5.3+i*.55,.12,i%2?M.gold:M.cyan,[18,0,0]);
  label3D('EGAS · CONCEITUAL',[18,8,0],2.4);
- // Uma única carenagem traseira contínua envolve os três alojamentos propulsivos e fecha a transição do casco.
-  add('aft_continuous_fairing','Carenagem traseira contínua integrada ao casco','hull',axisHullGeometry(42,12.5,27,112,64),M.armor,[57,0,0]);
- // Três unidades propulsivas alinhadas com bocais em sino e anéis concêntricos, sem brilho excessivo.
- for(const [y,z] of [[0,-17],[0,0],[0,17]]){
-  cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',4.2,4.8,15,M.dark,[67,y,z],[0,0,Math.PI/2]);
-  const nozzle=add('engine_nozzle_'+y+'_'+z,'Bocal externo ilustrativo','propulsion',new THREE.CylinderGeometry(3.1,5.1,6.5,64,1,true),M.armor,[77,y,z],[0,0,Math.PI/2]);
-  tor('aft_engine_ring_'+y+'_'+z,'Aro externo da unidade propulsiva','propulsion',4.8,.28,M.edge,[76.8,y,z]);
-  tor('engine_inner_ring_'+y+'_'+z,'Aro interno do bocal','propulsion',3.15,.18,M.cyan,[80.4,y,z]);
-  sphere('aft_engine_core_'+y+'_'+z,'Abertura de inspeção do conjunto termoelétrico-propulsivo','propulsion',.32,M.cyan,[80.8,y,z],48);
-  tor('integrated_energy_aperture_'+y+'_'+z,'Aro de inspeção do núcleo integrado','propulsion',.48,.10,M.cyan,[78.85,y,z],[0,Math.PI/2,0]);
-  tor('integrated_energy_inner_'+y+'_'+z,'Anel interno do conversor termoelétrico','propulsion',.27,.07,M.gold,[79.05,y,z],[0,Math.PI/2,0]);
-  // O corpo da nacele traseira funciona como berço integrado; sem quatro
-  // braços externos que deixavam o propulsor visualmente pendurado.
-  tor('engine_casing_collar_'+y+'_'+z,'Colar de carenagem da unidade propulsiva','propulsion',5.1,.42,M.edge,[66,y,z],[0,Math.PI/2,0]);
-  for(const [rr,thick,mat] of [[3.65,.16,M.edge],[2.75,.12,M.cyan],[1.8,.10,M.gold]])
-   tor('engine_throat_layer_'+y+'_'+z+'_'+rr,'Anel interno em camadas do bocal','propulsion',rr,thick,mat,[80.7,y,z],[0,Math.PI/2,0]);
-  for(let vane=0;vane<12;vane++){
-   const a=vane*Math.PI/6,ca=Math.cos(a),sa=Math.sin(a);
-   rod('engine_vane_'+y+'_'+z+'_'+vane,'Aleta radial interna ilustrativa do bocal','propulsion',[78.2,y+ca*2.1,z+sa*2.1],[80.3,y+ca*3,z+sa*3],.14,M.edge);
-  }
-  tor('engine_support_collar_'+y+'_'+z,'Colar estrutural externo do conjunto propulsivo','propulsion',5.25,.34,M.dark,[72,y,z],[0,Math.PI/2,0]);
+ // A popa continua o monocoque: três alojamentos curtos entram na
+ // contração traseira e terminam em bocais discretos, sem cápsula sobreposta,
+ // disco de fechamento ou armação circular externa.
+ for(const [y,z] of [[0,-12],[0,0],[0,12]]){
+  cyl('aft_engine_'+y+'_'+z,'Alojamento integrado de unidade propulsiva conceitual','propulsion',3.8,4.2,13,M.dark,[62,y,z],[0,0,Math.PI/2]);
+  add('engine_nozzle_'+y+'_'+z,'Bocal integrado de unidade propulsiva conceitual','propulsion',new THREE.CylinderGeometry(2.8,4.35,5.2,48,1,true),M.armor,[71,y,z],[0,0,Math.PI/2]);
+  tor('engine_casing_collar_'+y+'_'+z,'Junta curta entre casco e alojamento propulsivo','propulsion',4.25,.22,M.edge,[56.2,y,z],[0,Math.PI/2,0]);
+  sphere('aft_engine_core_'+y+'_'+z,'Abertura conceitual da unidade propulsiva','propulsion',.22,M.cyan,[74.0,y,z],32);
  }
- box('aft_service_deck','Convés de manutenção dos sistemas propulsivos','hull',16,1,22,M.armor,[54,-8,0]);
+ // Sem convés saliente: manutenção distribuída em painéis embutidos no casco.
  label3D('CONJUNTOS PROPULSIVOS',[73,9,0],2.4);
  // Representação do núcleo E-192 reutiliza a linguagem visual do simulador nuclear:
  // 192 prótons ciano + 250 nêutrons violeta, distribuição ilustrativa e sem escala física.
@@ -410,11 +400,11 @@ function hullSurface(){
  const nucleusProtonMat=new THREE.MeshStandardMaterial({color:0x55e0e5,emissive:0x0b555d,emissiveIntensity:.35,roughness:.24,metalness:.18});
  const nucleusNeutronMat=new THREE.MeshStandardMaterial({color:0x9b8cff,emissive:0x34266f,emissiveIntensity:.3,roughness:.27,metalness:.14});
  const nucleusContourMat=new THREE.MeshBasicMaterial({color:0x8cebea,wireframe:true,transparent:true,opacity:.075});
- for(const [y,z] of [[0,-17],[0,0],[0,17]]){
+ for(const [y,z] of [[0,-12],[0,0],[0,12]]){
   const id='integrated_power_'+y+'_'+z;
-  cyl(id+'_thermal_chamber','Câmara termoelétrica integrada ao conjunto propulsivo','propulsion',1.82,1.82,7.2,M.armor,[66.2,y,z],[0,0,Math.PI/2],56);
+  cyl(id+'_thermal_chamber','Câmara termoelétrica integrada ao conjunto propulsivo','propulsion',1.82,1.82,7.2,M.armor,[61.5,y,z],[0,0,Math.PI/2],56);
   const coreGroup=new THREE.Group();coreGroup.name=id+'_e192_nucleus';coreGroup.userData={label:'Núcleo E-192 · 192 prótons + 250 nêutrons · representação do simulador nuclear',group:'propulsion'};
-  coreGroup.position.set(66.2,y,z);coreGroup.scale.setScalar(.135);groups.propulsion.add(coreGroup);
+  coreGroup.position.set(61.5,y,z);coreGroup.scale.setScalar(.135);groups.propulsion.add(coreGroup);
   const A=442,rad=1.72;
   for(let i=0;i<A;i++){
    const proton=i<192,phi=Math.acos(1-2*(i+.5)/A),theta=Math.PI*(1+Math.sqrt(5))*i;
@@ -430,7 +420,7 @@ function hullSurface(){
   const glow=new THREE.Mesh(new THREE.SphereGeometry(rad*1.08,40,32),new THREE.MeshBasicMaterial({color:0x54dce2,wireframe:true,transparent:true,opacity:.055}));coreGroup.add(glow);
   coreGroup.traverse(o=>{if(o.isMesh){o.userData={...coreGroup.userData};pickables.push(o)}});
   for(const x of [62.7,69.7])tor(id+'_containment_'+x,'Anel de contenção térmica interno','propulsion',1.76,.18,M.edge,[x,y,z],[0,Math.PI/2,0]);
-  for(let k=0;k<12;k++){const a=k*Math.PI/6;rod(id+'_thermoelectric_fin_'+k,'Aleta de transferência térmica interna','propulsion',[66.2,y+Math.cos(a)*1.15,z+Math.sin(a)*1.15],[66.2,y+Math.cos(a)*2.35,z+Math.sin(a)*2.35],.12,M.cyan);}
+  for(let k=0;k<12;k++){const a=k*Math.PI/6;rod(id+'_thermoelectric_fin_'+k,'Aleta de transferência térmica interna','propulsion',[61.5,y+Math.cos(a)*1.15,z+Math.sin(a)*1.15],[61.5,y+Math.cos(a)*2.35,z+Math.sin(a)*2.35],.12,M.cyan);}
   cyl(id+'_converter','Conversor termoelétrico integrado','propulsion',1.42,1.42,1.5,M.dark,[71.1,y,z],[0,0,Math.PI/2],48);
   tor(id+'_converter_ring','Aro do conversor termoelétrico','propulsion',1.42,.16,M.cyan,[71.9,y,z],[0,Math.PI/2,0]);
  }
@@ -545,9 +535,9 @@ const e192Contours=new THREE.MeshBasicMaterial({color:0x8cebea,wireframe:true,tr
 [.48,.72,.94].forEach((fraction,index)=>{const mesh=new THREE.Mesh(new THREE.SphereGeometry(e192R*fraction,28,20),e192Contours);mesh.rotation.set(index*.31,index*.47,index*.19);e192Nucleus.add(mesh)});
 // Instâncias microscópicas do núcleo E-192 dentro das três unidades propulsivas.
 const engineNuclei=[];
-for(const [y,z] of [[0,-17],[0,0],[0,17]]){
+for(const [y,z] of [[0,-12],[0,0],[0,12]]){
  const instance=e192Nucleus.clone(true);instance.name='e192_engine_nucleus_'+y+'_'+z;
- instance.scale.setScalar(.12);instance.position.set(66.2,y,z);root.add(instance);engineNuclei.push(instance);
+ instance.scale.setScalar(.12);instance.position.set(61.5,y,z);root.add(instance);engineNuclei.push(instance);
 }
 const e192Cloud=new THREE.Group();atomGroup.add(e192Cloud);
 const cloudPositions=[];
@@ -617,7 +607,7 @@ document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click',()=>{if(scaleMode==='ship'){if(b.dataset.camera==='interior')showInterior();else cameraPreset(b.dataset.camera)}}));
 $('resetCamera').onclick=()=>scaleMode==='atom'?atomCamera():scaleMode==='engine'?engineCamera():cameraPreset('iso');
 $('fit').onclick=()=>$('resetCamera').click();
-function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/162,H/37.5,W/96);cameraBoundsCache=null;$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
+function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/160,H/37.5,W/96);cameraBoundsCache=null;$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
 ['len','wid','hei'].forEach(id=>$(id).addEventListener('input',setDims));
 $('resetDims').onclick=()=>{$('len').value=160;$('wid').value=96;$('hei').value=48;setDims()};
 function updateCount(){const controls=[...document.querySelectorAll('[data-module]')];const n=controls.filter(ch=>ch.checked).length;$('statMods').textContent=n+' / '+controls.length}
