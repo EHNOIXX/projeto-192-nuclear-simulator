@@ -381,7 +381,17 @@ function hullSurface(){
   cyl('access_tunnel_'+x+'_'+side,'Túnel pressurizado de acesso','hull',2.1,2.1,10,M.armor,[x,-1,z],[Math.PI/2,0,0],32);
   tor('dock_ring_'+x+'_'+side,'Anel de acoplamento pressurizado','hull',2.15,.16,M.edge,[x,-1,side*21.8],[Math.PI/2,0,0]);
  }
- // Plataforma científica compacta sob o eixo central.
+ // Naceles laterais integradas conforme a prancha oficial de seis vistas.
+  for(const side of [-1,1]){
+   const nacelle=add('axis_side_nacelle_'+side,'Nacele lateral integrada SPECTRA-AXIS','hull',new THREE.CapsuleGeometry(5.2,62,10,36),M.armor,[3,-1,side*25]);
+   nacelle.rotation.z=Math.PI/2;
+   tor('axis_side_nacelle_collar_'+side,'Anel estrutural da nacele lateral','hull',5.1,.38,M.edge,[3,-1,side*25],[Math.PI/2,0,Math.PI/2]);
+   for(let i=0;i<10;i++){
+    const x=-29+i*7;
+    box('axis_side_light_'+side+'_'+i,'Iluminação técnica azul lateral','hull',2.2,.22,.18,M.cyan,[x,1.1,side*29]);
+   }
+  }
+  // Plataforma científica compacta sob o eixo central.
  box('science_platform','Plataforma de instrumentação científica','hull',18,1,16,M.dark,[25,-8,0]);
  for(let i=0;i<4;i++)box('science_instrument_'+i,'Instrumento científico externo','antenna',3,3,3,M.gold,[19+i*4,-6,0]);
  label3D('INSTRUMENTAÇÃO',[25,-1,0],2.2);
@@ -498,6 +508,9 @@ function hullSurface(){
  }
 }
 hullSurface();
+ // Configuração inicial fiel à silhueta da prancha oficial: módulos e radiadores extensos recolhidos.
+ groups.radiators.visible=false;
+ groups.habitat.visible=false;
 // A prancha oficial mostra o casco elipsoidal com naceles integradas, sem asas solares externas abertas.
 groups.radiators.visible=false;
 
