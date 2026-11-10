@@ -90,14 +90,14 @@ const $=id=>document.getElementById(id), viewport=$('viewport');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x050a12);scene.fog=new THREE.Fog(0x050a12,190,390);
 const camera=new THREE.PerspectiveCamera(34,1,.01,1000);camera.position.set(-92,104,188);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.localClippingEnabled=true;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;viewport.appendChild(renderer.domElement);
-const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(900,600),.08,.28,.92));composer.addPass(new OutputPass());
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.localClippingEnabled=true;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.02;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;viewport.appendChild(renderer.domElement);
+const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(1100,720),.035,.22,.96));composer.addPass(new OutputPass());
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.target.set(0,0,0);controls.minDistance=25;controls.maxDistance=520;controls.autoRotateSpeed=.35;
 scene.add(new THREE.HemisphereLight(0xdce8ef,0x26303a,2.1));
-const key=new THREE.DirectionalLight(0xfff1dc,4.4);key.position.set(-65,100,75);key.castShadow=true;key.shadow.mapSize.set(3072,3072);scene.add(key);
-const fill=new THREE.DirectionalLight(0x9abac8,3.2);fill.position.set(75,28,-85);scene.add(fill);
-const rim=new THREE.PointLight(0x8ab9c7,90,300);rim.position.set(-5,30,-100);scene.add(rim);
-const warm=new THREE.PointLight(0x9b8aab,35,190);warm.position.set(45,-8,25);scene.add(warm);
+const key=new THREE.DirectionalLight(0xfff1dc,3.2);key.position.set(-65,100,75);key.castShadow=true;key.shadow.mapSize.set(3072,3072);scene.add(key);
+const fill=new THREE.DirectionalLight(0x9abac8,2.1);fill.position.set(75,28,-85);scene.add(fill);
+const rim=new THREE.PointLight(0x8ab9c7,34,300);rim.position.set(-5,30,-100);scene.add(rim);
+const warm=new THREE.PointLight(0x9b8aab,16,190);warm.position.set(45,-8,25);scene.add(warm);
 const grid=new THREE.GridHelper(300,60,0x24445a,0x102438);grid.position.y=-34;grid.material.transparent=true;grid.material.opacity=.42;scene.add(grid);
 // Campo estelar discreto para dar profundidade sem competir com a silhueta.
 const starGeo=new THREE.BufferGeometry(),starPos=[];for(let i=0;i<520;i++){const u=Math.random()*Math.PI*2,v=Math.acos(2*Math.random()-1),r=260+Math.random()*100;starPos.push(r*Math.sin(v)*Math.cos(u),r*Math.cos(v),r*Math.sin(v)*Math.sin(u))}starGeo.setAttribute('position',new THREE.Float32BufferAttribute(starPos,3));const stars=new THREE.Points(starGeo,new THREE.PointsMaterial({color:0x91c8dc,size:.65,transparent:true,opacity:.65,sizeAttenuation:true}));scene.add(stars);
@@ -105,11 +105,11 @@ const root=new THREE.Group();scene.add(root);
 const groups={hull:new THREE.Group(),bridge:new THREE.Group(),egas:new THREE.Group(),propulsion:new THREE.Group(),radiators:new THREE.Group(),habitat:new THREE.Group(),field:new THREE.Group(),antenna:new THREE.Group(),landing:new THREE.Group(),power:new THREE.Group(),interior:new THREE.Group()};
 Object.values(groups).forEach(g=>root.add(g));
 const M={
- hull:new THREE.MeshStandardMaterial({color:0x354653,metalness:.88,roughness:.29}),
- armor:new THREE.MeshStandardMaterial({color:0x202e3b,metalness:.9,roughness:.27}),
- edge:new THREE.MeshStandardMaterial({color:0x718897,metalness:.92,roughness:.23}),
+ hull:new THREE.MeshStandardMaterial({color:0x354653,metalness:.84,roughness:.36}),
+ armor:new THREE.MeshStandardMaterial({color:0x202e3b,metalness:.88,roughness:.34}),
+ edge:new THREE.MeshStandardMaterial({color:0x718897,metalness:.9,roughness:.31}),
  dark:new THREE.MeshStandardMaterial({color:0x101d2b,metalness:.78,roughness:.34}),
- cyan:new THREE.MeshStandardMaterial({color:0x62c9f5,metalness:.32,roughness:.3,emissive:0x075b9b,emissiveIntensity:.85}),
+ cyan:new THREE.MeshStandardMaterial({color:0x62c9f5,metalness:.32,roughness:.3,emissive:0x075b9b,emissiveIntensity:.42}),
  glass:new THREE.MeshPhysicalMaterial({color:0x56b6d2,metalness:.08,roughness:.08,transparent:true,opacity:.46,transmission:.35,thickness:.5,side:THREE.DoubleSide,depthWrite:false}),
  violet:new THREE.MeshStandardMaterial({color:0x756d9b,metalness:.35,roughness:.38,emissive:0x171324,emissiveIntensity:.3}),
  glow:new THREE.MeshBasicMaterial({color:0xa88aff}),
@@ -361,15 +361,14 @@ function hullSurface(){
   rod('radiator_root_mount_'+side,'Encaixe estrutural do radiador no casco','radiators',[8,5,side*7.5],[8,8,side*18],.72,M.armor);
   rod('radiator_boom_'+side,'Longarina contínua do radiador térmico','radiators',[8,8,side*15],[8,8,side*38],.62,M.edge);
   rod('radiator_outer_rail_'+side,'Trilho externo de sustentação do radiador','radiators',[32,8,side*15],[32,8,side*38],.42,M.edge);
-  for(const x of [-10,10,30]){
-   rod('radiator_crossbeam_'+side+'_'+x,'Travessa de ligação do painel ao braço principal','radiators',[x,8.3,side*37],[x,8.3,side*43],.28,M.edge);
-   rod('radiator_support_'+side+'_'+x,'Escora diagonal integrada ao casco','radiators',[x,4,side*9],[x,8,side*37],.3,M.edge);
-  }
+  // Cassete térmico com dois trilhos longitudinais e montagens curtas; sem treliça diagonal aberta.
+  const radiatorRoot=add('radiator_root_fairing_'+side,'Carenagem de raiz do radiador térmico','radiators',new THREE.SphereGeometry(1,36,24),M.armor,[8,8,side*21]);
+  radiatorRoot.scale.set(5.5,2.4,8.5);
   for(let j=0;j<4;j++){
-   const x=-10+j*13;
-   box('radiator_panel_'+side+'_'+j,'Painel radiador térmico segmentado','radiators',9,.28,10,M.panel,[x,8.6,side*41]);
-   for(let k=0;k<5;k++)box('radiator_channel_'+side+'_'+j+'_'+k,'Canal térmico superficial','radiators',8,.05,.10,M.cyan,[x,8.78,side*(37+k*2)]);
-   for(const z of [-4,4])rod('radiator_panel_standoff_'+side+'_'+j+'_'+z,'Suporte de fixação do painel radiador','radiators',[x,8.2,side*37],[x,8.6,side*(41+z)],.22,M.edge);
+   const x=-8.5+j*12.5;
+   box('radiator_panel_'+side+'_'+j,'Cassete radiador térmico segmentado','radiators',12,.34,10,M.panel,[x,8.6,side*41]);
+   for(let k=0;k<5;k++)box('radiator_channel_'+side+'_'+j+'_'+k,'Canal térmico superficial','radiators',10,.045,.09,M.edge,[x,8.81,side*(37+k*2)]);
+   for(const z of [-4,4])rod('radiator_panel_standoff_'+side+'_'+j+'_'+z,'Suporte curto de fixação do painel radiador','radiators',[x,8.2,side*37],[x,8.6,side*(41+z)],.18,M.edge);
   }
   // Coletores e bases de articulação tornam explícito o caminho de carga até o casco.
   box('radiator_root_housing_'+side,'Carcaça da articulação do radiador','radiators',5,3,5,M.armor,[8,7,side*12]);
