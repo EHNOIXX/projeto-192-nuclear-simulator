@@ -383,12 +383,12 @@ function hullSurface(){
  }
  // Naceles laterais integradas conforme a prancha oficial de seis vistas.
   for(const side of [-1,1]){
-   const nacelle=add('axis_side_nacelle_'+side,'Nacele lateral integrada SPECTRA-AXIS','hull',new THREE.CapsuleGeometry(5.2,62,10,36),M.armor,[3,-1,side*25]);
+   const nacelle=add('axis_side_nacelle_'+side,'Nacele lateral integrada SPECTRA-AXIS','hull',new THREE.CapsuleGeometry(5.2,62,10,36),M.armor,[3,-1,side*36]);
    nacelle.rotation.z=Math.PI/2;
    tor('axis_side_nacelle_collar_'+side,'Anel estrutural da nacele lateral','hull',5.1,.38,M.edge,[3,-1,side*25],[Math.PI/2,0,Math.PI/2]);
    for(let i=0;i<10;i++){
     const x=-29+i*7;
-    box('axis_side_light_'+side+'_'+i,'Iluminação técnica azul lateral','hull',2.2,.22,.18,M.cyan,[x,1.1,side*29]);
+    box('axis_side_light_'+side+'_'+i,'Iluminação técnica azul lateral','hull',2.2,.22,.18,M.cyan,[x,1.1,side*40]);
    }
   }
   // Plataforma científica compacta sob o eixo central.
