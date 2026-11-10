@@ -1,0 +1,53 @@
+name: SPECTRA-AXIS visual validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'nave/**'
+      - 'scripts/spectra-axis-visual-check.mjs'
+      - '.github/workflows/spectra-axis-visual-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  six-view-browser-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Chromium and Playwright
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Serve simulator
+        run: |
+          python3 -m http.server 4173 --directory . > /tmp/spectra-http.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail http://127.0.0.1:4173/nave/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/spectra-http.log
+          exit 1
+
+      - name: Render six views and test controls
+        run: node scripts/spectra-axis-visual-check.mjs
+
+      - name: Upload real simulator captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spectra-axis-six-views
+          path: artifacts/spectra-axis/
+          if-no-files-found: warn
+          retention-days: 14
