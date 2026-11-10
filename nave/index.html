@@ -185,8 +185,8 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
   for(let j=0;j<=radial;j++){
    const a=j/radial*Math.PI*2;
    const cs=Math.cos(a),sn=Math.sin(a);
-   const y=halfHeight*profile*Math.sign(cs)*Math.pow(Math.abs(cs),1.04);
-   const z=halfWidth*profile*Math.sign(sn)*Math.pow(Math.abs(sn),1.04);
+   const y=halfHeight*profile*Math.sign(cs)*Math.pow(Math.abs(cs),.90);
+   const z=halfWidth*profile*Math.sign(sn)*Math.pow(Math.abs(sn),.90);
    positions.push(x,y,z);
   }
  }
@@ -230,7 +230,7 @@ function hullSurface(){
  // Naceles laterais externas, longas e baixas: silhueta de pods integrados da prancha oficial.
  for(const side of [-1,1]){
   add('axis_side_pod_'+side,'Nacele lateral de ombro integrada ao monocoque','hull',axisHullGeometry(70,2.7,4.6,112,56),M.armor,[27,-.6,side*40.2]);
-  tor('axis_side_pod_frame_'+side,'Aro estrutural da nacele lateral','hull',3.35,.18,M.edge,[51,-1.0,side*34.8],[0,Math.PI/2,0]);
+  // A transição da nacele é feita pela própria sobreposição controlada ao ombro do casco; sem aro circular externo.
   for(let i=0;i<9;i++){
    const x=8+i*5.6;
    box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.3,.14,.16,M.cyan,[x,.85,side*44.4]);
