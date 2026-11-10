@@ -59,7 +59,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <section class="panel stage">
 <div class="stagehead"><span>3D VIEWPORT / <b>VESSEL ASSEMBLY</b></span><span id="selectionLabel">VISÃO GERAL</span></div>
 <div class="toolbar"><button class="btn" id="autoRotate">ÓRBITA AUTOMÁTICA</button><button class="btn" id="wire">MALHA TÉCNICA</button><button class="btn" id="labels">ETIQUETAS</button><button class="btn" id="resetCamera">CENTRALIZAR CÂMERA</button><button class="btn primary" id="export">EXPORTAR RELATÓRIO</button></div>
-<div class="camera"><span>ESCALA FÍSICA</span><button class="btn active" data-scale="ship">NAVE · 10² m</button><button class="btn" data-scale="engine">MOTOR · 10¹ m</button><button class="btn" data-scale="atom">ÁTOMO · 10⁻¹⁰ m</button></div><div class="camera"><span>CÂMERA</span><button class="btn" data-camera="iso">ISOMÉTRICA</button><button class="btn" data-camera="front">FRENTE</button><button class="btn" data-camera="side">LATERAL</button><button class="btn" data-camera="top">SUPERIOR</button><button class="btn" data-camera="rear">TRASEIRA</button><button class="btn primary" data-camera="interior">INTERIOR</button></div>
+<div class="camera"><span>ESCALA FÍSICA</span><button class="btn active" data-scale="ship">NAVE · 10² m</button><button class="btn" data-scale="engine">MOTOR · 10¹ m</button><button class="btn" data-scale="atom">ÁTOMO · 10⁻¹⁰ m</button></div><div class="camera"><span>CÂMERA</span><button class="btn" data-camera="iso">ISOMÉTRICA</button><button class="btn" data-camera="front">FRENTE</button><button class="btn" data-camera="side">DIREITA</button><button class="btn" data-camera="left">ESQUERDA</button><button class="btn" data-camera="top">SUPERIOR</button><button class="btn" data-camera="bottom">INFERIOR</button><button class="btn" data-camera="rear">TRASEIRA</button><button class="btn primary" data-camera="interior">INTERIOR</button></div>
 <div id="viewport"><div class="viewtag">SPECTRA / MOBILE ORBITAL RESEARCH VESSEL <span id="scaleTag">ESCALA 10² m</span></div><div class="axis">X / LONGITUDINAL<br>Y / VERTICAL<br>Z / TRANSVERSAL</div><div class="help" id="scaleHelp">ESCALA DA NAVE · DIMENSÕES EM METROS · ARRASTE PARA ORBITAR</div></div>
 <div class="stagefoot"><div class="legend"><span><i style="background:#79d8df"></i>Estrutura</span><span><i style="background:#a48bff"></i>EGAS conceitual</span><span><i style="background:#e5b46d"></i>Instrumentação</span></div><span id="renderStatus">RENDER 3D / PRONTO</span></div>
 </section>
@@ -166,29 +166,56 @@ function modulePod(id,label,center,dims,material=M.hull){
  tor(id+'_hatch_rim',label+' — aro da escotilha','habitat',1.3,.12,M.edge,[x,y,z-Math.sign(z)*(d*.5)],[Math.PI/2,0,0]);
  label3D(label,[x,y+h/2+3,z],2.1);
 }
+function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
+ const positions=[],indices=[];
+ for(let i=0;i<=segments;i++){
+  const t=i/segments,x=(t-.5)*length;
+  const profile=Math.pow(Math.max(0,Math.sin(Math.PI*t)),.78)*(.94+.06*t);
+  for(let j=0;j<=radial;j++){
+   const a=j/radial*Math.PI*2;
+   const cs=Math.cos(a),sn=Math.sin(a);
+   const y=halfHeight*profile*Math.sign(cs)*Math.pow(Math.abs(cs),.82);
+   const z=halfWidth*profile*Math.sign(sn)*Math.pow(Math.abs(sn),.82);
+   positions.push(x,y,z);
+  }
+ }
+ for(let i=0;i<segments;i++)for(let j=0;j<radial;j++){
+  const a=i*(radial+1)+j,b=a+radial+1;
+  indices.push(a,b,a+1,b,b+1,a+1);
+ }
+ const g=new THREE.BufferGeometry();
+ g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+ g.setIndex(indices);g.computeVertexNormals();return g;
+}
+function hullProfileAtX(x,halfHeight=14.5,length=156){
+ const q=Math.max(0,1-Math.pow(x/(length/2),2));
+ return halfHeight*Math.pow(q,.39);
+}
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
- const primary=add('primary_pressure_hull','Casco pressurizado elipsoidal principal — SPECTRA-AXIS','hull',new THREE.SphereGeometry(1,72,48),M.hull,[-2,0,0]);
- primary.scale.set(78,14.5,22.5);
- // Ombros laterais aerodinâmicos integrados: volumes largos, contínuos e alinhados ao casco.
+ const primary=add('primary_pressure_hull','Casco pressurizado elipsoidal de curvatura variável — SPECTRA-AXIS','hull',axisHullGeometry(156,14.5,22.5),M.hull,[0,0,0]);
+ // Dois conjuntos laterais compactos, integrados ao quarto traseiro do casco.
  for(const side of [-1,1]){
-  const shoulder=add('integrated_side_shoulder_'+side,'Carenagem lateral integrada do casco SPECTRA-AXIS','hull',new THREE.SphereGeometry(1,64,40),M.armor,[1,-1,side*18]);
-  shoulder.scale.set(58,7.2,15.5);
-  const nacelle=add('side_engine_nacelle_'+side,'Nacele lateral longitudinal integrada','hull',new THREE.CapsuleGeometry(4.8,66,10,36),M.dark,[4,-1,side*30]);
-  nacelle.rotation.z=Math.PI/2;
-  tor('side_nacelle_ring_'+side,'Anel estrutural da nacele lateral','hull',4.7,.32,M.edge,[4,-1,side*30],[0,0,Math.PI/2]);
-  for(let i=0;i<8;i++)box('side_nacelle_light_'+side+'_'+i,'Janela técnica azul da nacele lateral','hull',2.3,.18,.16,M.cyan,[-27+i*8,2.1,side*34]);
+  const pod=add('axis_side_pod_'+side,'Módulo lateral integrado SPECTRA-AXIS','hull',axisHullGeometry(48,4.8,6.2,72,40),M.armor,[37,-1.2,side*13.2]);
+  tor('axis_side_pod_frame_'+side,'Aro estrutural do módulo lateral','hull',4.2,.22,M.edge,[39,-1.2,side*13.2],[0,Math.PI/2,0]);
+  for(let i=0;i<7;i++){
+   const x=17+i*6;
+   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul do módulo lateral','hull',2.4,.2,.2,M.cyan,[x,3.3,side*16.8]);
+  }
  }
+
  const dorsal=add('dorsal_service_spine','Carenagem dorsal de serviços e distribuição','hull',new THREE.CapsuleGeometry(4.2,78,8,32),M.armor,[-3,8.2,0]);
  dorsal.rotation.z=Math.PI/2;dorsal.scale.z=1.12;
  const ventral=add('ventral_keel','Quilha inferior de proteção e manutenção','hull',new THREE.CapsuleGeometry(3.1,72,8,32),M.dark,[5,-8.2,0]);
  ventral.rotation.z=Math.PI/2;ventral.scale.z=1.2;
 
  // AXIS — estrutura central longitudinal integrada à superfície dorsal do casco.
- rod('spectra_axis_beam','AXIS — longarina estrutural longitudinal central','hull',[-68,14.1,0],[68,14.1,0],.82,M.dark);
- rod('spectra_axis_light','AXIS — guia óptica azul longitudinal','hull',[-65,14.75,0],[65,14.75,0],.16,M.cyan);
+ const axisPoints=[];for(let i=0;i<=48;i++){const x=-67+i*(134/48);axisPoints.push(new THREE.Vector3(x,hullProfileAtX(x)+.55,0))}
+ const axisCurve=new THREE.CatmullRomCurve3(axisPoints);
+ add('spectra_axis_beam','AXIS — longarina estrutural longitudinal central','hull',new THREE.TubeGeometry(axisCurve,160,.72,12,false),M.dark);
+ add('spectra_axis_light','AXIS — guia óptica azul longitudinal','hull',new THREE.TubeGeometry(axisCurve,160,.13,10,false),M.cyan);
  for(const x of [-58,-42,-26,-10,6,22,38,54]){
-  box('axis_marker_'+x,'Marcador luminoso azul da estrutura AXIS','hull',1.1,.22,2.2,M.cyan,[x,14.82,0]);
+  box('axis_marker_'+x,'Marcador luminoso azul da estrutura AXIS', 'hull',1.1,.22,2.2,M.cyan,[x,hullProfileAtX(x)+.78,0]);
  }
  label3D('SPECTRA · AXIS',[-4,18,0],2.2);
  // Anéis de união do casco e painéis de acesso.
@@ -239,37 +266,6 @@ function hullSurface(){
  box('science_platform','Plataforma de instrumentação científica','hull',18,1,16,M.dark,[25,-8,0]);
  for(let i=0;i<4;i++)box('science_instrument_'+i,'Instrumento científico externo','antenna',3,3,3,M.gold,[19+i*4,-6,0]);
  label3D('INSTRUMENTAÇÃO',[25,-1,0],2.2);
- // Raízes estruturais permanentes pertencem ao grupo do casco: as asas não ficam visualmente soltas.
- for(const side of [-1,1]){
-  const z=side;
-  box('integrated_wing_saddle_'+side,'Berço estrutural integrado ao casco para extensão lateral','hull',16,5,9,M.armor,[8,2,z*9]);
-  rod('integrated_wing_pylon_a_'+side,'Pilar de transferência de carga da extensão','hull',[3,1,z*7],[8,7,z*20],1.25,M.edge);
-  rod('integrated_wing_pylon_b_'+side,'Pilar secundário de transferência de carga','hull',[13,1,z*7],[8,7,z*20],1.05,M.armor);
-  cyl('integrated_wing_socket_'+side,'Mancal de conexão da asa ao casco','hull',2.1,2.1,4,M.gold,[8,7,z*17],[Math.PI/2,0,0],40);
-  tor('integrated_wing_socket_ring_'+side,'Anel de retenção da conexão estrutural','hull',2.15,.22,M.edge,[8,7,z*17],[Math.PI/2,0,0]);
-  rod('integrated_wing_power_link_'+side,'Conduíte protegido entre casco e extensão','hull',[8,4,z*8],[8,8,z*22],.24,M.cyan);
- }
- // Interfaces físicas de conexão entre casco, extensões e painéis solares.
- // As bases começam dentro do volume do casco e terminam nos suportes das asas.
- for(const side of [-1,1]){
-  const z=side;
-  // Caixa de raiz integrada à carenagem lateral.
-  box('wing_root_box_'+side,'Caixa estrutural integrada da extensão solar','radiators',12,3.2,7,M.armor,[8,5,z*10]);
-  // Braço principal em duas longarinas, com travessas e articulações aparentes.
-  rod('wing_root_neck_'+side,'Pescoço estrutural da extensão solar','radiators',[8,5,z*7],[8,7,z*20],1.05,M.armor);
-  rod('wing_spar_front_'+side,'Longarina frontal contínua da extensão','radiators',[8,7,z*17],[8,7,z*48],.62,M.edge);
-  rod('wing_spar_rear_'+side,'Longarina traseira contínua da extensão','radiators',[32,7,z*17],[32,7,z*48],.62,M.edge);
-  for(const x of [8,20,32]){
-   rod('wing_rib_'+side+'_'+x,'Travessa estrutural da extensão','radiators',[x,7,z*19],[x,7,z*47],.34,M.armor);
-  }
-  // Juntas e suportes de articulação nos dois extremos da asa.
-  for(const x of [8,32]){
-   cyl('wing_hinge_'+side+'_'+x,'Junta articulada da extensão solar','radiators',1.15,1.15,3,M.edge,[x,7,z*18],[Math.PI/2,0,0],32);
-   tor('wing_hinge_ring_'+side+'_'+x,'Aro da articulação da extensão','radiators',1.18,.16,M.gold,[x,7,z*18],[Math.PI/2,0,0]);
-  }
-  // Chicote de serviço acompanha a longarina até os painéis.
-  rod('wing_service_conduit_'+side,'Conduíte de energia e dados da extensão','radiators',[8,8.3,z*18],[8,8.3,z*47],.16,M.cyan);
- }
  // Radiadores segmentados com estrutura de suporte mais discreta.
  for(const side of [-1,1]){
   // A longarina principal começa dentro da zona estrutural do casco e alcança a raiz dos radiadores.
@@ -486,7 +482,7 @@ function cameraPreset(v){
  if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=true;
  for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=true;
  controls.minDistance=18;controls.maxDistance=420;
- const p={iso:[-145,105,170],front:[-205,35,0],side:[0,45,220],top:[0,245,4],rear:[205,35,0],interior:[-4,118,18]}[v]||[-145,105,170];
+ const p={iso:[-145,105,170],front:[-205,35,0],side:[0,45,220],left:[0,45,-220],top:[0,245,4],bottom:[0,-245,4],rear:[205,35,0],interior:[-4,118,18]}[v]||[-145,105,170];
  camera.position.set(...p);controls.target.set(0,0,0);controls.update()
 }
 function atomCamera(){controls.minDistance=.15;controls.maxDistance=8;camera.position.set(2.5,1.8,3);controls.target.set(0,0,0);controls.update();e192Nucleus.visible=true;e192Cloud.visible=false}
