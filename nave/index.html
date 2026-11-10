@@ -17,6 +17,161 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 #viewport{height:clamp(500px,58vw,740px);min-height:500px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 46%,#1c3449 0%,#0b1928 46%,#050b13 82%);touch-action:none}#viewport canvas{display:block;width:100%;height:100%;outline:none;cursor:grab}#viewport canvas:active{cursor:grabbing}.viewtag{position:absolute;top:13px;left:13px;pointer-events:none;color:#9ab0c3;font:8px var(--mono);letter-spacing:1px;background:#07111bd9;border:1px solid #2a4055;padding:7px 9px;border-radius:3px}.viewtag span{color:var(--cyan);margin-left:9px}.help{position:absolute;bottom:13px;left:14px;color:#7e93a8;font:8px var(--mono);pointer-events:none}.axis{position:absolute;right:13px;top:13px;color:#72869a;font:8px var(--mono);text-align:right;pointer-events:none}.stagefoot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 13px;border-top:1px solid var(--line);font:8px var(--mono);color:#8da2b6}.legend{display:flex;gap:13px;flex-wrap:wrap}.legend i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}.readout{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:10px}.stat{background:#09131f;border:1px solid #1e3042;border-radius:4px;padding:9px}.stat span{display:block;color:#8197ab;font:8px var(--mono);letter-spacing:.6px}.stat b{display:block;color:var(--cyan);font:14px var(--mono);margin-top:6px}.modulelist{display:grid;gap:2px}.modulelist label{display:flex;align-items:center;gap:8px;padding:7px 0;color:#bdcbd9;font-size:9px}.modulelist input{accent-color:var(--cyan)}.selectedInfo{font-size:10px;line-height:1.7;color:#9db0c2}.selectedInfo strong{display:block;color:#eef5fc;font-size:12px;margin-bottom:5px}.tag{display:inline-block;border:1px solid #47647b;color:#a7c3d5;padding:3px 5px;border-radius:3px;font:8px var(--mono);margin:6px 3px 0 0}.warning{border-color:#5d4d31}.warning .paneltitle{color:var(--amber)}.warning .panelbody{color:#bcae97;font-size:9px;line-height:1.7}.bottomgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:11px}.infoPanel{padding:14px}.infoPanel h3{font-size:11px;margin:0 0 8px;color:#e6eff8}.infoPanel p{font-size:9px;line-height:1.7;color:#92a6ba;margin:0}.footer{display:flex;justify-content:space-between;border-top:1px solid var(--line);margin-top:22px;padding:15px 2px;color:#72869b;font:8px var(--mono);letter-spacing:.7px}
 @media(max-width:1150px){.workspace{grid-template-columns:220px minmax(360px,1fr)}.rightstack{grid-column:1/-1;grid-template-columns:repeat(3,1fr)}.rightstack .panel{min-width:0}}
 @media(max-width:760px){header{padding:0 13px}.headlinks a{display:none}main{padding:15px 12px}.intro{display:block}.classify{max-width:none;margin-top:12px}.workspace{grid-template-columns:1fr}.stage{grid-row:1;min-height:0}.rightstack{grid-column:auto;grid-template-columns:1fr}.leftstack{grid-row:2}#viewport{height:420px;min-height:420px}.bottomgrid{grid-template-columns:1fr}.footer{gap:10px;flex-wrap:wrap}}
+
+/* SPECTRA AXIS — visual refresh 2026. Camada estética; preserva a lógica 3D e os controles. */
+:root{
+ --bg:#050a12;--panel:#0b1522;--line:#294156;--cyan:#83f0eb;--violet:#b5a2ff;
+ --amber:#f0c27d;--muted:#91a8bb;--mono:'DM Mono',ui-monospace,monospace;
+ --sans:'Manrope',Inter,system-ui,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{
+ background:
+  radial-gradient(ellipse at 50% -12%,rgba(42,105,132,.28),transparent 48%),
+  radial-gradient(ellipse at 100% 38%,rgba(83,65,132,.10),transparent 38%),
+  linear-gradient(180deg,#070e18 0%,#050a12 58%,#03070d 100%);
+ letter-spacing:.01em;
+}
+header{
+ height:72px;padding:0 clamp(14px,3vw,42px);
+ background:rgba(4,10,18,.88);border-bottom:1px solid rgba(115,190,207,.22);
+ box-shadow:0 8px 32px rgba(0,0,0,.22);
+}
+.brand{gap:13px;letter-spacing:2.4px}
+.brand b{
+ display:grid;place-items:center;width:39px;height:39px;padding:0;border-radius:10px;
+ background:linear-gradient(145deg,rgba(119,232,229,.18),rgba(77,121,157,.08));
+ border:1px solid rgba(131,240,235,.65);box-shadow:0 0 24px rgba(87,220,220,.12),inset 0 0 14px rgba(131,240,235,.08);
+}
+.brand small{letter-spacing:1.35px}
+.headlinks{gap:clamp(12px,2vw,27px)}
+.headlinks a{font-size:9px;letter-spacing:1px;transition:color .2s ease}
+.live{padding:8px 11px;border:1px solid rgba(131,240,235,.22);border-radius:999px;background:rgba(55,142,145,.08)}
+main{max-width:1900px;padding:clamp(16px,2.2vw,30px) clamp(12px,2vw,28px) 42px}
+.intro{margin:8px 0 25px;align-items:center}
+.eyebrow{letter-spacing:2.2px;font-size:9px}
+.intro h1{font-size:clamp(28px,3.5vw,46px);font-weight:650;letter-spacing:-2px;line-height:1.08}
+.intro h1 em{ text-shadow:0 0 28px rgba(131,240,235,.24)}
+.intro p:last-child{font-size:12px;max-width:590px;color:#a5b8c9}
+.classify{
+ border-color:rgba(240,194,125,.36);background:linear-gradient(135deg,rgba(73,54,28,.34),rgba(23,22,21,.7));
+ border-radius:9px;box-shadow:inset 0 1px rgba(255,255,255,.035);padding:13px 16px;
+}
+.workspace{gap:14px;grid-template-columns:minmax(220px,265px) minmax(420px,1fr) minmax(230px,275px)}
+.stack{gap:14px}
+.panel{
+ background:linear-gradient(145deg,rgba(16,30,45,.96),rgba(7,15,25,.97));
+ border:1px solid rgba(91,132,158,.28);border-radius:10px;
+ box-shadow:0 14px 38px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.025);
+}
+.paneltitle{
+ padding:13px 15px;background:linear-gradient(90deg,rgba(21,43,60,.9),rgba(10,21,33,.88));
+ border-bottom:1px solid rgba(89,136,160,.22);font-size:9px;letter-spacing:1.35px;
+}
+.panelbody{padding:15px}
+.field{font-size:10px;color:#b5c5d2;margin:14px 0 7px}
+.field output{font-size:10px}
+input[type=range]{accent-color:var(--cyan);cursor:pointer}
+select{
+ background:rgba(4,12,21,.92);border:1px solid #35516a;border-radius:7px;
+ padding:10px;color:#e8f3fa;outline:none;
+}
+select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(131,240,235,.09)}
+.btn{
+ border:1px solid rgba(91,139,164,.42);border-radius:7px;padding:9px 11px;
+ background:linear-gradient(180deg,rgba(24,48,68,.94),rgba(13,30,46,.96));
+ color:#d1e0eb;font-size:8px;letter-spacing:.75px;
+ transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease;
+}
+.btn:hover,.btn.active{
+ border-color:rgba(131,240,235,.85);color:#a9fff8;
+ background:linear-gradient(180deg,rgba(25,73,83,.9),rgba(13,43,55,.98));
+ box-shadow:0 0 18px rgba(83,219,215,.10);transform:translateY(-1px);
+}
+.btn.primary{
+ color:#c3fffb;border-color:rgba(131,240,235,.68);
+ background:linear-gradient(135deg,#1c5962,#153747);
+ box-shadow:inset 0 1px rgba(255,255,255,.08),0 5px 18px rgba(50,171,171,.12);
+}
+.btnrow{gap:7px}
+.toggle{font-size:10px;border-color:rgba(92,128,151,.18)}
+.hint{font-size:9px;color:#8da4b8;line-height:1.7}
+.stage{min-height:690px}
+.stagehead{padding:14px 17px;font-size:9px;background:rgba(8,18,29,.58)}
+.stagehead b{letter-spacing:1px}
+.toolbar,.camera{padding:10px 12px;background:rgba(6,15,25,.72);gap:7px}
+.camera{flex-wrap:wrap}
+.camera span{font-size:8px;letter-spacing:1px}
+.camera .btn{padding:7px 9px}
+#viewport{
+ height:clamp(520px,58vw,790px);min-height:520px;
+ background:
+  radial-gradient(ellipse at 50% 45%,rgba(39,77,100,.48) 0%,rgba(12,29,45,.82) 43%,rgba(3,9,16,.98) 100%);
+ isolation:isolate;
+}
+#viewport::before{
+ content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+ background:
+  linear-gradient(rgba(105,174,194,.055) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(105,174,194,.055) 1px,transparent 1px);
+ background-size:48px 48px;
+ mask-image:radial-gradient(ellipse at center,#000 15%,transparent 82%);
+ opacity:.48;
+}
+#viewport::after{
+ content:"";position:absolute;inset:12px;z-index:1;pointer-events:none;border:1px solid rgba(121,183,201,.10);
+ clip-path:polygon(0 0,18% 0,18% 1px,1px 1px,1px 18%,0 18%,0 0,100% 0,100% 18%,calc(100% - 1px) 18%,calc(100% - 1px) 1px,82% 1px,82% 0,100% 0,100% 100%,82% 100%,82% calc(100% - 1px),calc(100% - 1px) calc(100% - 1px),calc(100% - 1px) 82%,100% 82%,100% 100%,0 100%);
+}
+#viewport canvas{position:relative;z-index:0}
+.viewtag,.axis,.help{z-index:2}
+.viewtag{
+ top:17px;left:17px;padding:9px 12px;border-radius:6px;
+ background:rgba(4,12,21,.82);border-color:rgba(111,174,195,.30);
+ box-shadow:0 8px 24px rgba(0,0,0,.2);backdrop-filter:blur(10px);
+}
+.viewtag span{color:#9efff7}
+.axis{top:17px;right:18px;line-height:1.8}
+.help{bottom:18px;left:18px;padding:7px 9px;border-radius:5px;background:rgba(4,12,21,.62)}
+.stagefoot{padding:12px 16px;background:rgba(7,16,26,.68)}
+.legend{gap:17px}
+.legend i{box-shadow:0 0 9px currentColor}
+.readout{gap:8px;padding:12px}
+.stat{border-radius:7px;background:linear-gradient(145deg,rgba(10,25,39,.96),rgba(6,15,25,.96));border-color:rgba(83,128,153,.22);padding:11px}
+.stat span{font-size:8px;letter-spacing:.85px}
+.stat b{font-size:15px;text-shadow:0 0 15px rgba(131,240,235,.12)}
+.modulelist label{font-size:10px;min-height:34px;border-bottom:1px solid rgba(80,118,142,.12)}
+.modulelist label:last-child{border:0}
+.selectedInfo{font-size:10px;line-height:1.8;color:#a9bdce}
+.selectedInfo strong{font-size:12px}
+.tag{border-radius:5px;border-color:rgba(112,162,187,.48);background:rgba(34,65,86,.22);letter-spacing:.45px}
+.warning{border-color:rgba(204,157,89,.4);background:linear-gradient(145deg,rgba(39,31,21,.86),rgba(13,17,22,.98))}
+.warning .paneltitle{background:rgba(63,46,25,.28);color:#f0c27d}
+.warning .panelbody{font-size:10px;color:#c9b99e}
+.bottomgrid{gap:14px;margin-top:14px}
+.infoPanel{padding:17px 18px}
+.infoPanel h3{font:10px var(--mono);letter-spacing:1.15px;color:#bce9ec;margin-bottom:10px}
+.infoPanel p{font-size:10px;line-height:1.8}
+.footer{margin-top:28px;padding:18px 3px;color:#8198aa;letter-spacing:1px}
+@media(max-width:1150px){
+ .workspace{grid-template-columns:minmax(205px,235px) minmax(340px,1fr)}
+ .rightstack{gap:12px}
+}
+@media(max-width:760px){
+ header{height:62px;padding:0 13px}.brand b{width:34px;height:34px}
+ .live{font-size:8px;padding:7px 8px}
+ main{padding:15px 11px 30px}.intro{margin-bottom:18px}
+ .intro h1{font-size:30px}.intro p:last-child{font-size:11px}
+ .workspace{gap:12px}.stage{min-height:0}
+ #viewport{height:430px;min-height:430px}
+ .toolbar .btn,.camera .btn{font-size:7px;padding:7px}
+ .viewtag{max-width:calc(100% - 32px);font-size:7px}
+ .axis{font-size:7px}.help{font-size:7px;max-width:75%}
+ .bottomgrid{gap:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;transition:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -37,8 +192,8 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <label><input type="checkbox" data-module="egas" checked> Módulo EGAS conceitual</label>
 
 <label><input type="checkbox" data-module="propulsion" checked> Propulsão + núcleo energético integrado</label>
-<label><input type="checkbox" data-module="radiators" checked> Painéis radiadores</label>
-<label><input type="checkbox" data-module="habitat" checked> Módulos habitáveis</label>
+<label><input type="checkbox" data-module="radiators"> Painéis radiadores</label>
+<label><input type="checkbox" data-module="habitat"> Módulos habitáveis</label>
 <label><input type="checkbox" data-module="field" checked> Anéis de campo ilustrativos</label>
 <label><input type="checkbox" data-module="antenna" checked> Sensores e antenas</label>
 <label><input type="checkbox" data-module="landing" checked> Suportes inferiores</label>
@@ -169,11 +324,11 @@ function modulePod(id,label,center,dims,material=M.hull){
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
  const primary=add('primary_pressure_hull','Casco pressurizado elipsoidal principal — SPECTRA-AXIS','hull',new THREE.SphereGeometry(1,72,48),M.hull,[-2,0,0]);
- primary.scale.set(78,14.5,18.5);
+ primary.scale.set(78,19,31);
  const dorsal=add('dorsal_service_spine','Carenagem dorsal de serviços e distribuição','hull',new THREE.CapsuleGeometry(4.2,78,8,32),M.armor,[-3,8.2,0]);
- dorsal.rotation.z=Math.PI/2;dorsal.scale.z=1.12;
+ dorsal.rotation.z=Math.PI/2;dorsal.scale.z=1.22;
  const ventral=add('ventral_keel','Quilha inferior de proteção e manutenção','hull',new THREE.CapsuleGeometry(3.1,72,8,32),M.dark,[5,-8.2,0]);
- ventral.rotation.z=Math.PI/2;ventral.scale.z=1.2;
+ ventral.rotation.z=Math.PI/2;ventral.scale.z=1.32;
 
  // AXIS — estrutura central longitudinal integrada à superfície dorsal do casco.
  rod('spectra_axis_beam','AXIS — longarina estrutural longitudinal central','hull',[-68,14.1,0],[68,14.1,0],.82,M.dark);
@@ -226,7 +381,17 @@ function hullSurface(){
   cyl('access_tunnel_'+x+'_'+side,'Túnel pressurizado de acesso','hull',2.1,2.1,10,M.armor,[x,-1,z],[Math.PI/2,0,0],32);
   tor('dock_ring_'+x+'_'+side,'Anel de acoplamento pressurizado','hull',2.15,.16,M.edge,[x,-1,side*21.8],[Math.PI/2,0,0]);
  }
- // Plataforma científica compacta sob o eixo central.
+ // Naceles laterais integradas conforme a prancha oficial de seis vistas.
+  for(const side of [-1,1]){
+   const nacelle=add('axis_side_nacelle_'+side,'Nacele lateral integrada SPECTRA-AXIS','hull',new THREE.CapsuleGeometry(5.2,62,10,36),M.armor,[3,-1,side*25]);
+   nacelle.rotation.z=Math.PI/2;
+   tor('axis_side_nacelle_collar_'+side,'Anel estrutural da nacele lateral','hull',5.1,.38,M.edge,[3,-1,side*25],[Math.PI/2,0,Math.PI/2]);
+   for(let i=0;i<10;i++){
+    const x=-29+i*7;
+    box('axis_side_light_'+side+'_'+i,'Iluminação técnica azul lateral','hull',2.2,.22,.18,M.cyan,[x,1.1,side*29]);
+   }
+  }
+  // Plataforma científica compacta sob o eixo central.
  box('science_platform','Plataforma de instrumentação científica','hull',18,1,16,M.dark,[25,-8,0]);
  for(let i=0;i<4;i++)box('science_instrument_'+i,'Instrumento científico externo','antenna',3,3,3,M.gold,[19+i*4,-6,0]);
  label3D('INSTRUMENTAÇÃO',[25,-1,0],2.2);
@@ -287,7 +452,7 @@ function hullSurface(){
  for(let i=0;i<4;i++)tor('egas_ring_'+i,'Anel esquemático do EGAS','egas',5.3+i*.55,.12,i%2?M.gold:M.cyan,[18,0,0]);
  label3D('EGAS · CONCEITUAL',[18,8,0],2.4);
  // Quatro unidades propulsivas com bocais em sino e anéis concêntricos, sem brilho excessivo.
- for(const y of [-5,5])for(const z of [-8,8]){
+ for(const [y,z] of [[0,-20],[0,0],[0,20]]){
   cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',3.1,3.5,13,M.dark,[68,y,z],[0,0,Math.PI/2]);
   const nozzle=add('engine_nozzle_'+y+'_'+z,'Bocal externo ilustrativo','propulsion',new THREE.CylinderGeometry(2.1,3.5,5,48,1,true),M.armor,[76,y,z],[0,0,Math.PI/2]);
   tor('aft_engine_ring_'+y+'_'+z,'Aro externo da unidade propulsiva','propulsion',3.05,.18,M.edge,[74.7,y,z]);
@@ -305,7 +470,7 @@ function hullSurface(){
  const nucleusProtonMat=new THREE.MeshStandardMaterial({color:0x55e0e5,emissive:0x0b555d,emissiveIntensity:.35,roughness:.24,metalness:.18});
  const nucleusNeutronMat=new THREE.MeshStandardMaterial({color:0x9b8cff,emissive:0x34266f,emissiveIntensity:.3,roughness:.27,metalness:.14});
  const nucleusContourMat=new THREE.MeshBasicMaterial({color:0x8cebea,wireframe:true,transparent:true,opacity:.075});
- for(const y of [-5,5])for(const z of [-8,8]){
+ for(const [y,z] of [[0,-20],[0,0],[0,20]]){
   const id='integrated_power_'+y+'_'+z;
   cyl(id+'_thermal_chamber','Câmara termoelétrica integrada ao conjunto propulsivo','propulsion',1.82,1.82,7.2,M.armor,[66.2,y,z],[0,0,Math.PI/2],56);
   const coreGroup=new THREE.Group();coreGroup.name=id+'_e192_nucleus';coreGroup.userData={label:'Núcleo E-192 · 192 prótons + 250 nêutrons · representação do simulador nuclear',group:'propulsion'};
@@ -343,6 +508,11 @@ function hullSurface(){
  }
 }
 hullSurface();
+ // Configuração inicial fiel à silhueta da prancha oficial: módulos e radiadores extensos recolhidos.
+ groups.radiators.visible=false;
+ groups.habitat.visible=false;
+// A prancha oficial mostra o casco elipsoidal com naceles integradas, sem asas solares externas abertas.
+groups.radiators.visible=false;
 
 // Planta interna dimensionalmente associada aos módulos externos.
 // O modo interior é uma vista de corte superior, com tetos ocultados pela câmera.
