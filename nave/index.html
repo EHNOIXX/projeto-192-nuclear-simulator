@@ -394,7 +394,7 @@ function hullSurface(){
   cyl('aft_engine_'+y+'_'+z,'Alojamento integrado de unidade propulsiva conceitual','propulsion',3.8,4.2,13,M.dark,[62,y,z],[0,0,Math.PI/2]);
   add('engine_nozzle_'+y+'_'+z,'Bocal integrado de unidade propulsiva conceitual','propulsion',new THREE.CylinderGeometry(2.8,4.35,5.2,48,1,true),M.armor,[71,y,z],[0,0,Math.PI/2]);
   tor('engine_casing_collar_'+y+'_'+z,'Junta curta entre casco e alojamento propulsivo','propulsion',4.25,.22,M.edge,[56.2,y,z],[0,Math.PI/2,0]);
-  sphere('aft_engine_core_'+y+'_'+z,'Abertura conceitual da unidade propulsiva','propulsion',.22,M.cyan,[74.0,y,z],32);
+  // A abertura central permanece sem pino luminoso saliente na saída do bocal.
  }
  // Sem convés saliente: manutenção distribuída em painéis embutidos no casco.
  label3D('CONJUNTOS PROPULSIVOS',[73,9,0],2.4);
