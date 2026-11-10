@@ -202,9 +202,9 @@ function hullProfileAtX(x,halfHeight=13.5,length=156){
 function hullSurfacePoint(x,theta,offset=0){
  const t=Math.max(0,Math.min(1,x/156+.5)),p=axisHullProfile(t);
  const cs=Math.cos(theta),sn=Math.sin(theta);
- const y=16.8*p*Math.sign(cs)*Math.pow(Math.abs(cs),.82);
- const z=35*p*Math.sign(sn)*Math.pow(Math.abs(sn),.82);
- const n=new THREE.Vector3(0,cs/16.8,sn/35).normalize();
+ const y=13.5*p*Math.sign(cs)*Math.pow(Math.abs(cs),.82);
+  const z=28*p*Math.sign(sn)*Math.pow(Math.abs(sn),.82);
+  const n=new THREE.Vector3(0,cs/13.5,sn/28).normalize();
  return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
 }
 function hullArmorPatch(x0,x1,a0,a1){
@@ -235,10 +235,7 @@ function hullSurface(){
   for(const x of [12,27,42,57])box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso da nacele lateral','hull',5,.18,2.5,M.dark,[x,1.8,side*35.2]);
  }
 
- const dorsal=add('dorsal_service_spine','Carenagem dorsal de serviços e distribuição','hull',new THREE.CapsuleGeometry(3.1,82,8,32),M.armor,[-3,7.1,0]);
- dorsal.rotation.z=Math.PI/2;dorsal.scale.z=1.12;
- const ventral=add('ventral_keel','Quilha inferior de proteção e manutenção','hull',new THREE.CapsuleGeometry(2.3,76,8,32),M.dark,[5,-7.2,0]);
- ventral.rotation.z=Math.PI/2;ventral.scale.z=1.2;
+ // Serviços e proteção ventral embutidos na pele do casco, sem cápsulas longitudinais sobrepostas.
 
  // AXIS — estrutura central longitudinal integrada à superfície dorsal do casco.
  // AXIS em camadas: carenagem elevada, longarinas e interfaces transversais.
@@ -322,8 +319,7 @@ function hullSurface(){
   tor('hull_viewport_rim_'+side+'_'+i,'Aro de janela blindada','hull',.9,.09,M.edge,[x,1.6,side*9.92],[Math.PI/2,0,0]);
  }
  // Núcleo operacional integrado ao casco.
- const hub=add('central_hub','Núcleo central pressurizado de operações','hull',new THREE.CapsuleGeometry(6.3,20,8,32),M.armor,[-1,0,0]);
- hub.rotation.z=Math.PI/2;hub.scale.z=1.72;
+ const hub=add('central_hub','Núcleo central pressurizado de operações','hull',axisHullGeometry(34,5.8,10.5,96,48),M.armor,[-1,0,0]);
  for(const side of [-1,1])for(let i=0;i<4;i++){
   const x=-10+i*6.5;
   box('hub_window_'+side+'_'+x,'Janela do centro de operações','bridge',2.6,1.5,.22,M.glass,[x,1.5,side*10.8]);
@@ -384,15 +380,8 @@ function hullSurface(){
  sphere('egas_core','Representação hipotética do núcleo E-192','egas',1.7,M.violet,[18,0,0],40);
  for(let i=0;i<4;i++)tor('egas_ring_'+i,'Anel esquemático do EGAS','egas',5.3+i*.55,.12,i%2?M.gold:M.cyan,[18,0,0]);
  label3D('EGAS · CONCEITUAL',[18,8,0],2.4);
- // Traseira reconstruída como três carenagens-naceles longitudinais.
- // Cada unidade fica parcialmente embutida no volume traseiro do casco,
- // substituindo o quadro periférico, os arcos e as travessas expostas.
- for(const [i,z] of [[-1,-21.5],[0,0],[1,21.5]]){
-  add('aft_integrated_shroud_'+i,'Carenagem integrada da nacele propulsiva traseira','hull',
-      axisHullGeometry(40,7.6,7.8,112,56),M.armor,[64,0,z]);
-  add('aft_shroud_root_'+i,'Transição estrutural da nacele para o casco','hull',
-      axisHullGeometry(17,5.9,6.2,80,48),M.hull,[50,0,z]);
- }
+ // Uma única carenagem traseira contínua envolve os três alojamentos propulsivos e fecha a transição do casco.
+  add('aft_continuous_fairing','Carenagem traseira contínua integrada ao casco','hull',axisHullGeometry(42,10.8,28.5,112,64),M.armor,[57,0,0]);
  // Três unidades propulsivas alinhadas com bocais em sino e anéis concêntricos, sem brilho excessivo.
  for(const [y,z] of [[0,-21.5],[0,0],[0,21.5]]){
   cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',4.2,4.8,15,M.dark,[67,y,z],[0,0,Math.PI/2]);
