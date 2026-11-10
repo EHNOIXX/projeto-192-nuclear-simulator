@@ -17,8 +17,11 @@ page.on('console', message => { if (message.type() === 'error') errors.push(mess
 try {
   await page.goto('http://127.0.0.1:4173/nave/', { waitUntil: 'domcontentloaded', timeout: 120000 });
   await page.waitForSelector('#viewport canvas', { timeout: 90000 });
-  await page.waitForFunction(() => document.querySelector('#renderStatus')?.textContent.includes('PRONTO'), { timeout: 90000 });
-  await page.waitForTimeout(2500);
+  await page.waitForFunction(() => window.__spectraReady === true && Number.isFinite(window.__spectraStartupMs), { timeout: 90000 });
+  const startupMs = await page.evaluate(() => window.__spectraStartupMs);
+  const canvasSize = await page.locator('#viewport canvas').evaluate(el => ({ width: el.width, height: el.height }));
+  if (!canvasSize.width || !canvasSize.height) throw new Error('Canvas WebGL sem dimensões após inicialização');
+  await page.waitForTimeout(500);
 
   const views = [
     ['frontal', 'front'],
@@ -70,8 +73,8 @@ try {
   }
   if (errors.length) throw new Error('Erros de console/runtime: ' + errors.join(' | '));
 
-  await fs.writeFile(`${out}/validation.json`, JSON.stringify({ status: 'passed', views: views.map(([name]) => name), dimensions, controls: ['orbit', 'module visibility', 'individual selection', 'hide/restore', 'section cut', 'assembled mode'] }, null, 2));
-  console.log('SPECTRA-AXIS visual validation passed');
+  await fs.writeFile(`${out}/validation.json`, JSON.stringify({ status: 'passed', startup_ms_from_navigation: startupMs, canvas: canvasSize, views: views.map(([name]) => name), dimensions, controls: ['orbit', 'module visibility', 'individual selection', 'hide/restore', 'section cut', 'assembled mode'] }, null, 2));
+  console.log(`SPECTRA-AXIS visual validation passed; startup=${startupMs}ms; canvas=${canvasSize.width}x${canvasSize.height}`);
 } catch (error) {
   await fs.writeFile(`${out}/validation-error.txt`, String(error.stack || error));
   throw error;
