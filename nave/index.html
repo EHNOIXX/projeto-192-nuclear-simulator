@@ -577,6 +577,7 @@ function restoreModuleVisibility(){document.querySelectorAll('[data-module]').fo
 function showInterior(){interiorMode=true;restoreModuleVisibility();groups.interior.visible=true;labelsGroup.visible=true;groups.hull.visible=false;groups.habitat.visible=false;groups.radiators.visible=false;groups.field.visible=false;groups.bridge.visible=false;groups.antenna.visible=false;groups.landing.visible=false;groups.egas.visible=false;groups.interior.visible=true;
  if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=false;
  for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=false;controls.minDistance=15;controls.maxDistance=280;camera.position.set(-4,118,18);controls.target.set(-2,-1,0);controls.update();$('selectionLabel').textContent='PLANTA INTERNA / COMPARTIMENTOS';$('selectionInfo').innerHTML='<strong>Configuração interna conceitual</strong>Planta de corte da arquitetura de 50 tripulantes: 24 cabines duplas, ponte, centro de operações, laboratórios E-192/EGAS, enfermaria, refeitório, suporte ambiental e manutenção propulsiva. Modelo conceitual, não projeto habitável validado.';log('Vista interna ativada: compartimentos e circulação expostos.')}
+let cameraBoundsCache=null;
 function cameraPreset(v){
  interiorMode=false;restoreModuleVisibility();groups.interior.visible=false;labelsGroup.visible=$('labels').classList.contains('active');
  if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=true;
@@ -584,7 +585,8 @@ function cameraPreset(v){
  controls.minDistance=18;controls.maxDistance=420;
  const p={iso:[-1.0,.72,1.12],front:[-1,.17,0],side:[0,.22,1],left:[0,.22,-1],top:[0,1,.02],bottom:[0,-1,.02],rear:[1,.17,0],interior:[-.04,.58,.09]}[v]||[-1,.72,1.12];
  camera.up.set(0,(v==='top'||v==='bottom')?0:1,v==='top'?-1:v==='bottom'?1:0);
- const bounds=new THREE.Box3().setFromObject(root);
+ if(!cameraBoundsCache){root.updateMatrixWorld(true);cameraBoundsCache=new THREE.Box3().setFromObject(root)}
+  const bounds=cameraBoundsCache;
  const center=bounds.getCenter(new THREE.Vector3()),direction=new THREE.Vector3(...p).normalize();
  const right=new THREE.Vector3().crossVectors(camera.up,direction).normalize();
  const viewUp=new THREE.Vector3().crossVectors(direction,right).normalize();
@@ -615,12 +617,12 @@ document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click',()=>{if(scaleMode==='ship'){if(b.dataset.camera==='interior')showInterior();else cameraPreset(b.dataset.camera)}}));
 $('resetCamera').onclick=()=>scaleMode==='atom'?atomCamera():scaleMode==='engine'?engineCamera():cameraPreset('iso');
 $('fit').onclick=()=>$('resetCamera').click();
-function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/162,H/37.5,W/96);$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
+function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/162,H/37.5,W/96);cameraBoundsCache=null;$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
 ['len','wid','hei'].forEach(id=>$(id).addEventListener('input',setDims));
 $('resetDims').onclick=()=>{$('len').value=160;$('wid').value=96;$('hei').value=48;setDims()};
 function updateCount(){const controls=[...document.querySelectorAll('[data-module]')];const n=controls.filter(ch=>ch.checked).length;$('statMods').textContent=n+' / '+controls.length}
 document.querySelectorAll('[data-module]').forEach(ch=>ch.addEventListener('change',()=>{groups[ch.dataset.module].visible=ch.checked;updateCount();log('Visibilidade atualizada: '+ch.parentElement.textContent.trim())}));
-function explode(v){const t=v/100;const dirs={hull:[0,0,0],bridge:[-1,1,0],egas:[0,0,0],propulsion:[1,0,0],radiators:[0,1,1],habitat:[0,-1,1],field:[0,0,-1],antenna:[-1,1,0],landing:[0,-1,0],power:[1,1,0],interior:[0,0,0]};Object.entries(groups).forEach(([k,g])=>g.position.set(dirs[k][0]*t*19,dirs[k][1]*t*15,dirs[k][2]*t*20));$('explodeOut').textContent=Math.round(v)+'%';$('statState').textContent=t?'EXPLODIDA':'MONTADA';exploded=t>0}
+function explode(v){const t=v/100;const dirs={hull:[0,0,0],bridge:[-1,1,0],egas:[0,0,0],propulsion:[1,0,0],radiators:[0,1,1],habitat:[0,-1,1],field:[0,0,-1],antenna:[-1,1,0],landing:[0,-1,0],power:[1,1,0],interior:[0,0,0]};Object.entries(groups).forEach(([k,g])=>g.position.set(dirs[k][0]*t*19,dirs[k][1]*t*15,dirs[k][2]*t*20));cameraBoundsCache=null;$('explodeOut').textContent=Math.round(v)+'%';$('statState').textContent=t?'EXPLODIDA':'MONTADA';exploded=t>0}
 $('explode').addEventListener('input',e=>{explode(+e.target.value);$('modeExploded').classList.toggle('active',+e.target.value>0);$('modeAssembled').classList.toggle('active',+e.target.value===0)});
 $('modeAssembled').onclick=()=>{$('explode').value=0;explode(0);$('modeAssembled').classList.add('active');$('modeExploded').classList.remove('active');$('modeCut').classList.remove('active');cut=false;Object.values(M).forEach(mat=>{mat.clippingPlanes=[]});groups.hull.visible=document.querySelector('[data-module="hull"]').checked};
 $('modeExploded').onclick=()=>{$('explode').value=68;explode(68);$('modeExploded').classList.add('active');$('modeAssembled').classList.remove('active');$('modeCut').classList.remove('active');cut=false;Object.values(M).forEach(mat=>{mat.clippingPlanes=[]})};
