@@ -105,9 +105,9 @@ const root=new THREE.Group();scene.add(root);
 const groups={hull:new THREE.Group(),bridge:new THREE.Group(),egas:new THREE.Group(),propulsion:new THREE.Group(),radiators:new THREE.Group(),habitat:new THREE.Group(),field:new THREE.Group(),antenna:new THREE.Group(),landing:new THREE.Group(),power:new THREE.Group(),interior:new THREE.Group()};
 Object.values(groups).forEach(g=>root.add(g));
 const M={
- hull:new THREE.MeshStandardMaterial({color:0x354653,metalness:.78,roughness:.34}),
- armor:new THREE.MeshStandardMaterial({color:0x202e3b,metalness:.82,roughness:.32}),
- edge:new THREE.MeshStandardMaterial({color:0x718897,metalness:.86,roughness:.26}),
+ hull:new THREE.MeshStandardMaterial({color:0x354653,metalness:.88,roughness:.29}),
+ armor:new THREE.MeshStandardMaterial({color:0x202e3b,metalness:.9,roughness:.27}),
+ edge:new THREE.MeshStandardMaterial({color:0x718897,metalness:.92,roughness:.23}),
  dark:new THREE.MeshStandardMaterial({color:0x101d2b,metalness:.78,roughness:.34}),
  cyan:new THREE.MeshStandardMaterial({color:0x62c9f5,metalness:.32,roughness:.3,emissive:0x075b9b,emissiveIntensity:.85}),
  glass:new THREE.MeshPhysicalMaterial({color:0x56b6d2,metalness:.08,roughness:.08,transparent:true,opacity:.46,transmission:.35,thickness:.5,side:THREE.DoubleSide,depthWrite:false}),
@@ -199,8 +199,8 @@ function hullSurfacePoint(x,theta,offset=0){
  const t=Math.max(0,Math.min(1,x/156+.5)),p=axisHullProfile(t);
  const cs=Math.cos(theta),sn=Math.sin(theta);
  const y=18.75*p*Math.sign(cs)*Math.pow(Math.abs(cs),.82);
- const z=50*p*Math.sign(sn)*Math.pow(Math.abs(sn),.82);
- const n=new THREE.Vector3(0,cs/18.75,sn/50).normalize();
+ const z=39*p*Math.sign(sn)*Math.pow(Math.abs(sn),.82);
+ const n=new THREE.Vector3(0,cs/18.75,sn/39).normalize();
  return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
 }
 function hullArmorPatch(x0,x1,a0,a1){
@@ -220,16 +220,16 @@ function hullSeamCurve(x0,x1,angle){
 }
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
- const primary=add('primary_pressure_hull','Casco pressurizado elipsoidal de curvatura variável — SPECTRA-AXIS','hull',axisHullGeometry(156,18.75,50),M.hull,[0,0,0]);
+ const primary=add('primary_pressure_hull','Casco pressurizado elipsoidal de curvatura variável — SPECTRA-AXIS','hull',axisHullGeometry(156,18.75,39),M.hull,[0,0,0]);
  // Naceles laterais externas, longas e baixas: silhueta de pods integrados da prancha oficial.
  for(const side of [-1,1]){
-  add('axis_side_pod_'+side,'Nacele lateral longitudinal integrada ao casco','hull',axisHullGeometry(58,4.4,7.2,96,48),M.armor,[31,-1.8,side*48.5]);
-  tor('axis_side_pod_frame_'+side,'Aro estrutural da nacele lateral','hull',4.1,.24,M.edge,[51,-1.8,side*48.5],[0,Math.PI/2,0]);
+  add('axis_side_pod_'+side,'Nacele lateral longitudinal integrada ao casco','hull',axisHullGeometry(64,4.8,7.8,112,56),M.armor,[30,-1.8,side*46.5]);
+  tor('axis_side_pod_frame_'+side,'Aro estrutural da nacele lateral','hull',4.1,.24,M.edge,[51,-1.8,side*46.5],[0,Math.PI/2,0]);
   for(let i=0;i<9;i++){
    const x=8+i*5.6;
-   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.5,.18,.2,M.cyan,[x,2.1,side*54.9]);
+   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.5,.18,.2,M.cyan,[x,2.1,side*53.9]);
   }
-  for(const x of [12,27,42,57])box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso da nacele lateral','hull',5,.18,2.5,M.dark,[x,3.1,side*49.2]);
+  for(const x of [12,27,42,57])box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso da nacele lateral','hull',5,.18,2.5,M.dark,[x,3.1,side*47.4]);
  }
 
  const dorsal=add('dorsal_service_spine','Carenagem dorsal de serviços e distribuição','hull',new THREE.CapsuleGeometry(4.2,78,8,32),M.armor,[-3,8.2,0]);
@@ -251,7 +251,7 @@ function hullSurface(){
  const armorAlt=new THREE.MeshStandardMaterial({color:0x3b4b57,metalness:.84,roughness:.31,side:THREE.DoubleSide});
  for(let i=0;i<10;i++){
   const x0=-69+i*13.8,x1=x0+12.9;
-  for(const [j,span] of [[0,[-1.08,1.08]],[1,[1.12,1.48]],[2,[-1.48,-1.12]]]){
+  for(const [j,span] of [[0,[-1.08,1.08]],[1,[1.12,1.48]],[2,[-1.48,-1.12]],[3,[2.06,4.22]],[4,[4.80,5.17]],[5,[1.66,1.98]]]){
    const mat=(i+j)%3===0?armorAlt:armorMat;
    add('hull_armor_panel_'+i+'_'+j,'Placa de blindagem conformada do casco','hull',hullArmorPatch(x0,x1,span[0],span[1]),mat);
   }
@@ -265,6 +265,41 @@ function hullSurface(){
   const pts=[];for(let i=0;i<=40;i++){const x=-65+i*3.25;pts.push(hullSurfacePoint(x,side*1.37,.38))}
   const curve=new THREE.CatmullRomCurve3(pts);
   add('hull_blue_guide_'+side,'Guia luminosa azul lateral do casco','hull',new THREE.TubeGeometry(curve,120,.22,8,false),M.cyan);
+ }
+ // Nervuras transversais rasas e segmentadas.
+ for(const x of [-58,-43,-28,-13,2,17,32,47,60]){
+  const pts=[];for(let k=0;k<=48;k++){const a=k*Math.PI*2/48;pts.push(hullSurfacePoint(x,a,.34))}
+  add('hull_transverse_rib_'+x,'Nervura transversal de reforço do casco','hull',new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),96,.19,7,true),M.edge);
+ }
+ // Tampas de inspeção simétricas com fixadores modelados.
+ for(const side of [-1,1])for(let i=0;i<6;i++){
+  const x=-47+i*18,angle=side*1.12;
+  add('hull_access_hatch_'+side+'_'+i,'Tampa de inspeção estrutural do casco','hull',hullArmorPatch(x-3.1,x+3.1,angle-.10,angle+.10),i%2?armorAlt:armorMat);
+  for(const [dx,da] of [[-2.5,-.065],[2.5,-.065],[-2.5,.065],[2.5,.065]]){
+   const p=hullSurfacePoint(x+dx,angle+da,.48);
+   sphere('hull_hatch_fastener_'+side+'_'+i+'_'+dx+'_'+da,'Fixador de painel de inspeção','hull',.19,M.edge,p.toArray(),12);
+  }
+ }
+ // Venezianas técnicas discretas no dorso e no ventre.
+ for(const side of [-1,1])for(let i=0;i<9;i++){
+  const x=-48+i*12,a=side===1?.18:Math.PI-.18;
+  for(let k=0;k<4;k++){
+   const p=hullSurfacePoint(x,a+k*.035,.43),q=hullSurfacePoint(x+5.6,a+k*.035,.43);
+   rod('hull_vent_louver_'+side+'_'+i+'_'+k,'Aleta de veneziana técnica','hull',p.toArray(),q.toArray(),.11,M.dark);
+  }
+ }
+ // Berços e escoras unem as naceles ao casco.
+ for(const side of [-1,1])for(const x of [8,27,46]){
+  const z=side*39,podZ=side*46.5;
+  rod('side_pod_mount_'+side+'_'+x,'Berço estrutural de conexão da nacele lateral','hull',[x,0,z],[x,-1.8,podZ],.72,M.edge);
+  rod('side_pod_mount_diag_'+side+'_'+x,'Escora diagonal da nacele lateral','hull',[x-4,-3,z+side*1.5],[x+4,-1.8,podZ-side*1.5],.34,M.dark);
+ }
+ // Sensores distribuídos em carenagens simétricas.
+ for(const side of [-1,1])for(const x of [-52,-35,43,58]){
+  const p=hullSurfacePoint(x,side*1.48,.75);
+  const pod=add('distributed_sensor_'+side+'_'+x,'Carenagem de sensor externo distribuído','antenna',new THREE.SphereGeometry(1,24,16),M.dark,p.toArray());
+  pod.scale.set(2.1,1.1,1.4);
+  sphere('distributed_sensor_lens_'+side+'_'+x,'Lente azul de sensor externo','antenna',.42,M.cyan,[p.x,p.y+1.05,p.z],20);
  }
  // Anéis de união do casco e painéis de acesso.
  for(const x of [-48,-32,-16,0,16,32,48]){
@@ -349,6 +384,13 @@ function hullSurface(){
   tor('integrated_energy_aperture_'+y+'_'+z,'Aro de inspeção do núcleo integrado','propulsion',.48,.10,M.cyan,[78.85,y,z],[0,Math.PI/2,0]);
   tor('integrated_energy_inner_'+y+'_'+z,'Anel interno do conversor termoelétrico','propulsion',.27,.07,M.gold,[79.05,y,z],[0,Math.PI/2,0]);
   rod('engine_mount_'+y+'_'+z,'Suporte estrutural da unidade propulsiva','propulsion',[68,y,z],[56,y,z],.38,M.edge);
+  for(const [rr,thick,mat] of [[3.65,.16,M.edge],[2.75,.12,M.cyan],[1.8,.10,M.gold]])
+   tor('engine_throat_layer_'+y+'_'+z+'_'+rr,'Anel interno em camadas do bocal','propulsion',rr,thick,mat,[80.7,y,z],[0,Math.PI/2,0]);
+  for(let vane=0;vane<12;vane++){
+   const a=vane*Math.PI/6,ca=Math.cos(a),sa=Math.sin(a);
+   rod('engine_vane_'+y+'_'+z+'_'+vane,'Aleta radial interna ilustrativa do bocal','propulsion',[78.2,y+ca*2.1,z+sa*2.1],[80.3,y+ca*3,z+sa*3],.14,M.edge);
+  }
+  tor('engine_support_collar_'+y+'_'+z,'Colar estrutural externo do conjunto propulsivo','propulsion',5.25,.34,M.dark,[72,y,z],[0,Math.PI/2,0]);
  }
  box('aft_service_deck','Convés de manutenção dos sistemas propulsivos','hull',16,1,22,M.armor,[54,-8,0]);
  label3D('CONJUNTOS PROPULSIVOS',[73,9,0],2.4);
