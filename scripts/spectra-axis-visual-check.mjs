@@ -29,7 +29,8 @@ try {
   for (const [name, camera] of views) {
     await page.locator(`[data-camera="${camera}"]`).evaluate(el => el.click());
     await page.waitForTimeout(900);
-    await page.locator('#viewport').screenshot({ path: `${out}/spectra-axis-${name}.png`, animations: 'disabled' });
+    const rect = await page.locator('#viewport').evaluate(el => { const r = el.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; });
+    await page.screenshot({ path: `${out}/spectra-axis-${name}.png`, clip: rect, animations: 'disabled', timeout: 60000 });
   }
 
   // Smoke tests dos controles preservados.
