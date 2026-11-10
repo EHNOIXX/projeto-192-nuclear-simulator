@@ -183,8 +183,8 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
   for(let j=0;j<=radial;j++){
    const a=j/radial*Math.PI*2;
    const cs=Math.cos(a),sn=Math.sin(a);
-   const y=halfHeight*profile*Math.sign(cs)*Math.pow(Math.abs(cs),.90);
-   const z=halfWidth*profile*Math.sign(sn)*Math.pow(Math.abs(sn),.90);
+   const y=halfHeight*profile*Math.sign(cs)*Math.pow(Math.abs(cs),1.04);
+   const z=halfWidth*profile*Math.sign(sn)*Math.pow(Math.abs(sn),1.04);
    positions.push(x,y,z);
   }
  }
