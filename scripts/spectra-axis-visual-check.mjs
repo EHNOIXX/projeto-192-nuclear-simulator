@@ -35,7 +35,7 @@ try {
   // Smoke tests dos controles preservados.
   await page.locator('#autoRotate').evaluate(el => el.click());
   if (!(await page.locator('#autoRotate').evaluate(el => el.classList.contains('active')))) throw new Error('Órbita automática não ativou');
-  await page.locator('#autoRotate').click();
+  await page.locator('#autoRotate').evaluate(el => el.click());
 
   await page.locator('[data-module="egas"]').check();
   await page.locator('[data-module="egas"]').uncheck();
