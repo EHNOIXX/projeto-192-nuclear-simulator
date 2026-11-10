@@ -167,15 +167,13 @@ function modulePod(id,label,center,dims,material=M.hull){
  label3D(label,[x,y+h/2+3,z],2.1);
 }
 function axisHullProfile(t){
- // Planta longitudinal: proa fina, ombros progressivos, corpo central cheio
- // e contração traseira gradual para integrar três alojamentos propulsivos.
+ // Perfil recuperado da base visual mais esguia: proa longa, ombros contidos,
+ // seção central estável e contração progressiva na popa.
  const smooth=u=>{u=THREE.MathUtils.clamp(u,0,1);return u*u*(3-2*u)};
- const keys=[[0,.008],[.07,.105],[.19,.43],[.32,.79],[.43,.94],[.62,1],[.75,.97],[.84,.79],[.92,.48],[.98,.16],[1,.012]];
- for(let i=0;i<keys.length-1;i++){
-  const [a,va]=keys[i],[b,vb]=keys[i+1];
-  if(t<=b){const u=smooth((t-a)/(b-a));return va+(vb-va)*u;}
- }
- return keys[keys.length-1][1];
+ if(t<.29)return Math.pow(Math.sin(smooth(t/.29)*Math.PI/2),.82);
+ if(t>.77)return Math.pow(1-smooth((t-.77)/.23),.76);
+ const rise=smooth((t-.29)/.13),fall=1-smooth((t-.65)/.12);
+ return .88+.12*rise*fall;
 }
 function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
  const positions=[],indices=[];
@@ -198,16 +196,16 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
  g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
  g.setIndex(indices);g.computeVertexNormals();return g;
 }
-function hullProfileAtX(x,halfHeight=16.2,length=160){
+function hullProfileAtX(x,halfHeight=13.5,length=160){
  const t=Math.max(0,Math.min(1,x/length+.5));
  return halfHeight*axisHullProfile(t);
 }
 function hullSurfacePoint(x,theta,offset=0){
  const t=Math.max(0,Math.min(1,x/160+.5)),p=axisHullProfile(t);
  const cs=Math.cos(theta),sn=Math.sin(theta);
- const y=16.2*p*Math.sign(cs)*Math.pow(Math.abs(cs),.90);
- const z=34.5*p*Math.sign(sn)*Math.pow(Math.abs(sn),.90);
- const n=new THREE.Vector3(0,cs/16.2,sn/34.5).normalize();
+ const y=13.5*p*Math.sign(cs)*Math.pow(Math.abs(cs),1.04);
+ const z=28*p*Math.sign(sn)*Math.pow(Math.abs(sn),1.04);
+ const n=new THREE.Vector3(0,cs/13.5,sn/28).normalize();
  return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
 }
 function hullArmorPatch(x0,x1,a0,a1){
@@ -226,7 +224,7 @@ function hullSeamCurve(x0,x1,angle){
 }
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
- const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,16.2,34.5),M.hull,[0,0,0]);
+ const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,13.5,28),M.hull,[0,0,0]);
  // Naceles laterais externas, longas e baixas: silhueta de pods integrados da prancha oficial.
  for(const side of [-1,1]){
   add('axis_side_pod_'+side,'Nacele lateral de ombro integrada ao monocoque','hull',axisHullGeometry(70,2.7,4.6,112,56),M.armor,[27,-.6,side*40.2]);
@@ -242,9 +240,9 @@ function hullSurface(){
 
  // AXIS — estrutura central longitudinal integrada à superfície dorsal do casco.
  // AXIS em camadas: carenagem elevada, longarinas e interfaces transversais.
- add('spectra_axis_spine','AXIS — carenagem longitudinal central integrada','hull',axisHullGeometry(112,1.15,2.8,112,48),M.armor,[0,15.65,0]);
- rod('axis_upper_rail_left','AXIS — longarina superior esquerda','hull',[-54,17.0,-1.9],[54,17.0,-1.9],.34,M.edge);
- rod('axis_upper_rail_right','AXIS — longarina superior direita','hull',[-54,17.0,1.9],[54,17.0,1.9],.34,M.edge);
+ add('spectra_axis_spine','AXIS — carenagem longitudinal central integrada','hull',axisHullGeometry(112,1.45,3.2,112,48),M.armor,[0,13.1,0]);
+ rod('axis_upper_rail_left','AXIS — longarina superior esquerda','hull',[-54,14.25,-2.2],[54,14.25,-2.2],.48,M.edge);
+ rod('axis_upper_rail_right','AXIS — longarina superior direita','hull',[-54,14.25,2.2],[54,14.25,2.2],.48,M.edge);
  for(const x of [-52,-39,-26,-13,0,13,26,39,52]){const y=hullProfileAtX(x)+.22;box('axis_interface_'+x,'AXIS — interface modular embutida','hull',2.6,.28,1.8,M.panel,[x,y,0])}
  const axisPoints=[];for(let i=0;i<=48;i++){const x=-67+i*(134/48);axisPoints.push(new THREE.Vector3(x,hullProfileAtX(x)+.22,0))}
  const axisCurve=new THREE.CatmullRomCurve3(axisPoints);
@@ -253,7 +251,7 @@ function hullSurface(){
  for(const x of [-58,-42,-26,-10,6,22,38,54]){
   box('axis_marker_'+x,'Marcador luminoso azul da estrutura AXIS', 'hull',1.1,.22,2.2,M.cyan,[x,hullProfileAtX(x)+.42,0]);
  }
- label3D('SPECTRA · AXIS',[-4,18,0],2.2);
+ label3D('SPECTRA · AXIS',[-4,15,0],2.2);
  // Revestimento segmentado conformado à superfície: placas seguem a curvatura real do casco.
  const armorMat=new THREE.MeshStandardMaterial({color:0x263541,metalness:.88,roughness:.29,side:THREE.DoubleSide});
  const armorAlt=new THREE.MeshStandardMaterial({color:0x3b4b57,metalness:.84,roughness:.31,side:THREE.DoubleSide});
@@ -311,7 +309,7 @@ function hullSurface(){
  }
  // Anéis de união do casco e painéis de acesso.
  for(const x of [-48,-32,-16,0,16,32,48]){
-  const y=hullProfileAtX(x,16.2,160)-.8;
+  const y=hullProfileAtX(x,13.5,160)-.8;
   box('service_panel_'+x,'Painel de inspeção embutido do casco','hull',5,.14,3.2,M.dark,[x,y,0]);
  }
  // Janelas de observação e iluminação de serviço em faixas laterais.
