@@ -365,19 +365,18 @@ function hullSurface(){
  for(const side of [-1,1]){
   // A longarina principal começa dentro da zona estrutural do casco e alcança a raiz dos radiadores.
   rod('radiator_root_mount_'+side,'Encaixe estrutural do radiador no casco','radiators',[8,5,side*7.5],[8,8,side*18],.72,M.armor);
-  rod('radiator_boom_'+side,'Longarina contínua do radiador térmico','radiators',[8,8,side*15],[8,8,side*38],.62,M.edge);
-  rod('radiator_outer_rail_'+side,'Trilho externo de sustentação do radiador','radiators',[32,8,side*15],[32,8,side*38],.42,M.edge);
+  // Os radiadores são montados rente às naceles laterais; sem braços longos externos.
   for(const x of [-10,10,30]){
    rod('radiator_crossbeam_'+side+'_'+x,'Longarina embutida de integração térmica','radiators',[x,4.8,side*36.8],[x,4.8,side*40.2],.18,M.edge);
   }
   for(let j=0;j<4;j++){
    const x=-10+j*13;
-   box('radiator_panel_'+side+'_'+j,'Painel radiador conformado e integrado','radiators',10,.22,5.2,M.panel,[x,5.1,side*39.6]);
-   for(let k=0;k<5;k++)box('radiator_channel_'+side+'_'+j+'_'+k,'Canal térmico superficial','radiators',8,.05,.10,M.cyan,[x,8.78,side*(37+k*2)]);
-   for(const z of [-1.8,1.8])rod('radiator_panel_standoff_'+side+'_'+j+'_'+z,'Fixação embutida do painel radiador','radiators',[x,4.9,side*37.5],[x,5.1,side*(39.6+z)],.12,M.edge);
+   box('radiator_panel_'+side+'_'+j,'Painel radiador conformado e integrado','radiators',10,.22,5.2,M.panel,[x,3.42,side*39.6]);
+   for(let k=0;k<5;k++)box('radiator_channel_'+side+'_'+j+'_'+k,'Canal térmico superficial','radiators',8,.05,.10,M.cyan,[x,3.56,side*(37.4+k*1.05)]);
+   for(const z of [-1.8,1.8])rod('radiator_panel_standoff_'+side+'_'+j+'_'+z,'Fixação embutida do painel radiador','radiators',[x,3.22,side*37.5],[x,3.42,side*(39.6+z)],.12,M.edge);
   }
   // Coletores e bases de articulação tornam explícito o caminho de carga até o casco.
-  box('radiator_root_housing_'+side,'Carcaça da articulação do radiador','radiators',5,3,5,M.armor,[8,7,side*12]);
+  box('radiator_root_housing_'+side,'Carcaça de integração térmica lateral','radiators',5,1.2,4,M.armor,[8,3.4,side*35.5]);
  }
  label3D('RADIADORES TÉRMICOS',[10,12,43],2.3);
  // Compartimento EGAS é mostrado como equipamento científico hipotético, não como motor validado.
