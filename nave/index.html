@@ -34,14 +34,14 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <div class="panel"><div class="paneltitle">02 / MÓDULOS VISÍVEIS</div><div class="panelbody modulelist" id="modules">
 <label><input type="checkbox" data-module="hull" checked> Estrutura e carenagem</label>
 <label><input type="checkbox" data-module="bridge" checked> Módulo de comando</label>
-<label><input type="checkbox" data-module="egas" checked> Módulo EGAS conceitual</label>
+<label><input type="checkbox" data-module="egas"> Módulo EGAS conceitual</label>
 
 <label><input type="checkbox" data-module="propulsion" checked> Propulsão + núcleo energético integrado</label>
 <label><input type="checkbox" data-module="radiators"> Painéis radiadores</label>
 <label><input type="checkbox" data-module="habitat"> Módulos habitáveis</label>
-<label><input type="checkbox" data-module="field" checked> Anéis de campo ilustrativos</label>
-<label><input type="checkbox" data-module="antenna" checked> Sensores e antenas</label>
-<label><input type="checkbox" data-module="landing" checked> Suportes inferiores</label>
+<label><input type="checkbox" data-module="field"> Anéis de campo ilustrativos</label>
+<label><input type="checkbox" data-module="antenna"> Sensores e antenas</label>
+<label><input type="checkbox" data-module="landing"> Suportes inferiores</label>
 <label><input type="checkbox" data-module="interior"> Compartimentos internos e corredores</label>
 </div></div>
 <div class="panel"><div class="paneltitle">04 / MANIPULAÇÃO DE COMPONENTES</div><div class="panelbody">
@@ -195,17 +195,41 @@ function hullProfileAtX(x,halfHeight=18.75,length=156){
  const t=Math.max(0,Math.min(1,x/length+.5));
  return halfHeight*axisHullProfile(t);
 }
+function hullSurfacePoint(x,theta,offset=0){
+ const t=Math.max(0,Math.min(1,x/156+.5)),p=axisHullProfile(t);
+ const cs=Math.cos(theta),sn=Math.sin(theta);
+ const y=18.75*p*Math.sign(cs)*Math.pow(Math.abs(cs),.82);
+ const z=50*p*Math.sign(sn)*Math.pow(Math.abs(sn),.82);
+ const n=new THREE.Vector3(0,cs/18.75,sn/50).normalize();
+ return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
+}
+function hullArmorPatch(x0,x1,a0,a1){
+ const positions=[],indices=[],nx=12,na=8;
+ for(let i=0;i<=nx;i++)for(let j=0;j<=na;j++){
+  const x=x0+(x1-x0)*i/nx,ang=a0+(a1-a0)*j/na;
+  const p=hullSurfacePoint(x,ang,.22);positions.push(p.x,p.y,p.z);
+ }
+ for(let i=0;i<nx;i++)for(let j=0;j<na;j++){
+  const a=i*(na+1)+j,b=a+na+1;indices.push(a,a+1,b,b,a+1,b+1);
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setIndex(indices);g.computeVertexNormals();return g;
+}
+function hullSeamCurve(x0,x1,angle){
+ const pts=[];for(let i=0;i<=24;i++)pts.push(hullSurfacePoint(x0+(x1-x0)*i/24,angle,.32));
+ return new THREE.CatmullRomCurve3(pts);
+}
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
  const primary=add('primary_pressure_hull','Casco pressurizado elipsoidal de curvatura variável — SPECTRA-AXIS','hull',axisHullGeometry(156,18.75,50),M.hull,[0,0,0]);
- // Dois conjuntos laterais compactos, integrados ao quarto traseiro do casco.
+ // Naceles laterais externas, longas e baixas: silhueta de pods integrados da prancha oficial.
  for(const side of [-1,1]){
-  const pod=add('axis_side_pod_'+side,'Módulo lateral integrado SPECTRA-AXIS','hull',axisHullGeometry(48,4.8,6.2,72,40),M.armor,[37,-1.2,side*34.5]);
-  tor('axis_side_pod_frame_'+side,'Aro estrutural do módulo lateral','hull',4.2,.22,M.edge,[39,-1.2,side*34.5],[0,Math.PI/2,0]);
-  for(let i=0;i<7;i++){
-   const x=17+i*6;
-   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul do módulo lateral','hull',2.4,.2,.2,M.cyan,[x,3.3,side*38.1]);
+  add('axis_side_pod_'+side,'Nacele lateral longitudinal integrada ao casco','hull',axisHullGeometry(58,4.4,7.2,96,48),M.armor,[31,-1.8,side*48.5]);
+  tor('axis_side_pod_frame_'+side,'Aro estrutural da nacele lateral','hull',4.1,.24,M.edge,[51,-1.8,side*48.5],[0,Math.PI/2,0]);
+  for(let i=0;i<9;i++){
+   const x=8+i*5.6;
+   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.5,.18,.2,M.cyan,[x,2.1,side*54.9]);
   }
+  for(const x of [12,27,42,57])box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso da nacele lateral','hull',5,.18,2.5,M.dark,[x,3.1,side*49.2]);
  }
 
  const dorsal=add('dorsal_service_spine','Carenagem dorsal de serviços e distribuição','hull',new THREE.CapsuleGeometry(4.2,78,8,32),M.armor,[-3,8.2,0]);
@@ -222,6 +246,26 @@ function hullSurface(){
   box('axis_marker_'+x,'Marcador luminoso azul da estrutura AXIS', 'hull',1.1,.22,2.2,M.cyan,[x,hullProfileAtX(x)+.78,0]);
  }
  label3D('SPECTRA · AXIS',[-4,18,0],2.2);
+ // Revestimento segmentado conformado à superfície: placas seguem a curvatura real do casco.
+ const armorMat=new THREE.MeshStandardMaterial({color:0x263541,metalness:.88,roughness:.29,side:THREE.DoubleSide});
+ const armorAlt=new THREE.MeshStandardMaterial({color:0x3b4b57,metalness:.84,roughness:.31,side:THREE.DoubleSide});
+ for(let i=0;i<10;i++){
+  const x0=-69+i*13.8,x1=x0+12.9;
+  for(const [j,span] of [[0,[-1.08,1.08]],[1,[1.12,1.48]],[2,[-1.48,-1.12]]]){
+   const mat=(i+j)%3===0?armorAlt:armorMat;
+   add('hull_armor_panel_'+i+'_'+j,'Placa de blindagem conformada do casco','hull',hullArmorPatch(x0,x1,span[0],span[1]),mat);
+  }
+ }
+ for(const ang of [-1.48,-1.12,-.72,0,.72,1.12,1.48]){
+  const curve=hullSeamCurve(-69,69,ang);
+  add('hull_longitudinal_seam_'+String(ang).replace('.','_'),'Junta longitudinal de painéis do casco','hull',new THREE.TubeGeometry(curve,120,.12,6,false),M.edge);
+ }
+ // Faixas luminosas azuis laterais, contínuas e embutidas na carenagem.
+ for(const side of [-1,1]){
+  const pts=[];for(let i=0;i<=40;i++){const x=-65+i*3.25;pts.push(hullSurfacePoint(x,side*1.37,.38))}
+  const curve=new THREE.CatmullRomCurve3(pts);
+  add('hull_blue_guide_'+side,'Guia luminosa azul lateral do casco','hull',new THREE.TubeGeometry(curve,120,.22,8,false),M.cyan);
+ }
  // Anéis de união do casco e painéis de acesso.
  for(const x of [-48,-32,-16,0,16,32,48]){
   tor('hull_frame_'+x,'Anel estrutural de reforço do casco','hull',9.9,.22,M.edge,[x,0,0],[0,0,Math.PI/2]);
@@ -296,12 +340,12 @@ function hullSurface(){
  for(let i=0;i<4;i++)tor('egas_ring_'+i,'Anel esquemático do EGAS','egas',5.3+i*.55,.12,i%2?M.gold:M.cyan,[18,0,0]);
  label3D('EGAS · CONCEITUAL',[18,8,0],2.4);
  // Três unidades propulsivas alinhadas com bocais em sino e anéis concêntricos, sem brilho excessivo.
- for(const [y,z] of [[0,-20],[0,0],[0,20]]){
-  cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',3.1,3.5,13,M.dark,[68,y,z],[0,0,Math.PI/2]);
-  const nozzle=add('engine_nozzle_'+y+'_'+z,'Bocal externo ilustrativo','propulsion',new THREE.CylinderGeometry(2.1,3.5,5,48,1,true),M.armor,[76,y,z],[0,0,Math.PI/2]);
-  tor('aft_engine_ring_'+y+'_'+z,'Aro externo da unidade propulsiva','propulsion',3.05,.18,M.edge,[74.7,y,z]);
-  tor('engine_inner_ring_'+y+'_'+z,'Aro interno do bocal','propulsion',2.1,.12,M.cyan,[78.6,y,z]);
-  sphere('aft_engine_core_'+y+'_'+z,'Abertura de inspeção do conjunto termoelétrico-propulsivo','propulsion',.22,M.gold,[79,y,z],40);
+ for(const [y,z] of [[0,-25],[0,0],[0,25]]){
+  cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',4.2,4.8,15,M.dark,[67,y,z],[0,0,Math.PI/2]);
+  const nozzle=add('engine_nozzle_'+y+'_'+z,'Bocal externo ilustrativo','propulsion',new THREE.CylinderGeometry(3.1,5.1,6.5,64,1,true),M.armor,[77,y,z],[0,0,Math.PI/2]);
+  tor('aft_engine_ring_'+y+'_'+z,'Aro externo da unidade propulsiva','propulsion',4.8,.28,M.edge,[76.8,y,z]);
+  tor('engine_inner_ring_'+y+'_'+z,'Aro interno do bocal','propulsion',3.15,.18,M.cyan,[80.4,y,z]);
+  sphere('aft_engine_core_'+y+'_'+z,'Abertura de inspeção do conjunto termoelétrico-propulsivo','propulsion',.32,M.cyan,[80.8,y,z],48);
   tor('integrated_energy_aperture_'+y+'_'+z,'Aro de inspeção do núcleo integrado','propulsion',.48,.10,M.cyan,[78.85,y,z],[0,Math.PI/2,0]);
   tor('integrated_energy_inner_'+y+'_'+z,'Anel interno do conversor termoelétrico','propulsion',.27,.07,M.gold,[79.05,y,z],[0,Math.PI/2,0]);
   rod('engine_mount_'+y+'_'+z,'Suporte estrutural da unidade propulsiva','propulsion',[68,y,z],[56,y,z],.38,M.edge);
@@ -314,7 +358,7 @@ function hullSurface(){
  const nucleusProtonMat=new THREE.MeshStandardMaterial({color:0x55e0e5,emissive:0x0b555d,emissiveIntensity:.35,roughness:.24,metalness:.18});
  const nucleusNeutronMat=new THREE.MeshStandardMaterial({color:0x9b8cff,emissive:0x34266f,emissiveIntensity:.3,roughness:.27,metalness:.14});
  const nucleusContourMat=new THREE.MeshBasicMaterial({color:0x8cebea,wireframe:true,transparent:true,opacity:.075});
- for(const [y,z] of [[0,-20],[0,0],[0,20]]){
+ for(const [y,z] of [[0,-25],[0,0],[0,25]]){
   const id='integrated_power_'+y+'_'+z;
   cyl(id+'_thermal_chamber','Câmara termoelétrica integrada ao conjunto propulsivo','propulsion',1.82,1.82,7.2,M.armor,[66.2,y,z],[0,0,Math.PI/2],56);
   const coreGroup=new THREE.Group();coreGroup.name=id+'_e192_nucleus';coreGroup.userData={label:'Núcleo E-192 · 192 prótons + 250 nêutrons · representação do simulador nuclear',group:'propulsion'};
@@ -449,7 +493,7 @@ const e192Contours=new THREE.MeshBasicMaterial({color:0x8cebea,wireframe:true,tr
 [.48,.72,.94].forEach((fraction,index)=>{const mesh=new THREE.Mesh(new THREE.SphereGeometry(e192R*fraction,28,20),e192Contours);mesh.rotation.set(index*.31,index*.47,index*.19);e192Nucleus.add(mesh)});
 // Instâncias microscópicas do núcleo E-192 dentro das três unidades propulsivas.
 const engineNuclei=[];
-for(const [y,z] of [[0,-20],[0,0],[0,20]]){
+for(const [y,z] of [[0,-25],[0,0],[0,25]]){
  const instance=e192Nucleus.clone(true);instance.name='e192_engine_nucleus_'+y+'_'+z;
  instance.scale.setScalar(.12);instance.position.set(66.2,y,z);root.add(instance);engineNuclei.push(instance);
 }
