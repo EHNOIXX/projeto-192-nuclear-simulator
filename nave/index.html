@@ -192,7 +192,7 @@ select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(131,240,235,.09)
 <label><input type="checkbox" data-module="egas" checked> Módulo EGAS conceitual</label>
 
 <label><input type="checkbox" data-module="propulsion" checked> Propulsão + núcleo energético integrado</label>
-<label><input type="checkbox" data-module="radiators" checked> Painéis radiadores</label>
+<label><input type="checkbox" data-module="radiators"> Painéis radiadores</label>
 <label><input type="checkbox" data-module="habitat" checked> Módulos habitáveis</label>
 <label><input type="checkbox" data-module="field" checked> Anéis de campo ilustrativos</label>
 <label><input type="checkbox" data-module="antenna" checked> Sensores e antenas</label>
@@ -498,6 +498,8 @@ function hullSurface(){
  }
 }
 hullSurface();
+// A prancha oficial mostra o casco elipsoidal com naceles integradas, sem asas solares externas abertas.
+groups.radiators.visible=false;
 
 // Planta interna dimensionalmente associada aos módulos externos.
 // O modo interior é uma vista de corte superior, com tetos ocultados pela câmera.
