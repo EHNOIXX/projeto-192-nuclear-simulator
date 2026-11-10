@@ -172,7 +172,7 @@ function axisHullProfile(t){
  // o aspecto de cilindros empilhados ou de uma extremidade truncada.
  const smooth=u=>{u=THREE.MathUtils.clamp(u,0,1);return u*u*(3-2*u)};
  if(t<.22)return Math.pow(Math.sin(smooth(t/.22)*Math.PI/2),.92);
- if(t>.76)return .44+.56*(1-smooth((t-.76)/.24));
+ if(t>.84)return Math.pow(1-smooth((t-.84)/.16),.88)
  return 1;
 }
 function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
@@ -183,8 +183,8 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
   for(let j=0;j<=radial;j++){
    const a=j/radial*Math.PI*2;
    const cs=Math.cos(a),sn=Math.sin(a);
-   const y=halfHeight*profile*Math.sign(cs)*Math.pow(Math.abs(cs),.82);
-   const z=halfWidth*profile*Math.sign(sn)*Math.pow(Math.abs(sn),.82);
+   const y=halfHeight*profile*Math.sign(cs)*Math.pow(Math.abs(cs),1.04);
+   const z=halfWidth*profile*Math.sign(sn)*Math.pow(Math.abs(sn),1.04);
    positions.push(x,y,z);
   }
  }
@@ -227,13 +227,13 @@ function hullSurface(){
  const primary=add('primary_pressure_hull','Casco pressurizado elipsoidal de curvatura variável — SPECTRA-AXIS','hull',axisHullGeometry(156,18.75,39),M.hull,[0,0,0]);
  // Naceles laterais externas, longas e baixas: silhueta de pods integrados da prancha oficial.
  for(const side of [-1,1]){
-  add('axis_side_pod_'+side,'Nacele lateral longitudinal integrada ao casco','hull',axisHullGeometry(64,4.8,7.8,112,56),M.armor,[30,-1.8,side*46.5]);
-  tor('axis_side_pod_frame_'+side,'Aro estrutural da nacele lateral','hull',4.1,.24,M.edge,[51,-1.8,side*46.5],[0,Math.PI/2,0]);
+  add('axis_side_pod_'+side,'Nacele lateral longitudinal integrada ao casco','hull',axisHullGeometry(64,4.8,7.8,112,56),M.armor,[30,-1.8,side*40.2]);
+  tor('axis_side_pod_frame_'+side,'Aro estrutural da nacele lateral','hull',4.1,.24,M.edge,[51,-1.8,side*40.2],[0,Math.PI/2,0]);
   for(let i=0;i<9;i++){
    const x=8+i*5.6;
-   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.5,.18,.2,M.cyan,[x,2.1,side*53.9]);
+   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.5,.18,.2,M.cyan,[x,2.1,side*47.6]);
   }
-  for(const x of [12,27,42,57])box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso da nacele lateral','hull',5,.18,2.5,M.dark,[x,3.1,side*47.4]);
+  for(const x of [12,27,42,57])box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso da nacele lateral','hull',5,.18,2.5,M.dark,[x,3.1,side*41.1]);
  }
 
  const dorsal=add('dorsal_service_spine','Carenagem dorsal de serviços e distribuição','hull',new THREE.CapsuleGeometry(4.2,78,8,32),M.armor,[-3,8.2,0]);
@@ -299,7 +299,7 @@ function hullSurface(){
  }
  // Berços e escoras unem as naceles ao casco.
  for(const side of [-1,1])for(const x of [8,27,46]){
-  const z=side*39,podZ=side*46.5;
+  const z=side*37,podZ=side*40.2;
   rod('side_pod_mount_'+side+'_'+x,'Berço estrutural de conexão da nacele lateral','hull',[x,0,z],[x,-1.8,podZ],.72,M.edge);
   rod('side_pod_mount_diag_'+side+'_'+x,'Escora diagonal da nacele lateral','hull',[x-4,-3,z+side*1.5],[x+4,-1.8,podZ-side*1.5],.34,M.dark);
  }
@@ -368,14 +368,13 @@ function hullSurface(){
   rod('radiator_boom_'+side,'Longarina contínua do radiador térmico','radiators',[8,8,side*15],[8,8,side*38],.62,M.edge);
   rod('radiator_outer_rail_'+side,'Trilho externo de sustentação do radiador','radiators',[32,8,side*15],[32,8,side*38],.42,M.edge);
   for(const x of [-10,10,30]){
-   rod('radiator_crossbeam_'+side+'_'+x,'Travessa de ligação do painel ao braço principal','radiators',[x,8.3,side*37],[x,8.3,side*43],.28,M.edge);
-   rod('radiator_support_'+side+'_'+x,'Escora diagonal integrada ao casco','radiators',[x,4,side*9],[x,8,side*37],.3,M.edge);
+   rod('radiator_crossbeam_'+side+'_'+x,'Longarina embutida de integração térmica','radiators',[x,4.8,side*36.8],[x,4.8,side*40.2],.18,M.edge);
   }
   for(let j=0;j<4;j++){
    const x=-10+j*13;
-   box('radiator_panel_'+side+'_'+j,'Painel radiador térmico segmentado','radiators',9,.28,10,M.panel,[x,8.6,side*41]);
+   box('radiator_panel_'+side+'_'+j,'Painel radiador conformado e integrado','radiators',10,.22,5.2,M.panel,[x,5.1,side*39.6]);
    for(let k=0;k<5;k++)box('radiator_channel_'+side+'_'+j+'_'+k,'Canal térmico superficial','radiators',8,.05,.10,M.cyan,[x,8.78,side*(37+k*2)]);
-   for(const z of [-4,4])rod('radiator_panel_standoff_'+side+'_'+j+'_'+z,'Suporte de fixação do painel radiador','radiators',[x,8.2,side*37],[x,8.6,side*(41+z)],.22,M.edge);
+   for(const z of [-1.8,1.8])rod('radiator_panel_standoff_'+side+'_'+j+'_'+z,'Fixação embutida do painel radiador','radiators',[x,4.9,side*37.5],[x,5.1,side*(39.6+z)],.12,M.edge);
   }
   // Coletores e bases de articulação tornam explícito o caminho de carga até o casco.
   box('radiator_root_housing_'+side,'Carcaça da articulação do radiador','radiators',5,3,5,M.armor,[8,7,side*12]);
@@ -390,14 +389,14 @@ function hullSurface(){
  // Traseira reconstruída como três carenagens-naceles longitudinais.
  // Cada unidade fica parcialmente embutida no volume traseiro do casco,
  // substituindo o quadro periférico, os arcos e as travessas expostas.
- for(const [i,z] of [[-1,-25],[0,0],[1,25]]){
+ for(const [i,z] of [[-1,-21.5],[0,0],[1,21.5]]){
   add('aft_integrated_shroud_'+i,'Carenagem integrada da nacele propulsiva traseira','hull',
-      axisHullGeometry(25,7.2,7.2,88,48),M.armor,[58.5,0,z]);
+      axisHullGeometry(40,7.6,7.8,112,56),M.armor,[64,0,z]);
   add('aft_shroud_root_'+i,'Transição estrutural da nacele para o casco','hull',
-      axisHullGeometry(12,5.8,6.2,64,40),M.hull,[48,0,z]);
+      axisHullGeometry(17,5.9,6.2,80,48),M.hull,[50,0,z]);
  }
  // Três unidades propulsivas alinhadas com bocais em sino e anéis concêntricos, sem brilho excessivo.
- for(const [y,z] of [[0,-25],[0,0],[0,25]]){
+ for(const [y,z] of [[0,-21.5],[0,0],[0,21.5]]){
   cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',4.2,4.8,15,M.dark,[67,y,z],[0,0,Math.PI/2]);
   const nozzle=add('engine_nozzle_'+y+'_'+z,'Bocal externo ilustrativo','propulsion',new THREE.CylinderGeometry(3.1,5.1,6.5,64,1,true),M.armor,[77,y,z],[0,0,Math.PI/2]);
   tor('aft_engine_ring_'+y+'_'+z,'Aro externo da unidade propulsiva','propulsion',4.8,.28,M.edge,[76.8,y,z]);
@@ -596,8 +595,13 @@ function cameraPreset(v){
  if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=true;
  for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=true;
  controls.minDistance=18;controls.maxDistance=420;
- const p={iso:[-145,105,170],front:[-205,35,0],side:[0,45,220],left:[0,45,-220],top:[0,245,4],bottom:[0,-245,4],rear:[205,35,0],interior:[-4,118,18]}[v]||[-145,105,170];
- camera.up.set(0,(v==='top'||v==='bottom')?0:1,v==='top'?-1:v==='bottom'?1:0);camera.position.set(...p);controls.target.set(0,0,0);controls.update()
+ const p={iso:[-1.0,.72,1.12],front:[-1,.17,0],side:[0,.22,1],left:[0,.22,-1],top:[0,1,.02],bottom:[0,-1,.02],rear:[1,.17,0],interior:[-.04,.58,.09]}[v]||[-1,.72,1.12];
+ camera.up.set(0,(v==='top'||v==='bottom')?0:1,v==='top'?-1:v==='bottom'?1:0);
+ controls.target.set(0,0,0);
+ const bounds=new THREE.Box3().setFromObject(root),sphere=bounds.getBoundingSphere(new THREE.Sphere());
+ const fitDistance=Math.max(34,sphere.radius/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*1.18);
+ camera.position.copy(controls.target).addScaledVector(new THREE.Vector3(...p).normalize(),fitDistance);
+ controls.minDistance=Math.max(16,fitDistance*.32);controls.maxDistance=fitDistance*4;controls.update()
 }
 function atomCamera(){controls.minDistance=.15;controls.maxDistance=8;camera.position.set(2.5,1.8,3);controls.target.set(0,0,0);controls.update();e192Nucleus.visible=true;e192Cloud.visible=false}
 function setScale(mode){
@@ -615,7 +619,7 @@ document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click',()=>{if(scaleMode==='ship'){if(b.dataset.camera==='interior')showInterior();else cameraPreset(b.dataset.camera)}}));
 $('resetCamera').onclick=()=>scaleMode==='atom'?atomCamera():scaleMode==='engine'?engineCamera():cameraPreset('iso');
 $('fit').onclick=()=>$('resetCamera').click();
-function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/158.8,H/37.5,W/108.6);$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
+function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/159.2,H/37.5,W/96);$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
 ['len','wid','hei'].forEach(id=>$(id).addEventListener('input',setDims));
 $('resetDims').onclick=()=>{$('len').value=160;$('wid').value=96;$('hei').value=48;setDims()};
 function updateCount(){const controls=[...document.querySelectorAll('[data-module]')];const n=controls.filter(ch=>ch.checked).length;$('statMods').textContent=n+' / '+controls.length}
