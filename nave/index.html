@@ -202,15 +202,15 @@ function hullProfileAtX(x,halfHeight=13.5,length=156){
 function hullSurfacePoint(x,theta,offset=0){
  const t=Math.max(0,Math.min(1,x/156+.5)),p=axisHullProfile(t);
  const cs=Math.cos(theta),sn=Math.sin(theta);
- const y=13.5*p*Math.sign(cs)*Math.pow(Math.abs(cs),.82);
-  const z=28*p*Math.sign(sn)*Math.pow(Math.abs(sn),.82);
+ const y=13.5*p*Math.sign(cs)*Math.pow(Math.abs(cs),1.04);
+  const z=28*p*Math.sign(sn)*Math.pow(Math.abs(sn),1.04);
   const n=new THREE.Vector3(0,cs/13.5,sn/28).normalize();
  return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
 }
 function hullArmorPatch(x0,x1,a0,a1){
  const nx=16,na=10,positions=[],indices=[],stride=(nx+1)*(na+1),idx=(i,j)=>i*(na+1)+j;
- const point=(u,v,offset)=>{const x=x0+(x1-x0)*u,ang=a0+(a1-a0)*v,crown=.72*Math.pow(Math.sin(Math.PI*u),.7)*Math.pow(Math.sin(Math.PI*v),.7);return hullSurfacePoint(x,ang,offset+crown)};
- for(let layer=0;layer<2;layer++)for(let i=0;i<=nx;i++)for(let j=0;j<=na;j++){const p=point(i/nx,j/na,layer===0?.68:.18);positions.push(p.x,p.y,p.z)}
+ const point=(u,v,offset)=>{const x=x0+(x1-x0)*u,ang=a0+(a1-a0)*v,crown=.24*Math.pow(Math.sin(Math.PI*u),.7)*Math.pow(Math.sin(Math.PI*v),.7);return hullSurfacePoint(x,ang,offset+crown)};
+ for(let layer=0;layer<2;layer++)for(let i=0;i<=nx;i++)for(let j=0;j<=na;j++){const p=point(i/nx,j/na,layer===0?.28:.10);positions.push(p.x,p.y,p.z)}
  for(let i=0;i<nx;i++)for(let j=0;j<na;j++){const a=idx(i,j),b=a+na+1,q=stride+a,r=stride+b;indices.push(a,a+1,b,b,a+1,b+1,q,r,q+1,r,r+1,q+1)}
  const wall=(a,b)=>{const q=stride+a,r=stride+b;indices.push(a,q,b,b,q,r)};
  for(let i=0;i<nx;i++){wall(idx(i,0),idx(i+1,0));wall(idx(i,na),idx(i+1,na))}
@@ -218,7 +218,7 @@ function hullArmorPatch(x0,x1,a0,a1){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setIndex(indices);g.computeVertexNormals();return g;
 }
 function hullSeamCurve(x0,x1,angle){
- const pts=[];for(let i=0;i<=24;i++)pts.push(hullSurfacePoint(x0+(x1-x0)*i/24,angle,.32));
+ const pts=[];for(let i=0;i<=24;i++)pts.push(hullSurfacePoint(x0+(x1-x0)*i/24,angle,.18));
  return new THREE.CatmullRomCurve3(pts);
 }
 function hullSurface(){
@@ -273,7 +273,7 @@ function hullSurface(){
  }
  // Nervuras transversais rasas e segmentadas.
  for(const x of [-58,-43,-28,-13,2,17,32,47,60]){
-  const pts=[];for(let k=0;k<=48;k++){const a=k*Math.PI*2/48;pts.push(hullSurfacePoint(x,a,.34))}
+  const pts=[];for(let k=0;k<=48;k++){const a=k*Math.PI*2/48;pts.push(hullSurfacePoint(x,a,.20))}
   add('hull_transverse_rib_'+x,'Nervura transversal de reforço do casco','hull',new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),96,.19,7,true),M.edge);
  }
  // Tampas de inspeção simétricas com fixadores modelados.
@@ -381,7 +381,7 @@ function hullSurface(){
  for(let i=0;i<4;i++)tor('egas_ring_'+i,'Anel esquemático do EGAS','egas',5.3+i*.55,.12,i%2?M.gold:M.cyan,[18,0,0]);
  label3D('EGAS · CONCEITUAL',[18,8,0],2.4);
  // Uma única carenagem traseira contínua envolve os três alojamentos propulsivos e fecha a transição do casco.
-  add('aft_continuous_fairing','Carenagem traseira contínua integrada ao casco','hull',axisHullGeometry(42,10.8,28.5,112,64),M.armor,[57,0,0]);
+  add('aft_continuous_fairing','Carenagem traseira contínua integrada ao casco','hull',axisHullGeometry(42,14.2,30.5,112,64),M.armor,[57,0,0]);
  // Três unidades propulsivas alinhadas com bocais em sino e anéis concêntricos, sem brilho excessivo.
  for(const [y,z] of [[0,-21.5],[0,0],[0,21.5]]){
   cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',4.2,4.8,15,M.dark,[67,y,z],[0,0,Math.PI/2]);
