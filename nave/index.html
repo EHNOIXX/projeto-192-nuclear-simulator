@@ -61,7 +61,7 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <div class="toolbar"><button class="btn" id="autoRotate">ÓRBITA AUTOMÁTICA</button><button class="btn" id="wire">MALHA TÉCNICA</button><button class="btn" id="labels">ETIQUETAS</button><button class="btn" id="resetCamera">CENTRALIZAR CÂMERA</button><button class="btn primary" id="export">EXPORTAR RELATÓRIO</button></div>
 <div class="camera"><span>ESCALA FÍSICA</span><button class="btn active" data-scale="ship">NAVE · 10² m</button><button class="btn" data-scale="engine">MOTOR · 10¹ m</button><button class="btn" data-scale="atom">ÁTOMO · 10⁻¹⁰ m</button></div><div class="camera"><span>CÂMERA</span><button class="btn" data-camera="iso">ISOMÉTRICA</button><button class="btn" data-camera="front">FRENTE</button><button class="btn" data-camera="side">DIREITA</button><button class="btn" data-camera="left">ESQUERDA</button><button class="btn" data-camera="top">SUPERIOR</button><button class="btn" data-camera="bottom">INFERIOR</button><button class="btn" data-camera="rear">TRASEIRA</button><button class="btn primary" data-camera="interior">INTERIOR</button></div>
 <div id="viewport"><div class="viewtag">SPECTRA / MOBILE ORBITAL RESEARCH VESSEL <span id="scaleTag">ESCALA 10² m</span></div><div class="axis">X / LONGITUDINAL<br>Y / VERTICAL<br>Z / TRANSVERSAL</div><div class="help" id="scaleHelp">ESCALA DA NAVE · DIMENSÕES EM METROS · ARRASTE PARA ORBITAR</div></div>
-<div class="stagefoot"><div class="legend"><span><i style="background:#79d8df"></i>Estrutura</span><span><i style="background:#a48bff"></i>EGAS conceitual</span><span><i style="background:#e5b46d"></i>Instrumentação</span></div><span id="renderStatus">RENDER 3D / PRONTO</span></div>
+<div class="stagefoot"><div class="legend"><span><i style="background:#79d8df"></i>Estrutura</span><span><i style="background:#a48bff"></i>EGAS conceitual</span><span><i style="background:#e5b46d"></i>Instrumentação</span></div><span id="renderStatus">CARREGANDO MODELO 3D…</span></div>
 </section>
 <aside class="stack rightstack">
 <div class="panel"><div class="paneltitle">06 / INSPEÇÃO DE COMPONENTE</div><div class="panelbody selectedInfo" id="selectionInfo"><strong>Nenhum componente selecionado</strong>Clique em uma parte da nave para consultar sua descrição e categoria.<span class="tag">SELEÇÃO 3D</span></div></div>
@@ -86,6 +86,7 @@ import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 
+const startupStarted=performance.now();
 const $=id=>document.getElementById(id), viewport=$('viewport');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x050a12);scene.fog=new THREE.Fog(0x050a12,190,390);
 const camera=new THREE.PerspectiveCamera(30,1,.01,1000);camera.position.set(-92,104,188);
@@ -119,14 +120,19 @@ const M={
 };
 const pickables=[],named={};
 const sectionPlane=new THREE.Plane(new THREE.Vector3(1,0,0),0);
+const geometryCache={box:new Map(),cylinder:new Map(),torus:new Map(),sphere:new Map()};
+function cachedGeometry(cache,key,create){let geometry=cache.get(key);if(!geometry){geometry=create();cache.set(key,geometry)}return geometry}
 function add(id,label,group,geo,mat,pos=[0,0,0],rot=[0,0,0],target=pickables){
- const o=new THREE.Mesh(geo,mat);o.name=id;o.userData={label,group,userHidden:false};o.position.set(...pos);o.rotation.set(...rot);o.castShadow=true;o.receiveShadow=true;groups[group].add(o);target.push(o);named[id]=o;return o;
+ const o=new THREE.Mesh(geo,mat);o.name=id;o.userData={label,group,userHidden:false};o.position.set(...pos);o.rotation.set(...rot);
+ // Sombras concentradas nas massas estruturais dominantes; detalhes mantêm materiais e iluminação.
+ o.castShadow=group==='hull'||group==='bridge'||group==='propulsion';o.receiveShadow=group==='hull'||group==='bridge'||group==='propulsion';
+ groups[group].add(o);target.push(o);named[id]=o;return o;
 }
-function box(id,label,g,w,h,d,mat,p,r=[0,0,0]){const bevel=Math.max(.008,Math.min(.7,Math.min(w,h,d)*.22));return add(id,label,g,new RoundedBoxGeometry(w,h,d,3,bevel),mat,p,r)}
-function cyl(id,label,g,r1,r2,len,mat,p,r=[0,0,0],n=40){return add(id,label,g,new THREE.CylinderGeometry(r1,r2,len,n),mat,p,r)}
-function tor(id,label,g,r,t,mat,p,rot=[0,Math.PI/2,0]){return add(id,label,g,new THREE.TorusGeometry(r,t,12,96),mat,p,rot)}
-function rod(id,label,g,a,b,r,mat){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A);const o=add(id,label,g,new THREE.CylinderGeometry(r,r,d.length(),12),mat,A.clone().add(B).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());return o}
-function sphere(id,label,g,r,mat,p,seg=24){return add(id,label,g,new THREE.SphereGeometry(r,seg,Math.max(12,Math.floor(seg*.65))),mat,p)}
+function box(id,label,g,w,h,d,mat,p,r=[0,0,0]){const bevel=Math.max(.008,Math.min(.7,Math.min(w,h,d)*.22)),key=[w,h,d,3,bevel].join('|');return add(id,label,g,cachedGeometry(geometryCache.box,key,()=>new RoundedBoxGeometry(w,h,d,3,bevel)),mat,p,r)}
+function cyl(id,label,g,r1,r2,len,mat,p,r=[0,0,0],n=40){const key=[r1,r2,len,n].join('|');return add(id,label,g,cachedGeometry(geometryCache.cylinder,key,()=>new THREE.CylinderGeometry(r1,r2,len,n)),mat,p,r)}
+function tor(id,label,g,r,t,mat,p,rot=[0,Math.PI/2,0]){const key=[r,t,12,96].join('|');return add(id,label,g,cachedGeometry(geometryCache.torus,key,()=>new THREE.TorusGeometry(r,t,12,96)),mat,p,rot)}
+function rod(id,label,g,a,b,r,mat){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A),len=d.length(),key=[r,len,12].join('|');const geometry=cachedGeometry(geometryCache.cylinder,key,()=>new THREE.CylinderGeometry(r,r,len,12));const o=add(id,label,g,geometry,mat,A.clone().add(B).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());return o}
+function sphere(id,label,g,r,mat,p,seg=24){const heightSegments=Math.max(12,Math.floor(seg*.65)),key=[r,seg,heightSegments].join('|');return add(id,label,g,cachedGeometry(geometryCache.sphere,key,()=>new THREE.SphereGeometry(r,seg,heightSegments)),mat,p)}
 
 // REV 09.0 — arquitetura modular dimensionada para missão de 50 tripulantes.
 // Coordenadas do modelo em metros: X longitudinal, Y vertical, Z transversal.
@@ -651,9 +657,12 @@ $('autoRotate').onclick=()=>{auto=!auto;controls.autoRotate=auto;controls.autoRo
 $('wire').onclick=()=>{wire=!wire;Object.values(M).forEach(m=>{if('wireframe'in m)m.wireframe=wire});$('wire').classList.toggle('active',wire)};
 $('labels').onclick=()=>{$('labels').classList.toggle('active');labelsGroup.visible=$('labels').classList.contains('active')||interiorMode;$('renderStatus').textContent=$('labels').classList.contains('active')?'MODO DE IDENTIFICAÇÃO ATIVO':'RENDER 3D / PRONTO';log('Identificação visual '+($('labels').classList.contains('active')?'ativada':'desativada'))};
 $('export').onclick=()=>{const data={project:'SPECTRA',module:'Nave',revision:'AXIS 1.0',classification:'Conceitual / não funcional',crew_reference:50,mission_profile:'Solar System and interstellar concept',revision_basis:'Modular architecture / 24 double cabins = 48 berths plus 1 flexible crew cabin = 50 crew berths; 2 separate medical beds',dimensions_m:{length:+$('len').value,width:+$('wid').value,height:+$('hei').value},visible_modules:Object.entries(groups).filter(([k,g])=>g.visible).map(([k])=>k),scale_view:scaleMode,scientific_note:'Geometrias ilustrativas. E-192 e EGAS são hipóteses não demonstradas.'};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SPECTRA-nave-relatorio.json';a.click();URL.revokeObjectURL(a.href);log('Relatório JSON exportado.')};
-function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
-new ResizeObserver(resize).observe(viewport);resize();setDims();$('resetCamera').click();updateCount();populatePieceSelect();
-function animate(){requestAnimationFrame(animate);controls.update();composer.render()}animate();
+let renderRequest=0,firstFrame=true;
+function requestRender(){if(!renderRequest)renderRequest=requestAnimationFrame(renderFrame)}
+function renderFrame(){renderRequest=0;controls.update();composer.render();if(firstFrame){firstFrame=false;const elapsed=Math.round(performance.now()-startupStarted);window.__spectraStartupMs=elapsed;window.__spectraReady=true;$('renderStatus').textContent='MODELO PRONTO · '+elapsed+' ms'}if(controls.autoRotate)requestRender()}
+controls.addEventListener('change',requestRender);
+function resize(){const w=Math.max(1,viewport.clientWidth),h=Math.max(1,viewport.clientHeight);renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();requestRender()}
+new ResizeObserver(resize).observe(viewport);resize();setDims();$('resetCamera').click();updateCount();populatePieceSelect();requestRender();
 window.addEventListener('error',e=>{$('renderStatus').textContent='ERRO DE RENDERIZAÇÃO';console.error(e)});
 </script>
 </body></html>
