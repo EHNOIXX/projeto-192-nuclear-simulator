@@ -187,20 +187,20 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
  g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
  g.setIndex(indices);g.computeVertexNormals();return g;
 }
-function hullProfileAtX(x,halfHeight=14.5,length=156){
+function hullProfileAtX(x,halfHeight=18.75,length=156){
  const q=Math.max(0,1-Math.pow(x/(length/2),2));
  return halfHeight*Math.pow(q,.39);
 }
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
- const primary=add('primary_pressure_hull','Casco pressurizado elipsoidal de curvatura variável — SPECTRA-AXIS','hull',axisHullGeometry(156,14.5,22.5),M.hull,[0,0,0]);
+ const primary=add('primary_pressure_hull','Casco pressurizado elipsoidal de curvatura variável — SPECTRA-AXIS','hull',axisHullGeometry(156,18.75,50),M.hull,[0,0,0]);
  // Dois conjuntos laterais compactos, integrados ao quarto traseiro do casco.
  for(const side of [-1,1]){
-  const pod=add('axis_side_pod_'+side,'Módulo lateral integrado SPECTRA-AXIS','hull',axisHullGeometry(48,4.8,6.2,72,40),M.armor,[37,-1.2,side*13.2]);
-  tor('axis_side_pod_frame_'+side,'Aro estrutural do módulo lateral','hull',4.2,.22,M.edge,[39,-1.2,side*13.2],[0,Math.PI/2,0]);
+  const pod=add('axis_side_pod_'+side,'Módulo lateral integrado SPECTRA-AXIS','hull',axisHullGeometry(48,4.8,6.2,72,40),M.armor,[37,-1.2,side*34.5]);
+  tor('axis_side_pod_frame_'+side,'Aro estrutural do módulo lateral','hull',4.2,.22,M.edge,[39,-1.2,side*34.5],[0,Math.PI/2,0]);
   for(let i=0;i<7;i++){
    const x=17+i*6;
-   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul do módulo lateral','hull',2.4,.2,.2,M.cyan,[x,3.3,side*16.8]);
+   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul do módulo lateral','hull',2.4,.2,.2,M.cyan,[x,3.3,side*38.1]);
   }
  }
 
