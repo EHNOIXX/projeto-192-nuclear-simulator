@@ -325,15 +325,16 @@ function hullSurface(){
   box('hub_window_'+side+'_'+x,'Janela do centro de operações','bridge',2.6,1.5,.22,M.glass,[x,1.5,side*10.8]);
  }
  label3D('NÚCLEO DE OPERAÇÕES',[0,13,0],2.6);
- // Ponte de comando com cápsula frontal e canopy panorâmico.
- const bridge=add('bridge_base','Módulo pressurizado da ponte de comando','bridge',new THREE.CapsuleGeometry(5.2,11,8,32),M.armor,[-66,1,0]);
- bridge.rotation.z=Math.PI/2;bridge.scale.z=1.28;
- const canopy=sphere('command_canopy','Cúpula panorâmica da ponte de comando','bridge',1,M.glass,[-66,5.3,0],48);canopy.scale.set(7.8,2.8,6.2);
- for(const side of [-1,1])for(let i=0;i<3;i++){
-  const x=-70+i*3.5;
-  box('bridge_glazing_'+side+'_'+i,'Painel de observação da ponte','bridge',2.6,1.6,.18,M.glass,[x,2.4,side*5.9]);
+ // Ponte de comando rebaixada e integrada ao nariz: carenagem metálica, sem cúpula esférica.
+ const bridge=add('bridge_base','Módulo integrado de comando e navegação','bridge',new THREE.SphereGeometry(1,48,32),M.armor,[-66,1.15,0]);bridge.scale.set(13.2,3.25,13.8);
+ const bridgeLower=add('bridge_lower_keel','Quilha inferior blindada da ponte','bridge',new THREE.SphereGeometry(1,40,24),M.dark,[-65,-1.25,0]);bridgeLower.scale.set(10.8,2.1,11.8);
+ const bridgeNose=add('bridge_nose_cowl','Carenagem frontal facetada da ponte','bridge',new THREE.SphereGeometry(1,40,24),M.edge,[-74,1.2,0]);bridgeNose.scale.set(5.2,2.5,11.2);
+ for(const side of [-1,1]){
+  for(let i=0;i<3;i++){const x=-71+i*4.2;const pane=box('bridge_glazing_'+side+'_'+i,'Visor estreito blindado da ponte','bridge',2.7,.34,.12,M.glass,[x,3.65,side*(8.3-i*.35)]);pane.rotation.z=-.08;}
+  rod('bridge_window_frame_'+side,'Moldura estrutural do visor de comando','bridge',[-76,3.35,side*7.4],[-62,3.35,side*8.8],.24,M.edge);
+  rod('bridge_side_keel_'+side,'Longarina lateral da ponte integrada ao casco','bridge',[-77,-.3,side*8],[-55,-.3,side*8],.48,M.dark);
  }
- label3D('PONTE DE COMANDO',[-66,10,0],2.6);
+ label3D('PONTE DE COMANDO',[-66,6.2,0],2.2);
  // Módulos habitacionais e laboratórios: cápsulas conectadas por túneis curtos.
  const habs=[
   {id:'hab_nw',name:'HABITAÇÃO A',p:[-27,0,-25]},
@@ -365,8 +366,9 @@ function hullSurface(){
   }
   for(let j=0;j<4;j++){
    const x=-10+j*13;
-   box('radiator_panel_'+side+'_'+j,'Painel radiador segmentado','radiators',11,.34,14,M.panel,[x,8.6,side*43]);
-   for(let k=0;k<5;k++)box('radiator_channel_'+side+'_'+j+'_'+k,'Canal térmico superficial','radiators',10,.06,.12,M.cyan,[x,8.82,side*(37.8+k*2.6)]);
+   box('radiator_panel_'+side+'_'+j,'Painel radiador térmico segmentado','radiators',9,.28,10,M.panel,[x,8.6,side*41]);
+   for(let k=0;k<5;k++)box('radiator_channel_'+side+'_'+j+'_'+k,'Canal térmico superficial','radiators',8,.05,.10,M.cyan,[x,8.78,side*(37+k*2)]);
+   for(const z of [-4,4])rod('radiator_panel_standoff_'+side+'_'+j+'_'+z,'Suporte de fixação do painel radiador','radiators',[x,8.2,side*37],[x,8.6,side*(41+z)],.22,M.edge);
   }
   // Coletores e bases de articulação tornam explícito o caminho de carga até o casco.
   box('radiator_root_housing_'+side,'Carcaça da articulação do radiador','radiators',5,3,5,M.armor,[8,7,side*12]);
@@ -378,11 +380,15 @@ function hullSurface(){
  sphere('egas_core','Representação hipotética do núcleo E-192','egas',1.7,M.violet,[18,0,0],40);
  for(let i=0;i<4;i++)tor('egas_ring_'+i,'Anel esquemático do EGAS','egas',5.3+i*.55,.12,i%2?M.gold:M.cyan,[18,0,0]);
  label3D('EGAS · CONCEITUAL',[18,8,0],2.4);
- // Antepara traseira integrada ao casco, com nervuras e carenagens de transição.
- const aftTransom=add('aft_integrated_transom','Antepara estrutural traseira integrada ao casco','hull',new THREE.SphereGeometry(1,64,40),M.armor,[63,-.8,0]);aftTransom.scale.set(5.8,14.8,43.5);
- const aftCrown=add('aft_transom_crown','Carenagem superior da antepara traseira','hull',new THREE.SphereGeometry(1,48,28),M.dark,[60,10.4,0]);aftCrown.scale.set(8,4.6,29);
- const aftKeel=add('aft_transom_keel','Carenagem inferior da antepara traseira','hull',new THREE.SphereGeometry(1,48,28),M.dark,[60,-11.4,0]);aftKeel.scale.set(8,3.6,29);
- for(const side of [-1,1]){for(const z of [-28,-14,0,14,28])rod('aft_bulkhead_rib_'+side+'_'+z,'Nervura de antepara traseira','hull',[62,side*3,z],[67,side*7,z],.48,M.edge);rod('aft_side_longeron_'+side,'Longarina lateral da estrutura traseira','hull',[52,side*5,side*31],[70,side*5,side*31],.72,M.dark)}
+ // Estrutura traseira aberta: quadro periférico e braços radiais, sem disco ou tampa obstruindo os bocais.
+ for(const side of [-1,1]){
+  rod('aft_upper_longeron_'+side,'Longarina superior traseira','hull',[49,side*8,side*30],[70,side*8,side*30],.72,M.dark);
+  rod('aft_lower_longeron_'+side,'Longarina inferior traseira','hull',[49,-side*8,side*30],[70,-side*8,side*30],.72,M.dark);
+  rod('aft_outer_rib_'+side,'Arco lateral aberto da estrutura traseira','hull',[68,-10,side*39],[68,10,side*39],.58,M.edge);
+  rod('aft_diagonal_brace_'+side,'Escora diagonal traseira','hull',[54,side*4,side*23],[68,side*8,side*36],.52,M.edge);
+ }
+ rod('aft_upper_bridge','Travessa superior aberta da traseira','hull',[68,10,-30],[68,10,30],.58,M.edge);
+ rod('aft_lower_bridge','Travessa inferior aberta da traseira','hull',[68,-10,-30],[68,-10,30],.58,M.edge);
  // Três unidades propulsivas alinhadas com bocais em sino e anéis concêntricos, sem brilho excessivo.
  for(const [y,z] of [[0,-25],[0,0],[0,25]]){
   cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',4.2,4.8,15,M.dark,[67,y,z],[0,0,Math.PI/2]);
