@@ -487,7 +487,7 @@ function cameraPreset(v){
  for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=true;
  controls.minDistance=18;controls.maxDistance=420;
  const p={iso:[-145,105,170],front:[-205,35,0],side:[0,45,220],left:[0,45,-220],top:[0,245,4],bottom:[0,-245,4],rear:[205,35,0],interior:[-4,118,18]}[v]||[-145,105,170];
- camera.position.set(...p);controls.target.set(0,0,0);controls.update()
+ camera.up.set(0,(v==='top'||v==='bottom')?0:1,v==='top'?-1:v==='bottom'?1:0);camera.position.set(...p);controls.target.set(0,0,0);controls.update()
 }
 function atomCamera(){controls.minDistance=.15;controls.maxDistance=8;camera.position.set(2.5,1.8,3);controls.target.set(0,0,0);controls.update();e192Nucleus.visible=true;e192Cloud.visible=false}
 function setScale(mode){
