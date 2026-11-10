@@ -9,6 +9,8 @@ const browser = await chromium.launch({
 });
 const page = await browser.newPage({ viewport: { width: 1600, height: 1200 }, deviceScaleFactor: 1 });
 const errors = [];
+const cdp = await page.context().newCDPSession(page);
+await cdp.send('Page.enable');
 page.on('pageerror', error => errors.push(error.message));
 page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
 
@@ -30,7 +32,8 @@ try {
     await page.locator(`[data-camera="${camera}"]`).evaluate(el => el.click());
     await page.waitForTimeout(900);
     const rect = await page.locator('#viewport').evaluate(el => { const r = el.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; });
-    await page.screenshot({ path: `${out}/spectra-axis-${name}.png`, clip: rect, animations: 'disabled', timeout: 60000 });
+    const capture = await cdp.send('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false, clip: { ...rect, scale: 1 } });
+    await fs.writeFile(`${out}/spectra-axis-${name}.png`, Buffer.from(capture.data, 'base64'));
   }
 
   // Smoke tests dos controles preservados.
