@@ -295,7 +295,7 @@ function hullSurface(){
  }
  // Berços e escoras unem as naceles ao casco.
  for(const side of [-1,1])for(const x of [8,27,46]){
-  const z=side*37,podZ=side*40.2;
+  const z=side*28,podZ=side*34.8;
   rod('side_pod_mount_'+side+'_'+x,'Berço estrutural de conexão da nacele lateral','hull',[x,0,z],[x,-1.8,podZ],.72,M.edge);
   rod('side_pod_mount_diag_'+side+'_'+x,'Escora diagonal da nacele lateral','hull',[x-4,-3,z+side*1.5],[x+4,-1.8,podZ-side*1.5],.34,M.dark);
  }
@@ -336,7 +336,7 @@ function hullSurface(){
   rod('bridge_window_frame_'+side,'Moldura estrutural do visor de comando','bridge',[-76,2.55,side*4.1],[-62,2.55,side*4.7],.24,M.edge);
   rod('bridge_side_keel_'+side,'Longarina lateral da ponte integrada ao casco','bridge',[-76,-.1,side*4.8],[-55,-.1,side*4.8],.48,M.dark);
  }
- label3D('PONTE DE COMANDO',[-66,6.2,0],2.2);
+ label3D('PONTE DE COMANDO',[-66,4.6,0],1.8);
  // Módulos habitacionais e laboratórios: cápsulas conectadas por túneis curtos.
  const habs=[
   {id:'hab_nw',name:'HABITAÇÃO A',p:[-27,0,-25]},
@@ -359,7 +359,7 @@ function hullSurface(){
  // Radiadores segmentados com estrutura de suporte mais discreta.
  for(const side of [-1,1]){
   // A longarina principal começa dentro da zona estrutural do casco e alcança a raiz dos radiadores.
-  rod('radiator_root_mount_'+side,'Encaixe estrutural do radiador no casco','radiators',[8,5,side*7.5],[8,8,side*18],.72,M.armor);
+  rod('radiator_root_mount_'+side,'Encaixe estrutural do radiador no casco','radiators',[8,5,side*25],[8,8,side*33],.72,M.armor);
   // Os radiadores são montados rente às naceles laterais; sem braços longos externos.
   for(const x of [-10,10,30]){
    rod('radiator_crossbeam_'+side+'_'+x,'Longarina embutida de integração térmica','radiators',[x,3.2,side*31.8],[x,3.2,side*35.8],.18,M.edge);
@@ -373,7 +373,7 @@ function hullSurface(){
   // Coletores e bases de articulação tornam explícito o caminho de carga até o casco.
   box('radiator_root_housing_'+side,'Carcaça de integração térmica lateral','radiators',5,1.2,4,M.armor,[8,3.4,side*33.5]);
  }
- label3D('RADIADORES TÉRMICOS',[10,12,43],2.3);
+ label3D('RADIADORES TÉRMICOS',[10,9,40],1.8);
  // Compartimento EGAS é mostrado como equipamento científico hipotético, não como motor validado.
  cyl('egas_housing','Compartimento conceitual EGAS','egas',4.5,4.5,18,M.dark,[18,0,0],[0,0,Math.PI/2]);
  for(const x of [9,27])tor('egas_flange_'+x,'Flange estrutural do compartimento EGAS','egas',4.6,.28,M.edge,[x,0,0]);
@@ -596,7 +596,7 @@ function cameraPreset(v){
   fitDistance=Math.max(fitDistance,depth+Math.abs(corner.dot(right))/tanH,depth+Math.abs(corner.dot(viewUp))/tanV);
  }
  controls.target.copy(center);
- camera.position.copy(center).addScaledVector(direction,fitDistance*1.12);
+ camera.position.copy(center).addScaledVector(direction,fitDistance*1.24);
  controls.minDistance=Math.max(16,fitDistance*.32);controls.maxDistance=fitDistance*4;controls.update()
 }
 function atomCamera(){controls.minDistance=.15;controls.maxDistance=8;camera.position.set(2.5,1.8,3);controls.target.set(0,0,0);controls.update();e192Nucleus.visible=true;e192Cloud.visible=false}
