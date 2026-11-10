@@ -596,10 +596,19 @@ function cameraPreset(v){
  controls.minDistance=18;controls.maxDistance=420;
  const p={iso:[-1.0,.72,1.12],front:[-1,.17,0],side:[0,.22,1],left:[0,.22,-1],top:[0,1,.02],bottom:[0,-1,.02],rear:[1,.17,0],interior:[-.04,.58,.09]}[v]||[-1,.72,1.12];
  camera.up.set(0,(v==='top'||v==='bottom')?0:1,v==='top'?-1:v==='bottom'?1:0);
- const bounds=new THREE.Box3().setFromObject(root),sphere=bounds.getBoundingSphere(new THREE.Sphere());
- controls.target.copy(sphere.center);
- const fitDistance=Math.max(34,sphere.radius/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*1.18);
- camera.position.copy(controls.target).addScaledVector(new THREE.Vector3(...p).normalize(),fitDistance);
+ const bounds=new THREE.Box3().setFromObject(root);
+ const center=bounds.getCenter(new THREE.Vector3()),direction=new THREE.Vector3(...p).normalize();
+ const right=new THREE.Vector3().crossVectors(camera.up,direction).normalize();
+ const viewUp=new THREE.Vector3().crossVectors(direction,right).normalize();
+ const tanV=Math.tan(THREE.MathUtils.degToRad(camera.fov/2)),tanH=tanV*camera.aspect;
+ let fitDistance=34;
+ for(const ix of [0,1])for(const iy of [0,1])for(const iz of [0,1]){
+  const corner=new THREE.Vector3(ix?bounds.max.x:bounds.min.x,iy?bounds.max.y:bounds.min.y,iz?bounds.max.z:bounds.min.z).sub(center);
+  const depth=corner.dot(direction);
+  fitDistance=Math.max(fitDistance,depth+Math.abs(corner.dot(right))/tanH,depth+Math.abs(corner.dot(viewUp))/tanV);
+ }
+ controls.target.copy(center);
+ camera.position.copy(center).addScaledVector(direction,fitDistance*1.12);
  controls.minDistance=Math.max(16,fitDistance*.32);controls.maxDistance=fitDistance*4;controls.update()
 }
 function atomCamera(){controls.minDistance=.15;controls.maxDistance=8;camera.position.set(2.5,1.8,3);controls.target.set(0,0,0);controls.update();e192Nucleus.visible=true;e192Cloud.visible=false}
