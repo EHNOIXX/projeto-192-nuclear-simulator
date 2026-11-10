@@ -167,8 +167,9 @@ function modulePod(id,label,center,dims,material=M.hull){
  label3D(label,[x,y+h/2+3,z],2.1);
 }
 function axisHullProfile(t){
+ // Dupla convergência: nariz e popa fecham progressivamente, sem uma parede elíptica plana na traseira.
  if(t<=.84)return Math.pow(Math.max(0,Math.sin((t/.84)*Math.PI/2)),.78);
- return 1-.28*Math.pow((t-.84)/.16,1.4);
+ return Math.pow(Math.max(0,Math.sin(((1-t)/.16)*Math.PI/2)),.78);
 }
 function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
  const positions=[],indices=[];
@@ -380,39 +381,30 @@ function hullSurface(){
  sphere('egas_core','Representação hipotética do núcleo E-192','egas',1.7,M.violet,[18,0,0],40);
  for(let i=0;i<4;i++)tor('egas_ring_'+i,'Anel esquemático do EGAS','egas',5.3+i*.55,.12,i%2?M.gold:M.cyan,[18,0,0]);
  label3D('EGAS · CONCEITUAL',[18,8,0],2.4);
- // Estrutura traseira aberta: quadro periférico e braços radiais, sem disco ou tampa obstruindo os bocais.
- for(const side of [-1,1]){
-  rod('aft_upper_longeron_'+side,'Longarina superior traseira','hull',[49,side*8,side*30],[70,side*8,side*30],.72,M.dark);
-  rod('aft_lower_longeron_'+side,'Longarina inferior traseira','hull',[49,-side*8,side*30],[70,-side*8,side*30],.72,M.dark);
-  rod('aft_outer_rib_'+side,'Arco lateral aberto da estrutura traseira','hull',[68,-10,side*39],[68,10,side*39],.58,M.edge);
-  rod('aft_diagonal_brace_'+side,'Escora diagonal traseira','hull',[54,side*4,side*23],[68,side*8,side*36],.52,M.edge);
+ // Popa redesenhada como carenagem composta convergente: volume contínuo, sem gaiola ou travessas expostas.
+ // O casco principal fecha em ponta suave; esta carenagem aloja as raízes dos três conjuntos propulsivos.
+ const aftFairing=add('aft_integrated_fairing','Carenagem traseira convergente integrada ao casco','hull',new THREE.SphereGeometry(1,64,40),M.armor,[56,0,0]);
+ aftFairing.scale.set(16,9.8,31.5);
+ const aftLower=add('aft_lower_keel_fairing','Quilha inferior traseira de proteção e manutenção','hull',new THREE.SphereGeometry(1,48,32),M.dark,[59,-5.2,0]);
+ aftLower.scale.set(13,5.2,24);
+ // Ombros metálicos curvos integram cada nacele à carenagem sem armações transversais.
+ for(const z of [-25,0,25]){
+  const shoulder=add('aft_engine_shoulder_'+z,'Ombro de carenagem integrado à raiz propulsiva','hull',new THREE.SphereGeometry(1,40,28),M.hull,[58,0,z]);
+  shoulder.scale.set(13,5.8,7.2);
+  const service=box('aft_engine_service_'+z,'Painel de manutenção da raiz propulsiva','hull',7,.32,5,M.dark,[55,-7.2,z]);
+  service.rotation.y=z===0?0:(z>0?.12:-.12);
  }
- rod('aft_upper_bridge','Travessa superior aberta da traseira','hull',[68,10,-30],[68,10,30],.58,M.edge);
- rod('aft_lower_bridge','Travessa inferior aberta da traseira','hull',[68,-10,-30],[68,-10,30],.58,M.edge);
- // Três unidades propulsivas alinhadas com bocais em sino e anéis concêntricos, sem brilho excessivo.
+ // Três módulos propulsivos independentes, parcialmente embutidos na popa e com bocais curtos.
  for(const [y,z] of [[0,-25],[0,0],[0,25]]){
-  cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',4.2,4.8,15,M.dark,[67,y,z],[0,0,Math.PI/2]);
-  const nozzle=add('engine_nozzle_'+y+'_'+z,'Bocal externo ilustrativo','propulsion',new THREE.CylinderGeometry(3.1,5.1,6.5,64,1,true),M.armor,[77,y,z],[0,0,Math.PI/2]);
-  tor('aft_engine_ring_'+y+'_'+z,'Aro externo da unidade propulsiva','propulsion',4.8,.28,M.edge,[76.8,y,z]);
-  tor('engine_inner_ring_'+y+'_'+z,'Aro interno do bocal','propulsion',3.15,.18,M.cyan,[80.4,y,z]);
-  sphere('aft_engine_core_'+y+'_'+z,'Abertura de inspeção do conjunto termoelétrico-propulsivo','propulsion',.32,M.cyan,[80.8,y,z],48);
-  tor('integrated_energy_aperture_'+y+'_'+z,'Aro de inspeção do núcleo integrado','propulsion',.48,.10,M.cyan,[78.85,y,z],[0,Math.PI/2,0]);
-  tor('integrated_energy_inner_'+y+'_'+z,'Anel interno do conversor termoelétrico','propulsion',.27,.07,M.gold,[79.05,y,z],[0,Math.PI/2,0]);
-  rod('engine_mount_upper_'+y+'_'+z,'Berço superior do conjunto propulsivo','propulsion',[68,y+3.8,z],[62,y+6.5,z],.62,M.edge);
-  rod('engine_mount_lower_'+y+'_'+z,'Berço inferior do conjunto propulsivo','propulsion',[68,y-3.8,z],[62,y-6.5,z],.62,M.edge);
-  rod('engine_mount_outer_'+y+'_'+z,'Berço externo do conjunto propulsivo','propulsion',[68,y,z+4.2],[62,y,z+7],.48,M.dark);
-  rod('engine_mount_inner_'+y+'_'+z,'Berço interno do conjunto propulsivo','propulsion',[68,y,z-4.2],[62,y,z-7],.48,M.dark);
-  tor('engine_casing_collar_'+y+'_'+z,'Colar de carenagem da unidade propulsiva','propulsion',5.1,.42,M.edge,[66,y,z],[0,Math.PI/2,0]);
-  for(const [rr,thick,mat] of [[3.65,.16,M.edge],[2.75,.12,M.cyan],[1.8,.10,M.gold]])
-   tor('engine_throat_layer_'+y+'_'+z+'_'+rr,'Anel interno em camadas do bocal','propulsion',rr,thick,mat,[80.7,y,z],[0,Math.PI/2,0]);
-  for(let vane=0;vane<12;vane++){
-   const a=vane*Math.PI/6,ca=Math.cos(a),sa=Math.sin(a);
-   rod('engine_vane_'+y+'_'+z+'_'+vane,'Aleta radial interna ilustrativa do bocal','propulsion',[78.2,y+ca*2.1,z+sa*2.1],[80.3,y+ca*3,z+sa*3],.14,M.edge);
-  }
-  tor('engine_support_collar_'+y+'_'+z,'Colar estrutural externo do conjunto propulsivo','propulsion',5.25,.34,M.dark,[72,y,z],[0,Math.PI/2,0]);
+  cyl('aft_engine_'+y+'_'+z,'Carcaça blindada integrada de unidade propulsiva','propulsion',4.5,4.9,15,M.dark,[67,y,z],[0,0,Math.PI/2],64);
+  cyl('engine_root_sleeve_'+y+'_'+z,'Manga metálica de integração do propulsor','propulsion',5.15,4.75,5.5,M.armor,[63.8,y,z],[0,0,Math.PI/2],64);
+  cyl('engine_nozzle_'+y+'_'+z,'Bocal externo metálico de geometria convergente','propulsion',4.9,3.1,6.5,M.edge,[77,y,z],[0,0,Math.PI/2],64);
+  cyl('engine_throat_'+y+'_'+z,'Garganta interna escurecida do bocal','propulsion',3.12,2.65,1.2,M.dark,[80.4,y,z],[0,0,Math.PI/2],64);
+  tor('engine_inner_ring_'+y+'_'+z,'Aro interno discreto de inspeção do bocal','propulsion',2.72,.10,M.cyan,[81,y,z],[0,Math.PI/2,0]);
+  sphere('aft_engine_core_'+y+'_'+z,'Abertura de inspeção do conjunto termoelétrico-propulsivo','propulsion',.32,M.cyan,[81.1,y,z],32);
  }
- box('aft_service_deck','Convés de manutenção dos sistemas propulsivos','hull',16,1,22,M.armor,[54,-8,0]);
- label3D('CONJUNTOS PROPULSIVOS',[73,9,0],2.4);
+ box('aft_service_deck','Convés de manutenção dos sistemas propulsivos','hull',13,.8,18,M.armor,[51,-8.1,0]);
+ label3D('CONJUNTOS PROPULSIVOS',[73,8,0],2.4);
  // Representação do núcleo E-192 reutiliza a linguagem visual do simulador nuclear:
  // 192 prótons ciano + 250 nêutrons violeta, distribuição ilustrativa e sem escala física.
  // Um núcleo compacto por unidade propulsiva; escala visual reduzida para não sugerir um bloco macroscópico.
