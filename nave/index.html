@@ -367,7 +367,7 @@ function hullSurface(){
   rod('radiator_root_mount_'+side,'Encaixe estrutural do radiador no casco','radiators',[8,5,side*7.5],[8,8,side*18],.72,M.armor);
   // Os radiadores são montados rente às naceles laterais; sem braços longos externos.
   for(const x of [-10,10,30]){
-   rod('radiator_crossbeam_'+side+'_'+x,'Longarina embutida de integração térmica','radiators',[x,4.8,side*36.8],[x,4.8,side*40.2],.18,M.edge);
+   rod('radiator_crossbeam_'+side+'_'+x,'Longarina embutida de integração térmica','radiators',[x,3.2,side*36.8],[x,3.2,side*40.2],.18,M.edge);
   }
   for(let j=0;j<4;j++){
    const x=-10+j*13;
@@ -596,8 +596,8 @@ function cameraPreset(v){
  controls.minDistance=18;controls.maxDistance=420;
  const p={iso:[-1.0,.72,1.12],front:[-1,.17,0],side:[0,.22,1],left:[0,.22,-1],top:[0,1,.02],bottom:[0,-1,.02],rear:[1,.17,0],interior:[-.04,.58,.09]}[v]||[-1,.72,1.12];
  camera.up.set(0,(v==='top'||v==='bottom')?0:1,v==='top'?-1:v==='bottom'?1:0);
- controls.target.set(0,0,0);
  const bounds=new THREE.Box3().setFromObject(root),sphere=bounds.getBoundingSphere(new THREE.Sphere());
+ controls.target.copy(sphere.center);
  const fitDistance=Math.max(34,sphere.radius/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*1.18);
  camera.position.copy(controls.target).addScaledVector(new THREE.Vector3(...p).normalize(),fitDistance);
  controls.minDistance=Math.max(16,fitDistance*.32);controls.maxDistance=fitDistance*4;controls.update()
@@ -618,7 +618,7 @@ document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click',()=>{if(scaleMode==='ship'){if(b.dataset.camera==='interior')showInterior();else cameraPreset(b.dataset.camera)}}));
 $('resetCamera').onclick=()=>scaleMode==='atom'?atomCamera():scaleMode==='engine'?engineCamera():cameraPreset('iso');
 $('fit').onclick=()=>$('resetCamera').click();
-function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/159.2,H/37.5,W/96);$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
+function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/162,H/37.5,W/96);$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
 ['len','wid','hei'].forEach(id=>$(id).addEventListener('input',setDims));
 $('resetDims').onclick=()=>{$('len').value=160;$('wid').value=96;$('hei').value=48;setDims()};
 function updateCount(){const controls=[...document.querySelectorAll('[data-module]')];const n=controls.filter(ch=>ch.checked).length;$('statMods').textContent=n+' / '+controls.length}
