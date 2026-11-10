@@ -403,14 +403,20 @@ function hullSurface(){
   cyl(id+'_thermal_chamber','Câmara termoelétrica integrada ao conjunto propulsivo','propulsion',1.82,1.82,7.2,M.armor,[61.5,y,z],[0,0,Math.PI/2],56);
   const coreGroup=new THREE.Group();coreGroup.name=id+'_e192_nucleus';coreGroup.userData={label:'Núcleo E-192 · 192 prótons + 250 nêutrons · representação do simulador nuclear',group:'propulsion'};
   coreGroup.position.set(61.5,y,z);coreGroup.scale.setScalar(.135);groups.propulsion.add(coreGroup);
-  const A=442,rad=1.72;
+  const A=442,rad=1.72,dummy=new THREE.Object3D();
+  const protonInstances=new THREE.InstancedMesh(new THREE.SphereGeometry(.073,16,14),nucleusProtonMat,192);
+  const neutronInstances=new THREE.InstancedMesh(new THREE.SphereGeometry(.069,16,14),nucleusNeutronMat,250);
+  let protonIndex=0,neutronIndex=0;
   for(let i=0;i<A;i++){
    const proton=i<192,phi=Math.acos(1-2*(i+.5)/A),theta=Math.PI*(1+Math.sqrt(5))*i;
-   const rr=rad*Math.cbrt((i+.5)/A);
-   const p=new THREE.Mesh(new THREE.SphereGeometry(proton?.073:.069,16,14),proton?nucleusProtonMat:nucleusNeutronMat);
-   p.position.set(rr*Math.sin(phi)*Math.cos(theta),rr*Math.sin(phi)*Math.sin(theta),rr*Math.cos(phi));
-   p.scale.setScalar(.94+.12*(.5+.5*Math.sin(i*12.9898)));coreGroup.add(p);
+   const rr=rad*Math.cbrt((i+.5)/A),variation=.94+.12*(.5+.5*Math.sin(i*12.9898));
+   dummy.position.set(rr*Math.sin(phi)*Math.cos(theta),rr*Math.sin(phi)*Math.sin(theta),rr*Math.cos(phi));
+   dummy.scale.setScalar(variation);dummy.updateMatrix();
+   if(proton)protonInstances.setMatrixAt(protonIndex++,dummy.matrix);else neutronInstances.setMatrixAt(neutronIndex++,dummy.matrix);
   }
+  protonInstances.instanceMatrix.needsUpdate=true;neutronInstances.instanceMatrix.needsUpdate=true;
+  protonInstances.userData={...coreGroup.userData};neutronInstances.userData={...coreGroup.userData};
+  coreGroup.add(protonInstances,neutronInstances);
   for(const [fraction,index] of [[.48,0],[.72,1],[.94,2]]){
    const contour=new THREE.Mesh(new THREE.SphereGeometry(rad*fraction,28,20),nucleusContourMat);
    contour.rotation.set(index*.31,index*.47,index*.19);coreGroup.add(contour);
@@ -437,6 +443,7 @@ function hullSurface(){
 }
 hullSurface();
 
+function buildInterior(){
 // Planta interna dimensionalmente associada aos módulos externos.
 // O modo interior é uma vista de corte superior, com tetos ocultados pela câmera.
 const roomMat=new THREE.MeshStandardMaterial({color:0x29465a,metalness:.35,roughness:.62});
@@ -514,29 +521,34 @@ interiorBox('engine_room_floor','Piso da área de manutenção propulsiva',17,.3
 for(const z of [-7,7])interiorBox('engine_service_rack_'+z,'Rack de monitoramento propulsivo',5,2,1.2,furnitureMat,[57,-6.8,z]);
 roomLabel('MANUTENÇÃO PROPULSIVA',57,0);
 
+}
+let interiorBuilt=false;
+
 const atomGroup=new THREE.Group();scene.add(atomGroup);atomGroup.visible=false;
 // Reprodução do visualizador 3D do laboratório E-192: 192 prótons ciano + 250 nêutrons violeta.
 const e192Nucleus=new THREE.Group();atomGroup.add(e192Nucleus);
 const protonMat=new THREE.MeshStandardMaterial({color:0x55e0e5,emissive:0x0b555d,emissiveIntensity:.35,roughness:.24,metalness:.18});
 const neutronMat=new THREE.MeshStandardMaterial({color:0x9b8cff,emissive:0x34266f,emissiveIntensity:.3,roughness:.27,metalness:.14});
 const e192A=442,e192R=1.72;
+const atomDummy=new THREE.Object3D();
+const atomProtons=new THREE.InstancedMesh(new THREE.SphereGeometry(.073,16,12),protonMat,192);
+const atomNeutrons=new THREE.InstancedMesh(new THREE.SphereGeometry(.069,16,12),neutronMat,250);
+let atomProtonIndex=0,atomNeutronIndex=0;
 for(let i=0;i<e192A;i++){
  const proton=i<192,phi=Math.acos(1-2*(i+.5)/e192A),theta=Math.PI*(1+Math.sqrt(5))*i;
  const radius=e192R*Math.cbrt((i+.5)/e192A);
- const particle=new THREE.Mesh(new THREE.SphereGeometry(proton?.073:.069,16,12),proton?protonMat:neutronMat);
- particle.position.set(radius*Math.sin(phi)*Math.cos(theta),radius*Math.sin(phi)*Math.sin(theta),radius*Math.cos(phi));
- const variation=.94+.12*(.5+.5*Math.sin(i*12.9898));particle.scale.setScalar(variation);e192Nucleus.add(particle);
+ atomDummy.position.set(radius*Math.sin(phi)*Math.cos(theta),radius*Math.sin(phi)*Math.sin(theta),radius*Math.cos(phi));
+ atomDummy.scale.setScalar(.94+.12*(.5+.5*Math.sin(i*12.9898)));atomDummy.updateMatrix();
+ if(proton)atomProtons.setMatrixAt(atomProtonIndex++,atomDummy.matrix);else atomNeutrons.setMatrixAt(atomNeutronIndex++,atomDummy.matrix);
 }
+atomProtons.instanceMatrix.needsUpdate=true;atomNeutrons.instanceMatrix.needsUpdate=true;
+e192Nucleus.add(atomProtons,atomNeutrons);
 const e192Outer=new THREE.Mesh(new THREE.SphereGeometry(e192R*1.08,40,32),new THREE.MeshBasicMaterial({color:0x54dce2,wireframe:true,transparent:true,opacity:.055}));e192Nucleus.add(e192Outer);
 const e192Halo=new THREE.Mesh(new THREE.SphereGeometry(e192R*1.22,40,32),new THREE.MeshBasicMaterial({color:0x6b83c9,wireframe:true,transparent:true,opacity:.035}));e192Nucleus.add(e192Halo);
 const e192Contours=new THREE.MeshBasicMaterial({color:0x8cebea,wireframe:true,transparent:true,opacity:.075});
 [.48,.72,.94].forEach((fraction,index)=>{const mesh=new THREE.Mesh(new THREE.SphereGeometry(e192R*fraction,28,20),e192Contours);mesh.rotation.set(index*.31,index*.47,index*.19);e192Nucleus.add(mesh)});
-// Instâncias microscópicas do núcleo E-192 dentro das três unidades propulsivas.
-const engineNuclei=[];
-for(const [y,z] of [[0,-12],[0,0],[0,12]]){
- const instance=e192Nucleus.clone(true);instance.name='e192_engine_nucleus_'+y+'_'+z;
- instance.scale.setScalar(.12);instance.position.set(61.5,y,z);root.add(instance);engineNuclei.push(instance);
-}
+// Os três núcleos em escala de nave já são instanciados em cada conjunto propulsivo acima.
+// Evita duplicar centenas de malhas microscópicas na cena externa.
 const e192Cloud=new THREE.Group();atomGroup.add(e192Cloud);
 const cloudPositions=[];
 for(let i=0;i<1100;i++){const u=Math.random(),v=Math.random(),theta=2*Math.PI*u,phi=Math.acos(2*v-1),r=1.8+Math.random()*.75;cloudPositions.push(r*Math.sin(phi)*Math.cos(theta),r*Math.sin(phi)*Math.sin(theta),r*Math.cos(phi))}
@@ -562,7 +574,7 @@ renderer.domElement.addEventListener('pointerdown',e=>{
 });
 let interiorMode=false;
 function restoreModuleVisibility(){document.querySelectorAll('[data-module]').forEach(ch=>{groups[ch.dataset.module].visible=ch.checked})}
-function showInterior(){interiorMode=true;restoreModuleVisibility();groups.interior.visible=true;labelsGroup.visible=true;groups.hull.visible=false;groups.habitat.visible=false;groups.radiators.visible=false;groups.field.visible=false;groups.bridge.visible=false;groups.antenna.visible=false;groups.landing.visible=false;groups.egas.visible=false;groups.interior.visible=true;
+function showInterior(){if(!interiorBuilt){buildInterior();interiorBuilt=true;}interiorMode=true;restoreModuleVisibility();groups.interior.visible=true;labelsGroup.visible=true;groups.hull.visible=false;groups.habitat.visible=false;groups.radiators.visible=false;groups.field.visible=false;groups.bridge.visible=false;groups.antenna.visible=false;groups.landing.visible=false;groups.egas.visible=false;groups.interior.visible=true;
  if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=false;
  for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=false;controls.minDistance=15;controls.maxDistance=280;camera.position.set(-4,118,18);controls.target.set(-2,-1,0);controls.update();$('selectionLabel').textContent='PLANTA INTERNA / COMPARTIMENTOS';$('selectionInfo').innerHTML='<strong>Configuração interna conceitual</strong>Planta de corte da arquitetura de 50 tripulantes: 24 cabines duplas, ponte, centro de operações, laboratórios E-192/EGAS, enfermaria, refeitório, suporte ambiental e manutenção propulsiva. Modelo conceitual, não projeto habitável validado.';log('Vista interna ativada: compartimentos e circulação expostos.')}
 let cameraBoundsCache=null;
