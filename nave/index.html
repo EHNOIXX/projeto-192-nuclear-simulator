@@ -381,9 +381,9 @@ function hullSurface(){
  for(let i=0;i<4;i++)tor('egas_ring_'+i,'Anel esquemático do EGAS','egas',5.3+i*.55,.12,i%2?M.gold:M.cyan,[18,0,0]);
  label3D('EGAS · CONCEITUAL',[18,8,0],2.4);
  // Uma única carenagem traseira contínua envolve os três alojamentos propulsivos e fecha a transição do casco.
-  add('aft_continuous_fairing','Carenagem traseira contínua integrada ao casco','hull',axisHullGeometry(42,14.2,30.5,112,64),M.armor,[57,0,0]);
+  add('aft_continuous_fairing','Carenagem traseira contínua integrada ao casco','hull',axisHullGeometry(42,12.5,27,112,64),M.armor,[57,0,0]);
  // Três unidades propulsivas alinhadas com bocais em sino e anéis concêntricos, sem brilho excessivo.
- for(const [y,z] of [[0,-21.5],[0,0],[0,21.5]]){
+ for(const [y,z] of [[0,-17],[0,0],[0,17]]){
   cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',4.2,4.8,15,M.dark,[67,y,z],[0,0,Math.PI/2]);
   const nozzle=add('engine_nozzle_'+y+'_'+z,'Bocal externo ilustrativo','propulsion',new THREE.CylinderGeometry(3.1,5.1,6.5,64,1,true),M.armor,[77,y,z],[0,0,Math.PI/2]);
   tor('aft_engine_ring_'+y+'_'+z,'Aro externo da unidade propulsiva','propulsion',4.8,.28,M.edge,[76.8,y,z]);
@@ -410,7 +410,7 @@ function hullSurface(){
  const nucleusProtonMat=new THREE.MeshStandardMaterial({color:0x55e0e5,emissive:0x0b555d,emissiveIntensity:.35,roughness:.24,metalness:.18});
  const nucleusNeutronMat=new THREE.MeshStandardMaterial({color:0x9b8cff,emissive:0x34266f,emissiveIntensity:.3,roughness:.27,metalness:.14});
  const nucleusContourMat=new THREE.MeshBasicMaterial({color:0x8cebea,wireframe:true,transparent:true,opacity:.075});
- for(const [y,z] of [[0,-25],[0,0],[0,25]]){
+ for(const [y,z] of [[0,-17],[0,0],[0,17]]){
   const id='integrated_power_'+y+'_'+z;
   cyl(id+'_thermal_chamber','Câmara termoelétrica integrada ao conjunto propulsivo','propulsion',1.82,1.82,7.2,M.armor,[66.2,y,z],[0,0,Math.PI/2],56);
   const coreGroup=new THREE.Group();coreGroup.name=id+'_e192_nucleus';coreGroup.userData={label:'Núcleo E-192 · 192 prótons + 250 nêutrons · representação do simulador nuclear',group:'propulsion'};
@@ -545,7 +545,7 @@ const e192Contours=new THREE.MeshBasicMaterial({color:0x8cebea,wireframe:true,tr
 [.48,.72,.94].forEach((fraction,index)=>{const mesh=new THREE.Mesh(new THREE.SphereGeometry(e192R*fraction,28,20),e192Contours);mesh.rotation.set(index*.31,index*.47,index*.19);e192Nucleus.add(mesh)});
 // Instâncias microscópicas do núcleo E-192 dentro das três unidades propulsivas.
 const engineNuclei=[];
-for(const [y,z] of [[0,-21.5],[0,0],[0,21.5]]){
+for(const [y,z] of [[0,-17],[0,0],[0,17]]){
  const instance=e192Nucleus.clone(true);instance.name='e192_engine_nucleus_'+y+'_'+z;
  instance.scale.setScalar(.12);instance.position.set(66.2,y,z);root.add(instance);engineNuclei.push(instance);
 }
