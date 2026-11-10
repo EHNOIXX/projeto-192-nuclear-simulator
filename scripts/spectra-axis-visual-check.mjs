@@ -41,8 +41,13 @@ try {
   if (!(await page.locator('#autoRotate').evaluate(el => el.classList.contains('active')))) throw new Error('Órbita automática não ativou');
   await page.locator('#autoRotate').evaluate(el => el.click());
 
-  await page.locator('[data-module="egas"]').check();
-  await page.locator('[data-module="egas"]').uncheck();
+  const egasToggle = page.locator('[data-module="egas"]');
+  const egasLabel = egasToggle.locator('xpath=..');
+  await egasLabel.scrollIntoViewIfNeeded();
+  await egasLabel.click();
+  if (!(await egasToggle.isChecked())) throw new Error('Controle de visibilidade EGAS não ativou');
+  await egasLabel.click();
+  if (await egasToggle.isChecked()) throw new Error('Controle de visibilidade EGAS não desativou');
 
   const piece = page.locator('#pieceSelect');
   const firstPiece = await piece.locator('option').nth(1).getAttribute('value');
