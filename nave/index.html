@@ -295,7 +295,7 @@ function hullSurface(){
  sphere('egas_core','Representação hipotética do núcleo E-192','egas',1.7,M.violet,[18,0,0],40);
  for(let i=0;i<4;i++)tor('egas_ring_'+i,'Anel esquemático do EGAS','egas',5.3+i*.55,.12,i%2?M.gold:M.cyan,[18,0,0]);
  label3D('EGAS · CONCEITUAL',[18,8,0],2.4);
- // Quatro unidades propulsivas com bocais em sino e anéis concêntricos, sem brilho excessivo.
+ // Três unidades propulsivas alinhadas com bocais em sino e anéis concêntricos, sem brilho excessivo.
  for(const [y,z] of [[0,-20],[0,0],[0,20]]){
   cyl('aft_engine_'+y+'_'+z,'Carcaça ilustrativa de unidade propulsiva','propulsion',3.1,3.5,13,M.dark,[68,y,z],[0,0,Math.PI/2]);
   const nozzle=add('engine_nozzle_'+y+'_'+z,'Bocal externo ilustrativo','propulsion',new THREE.CylinderGeometry(2.1,3.5,5,48,1,true),M.armor,[76,y,z],[0,0,Math.PI/2]);
@@ -447,7 +447,7 @@ const e192Outer=new THREE.Mesh(new THREE.SphereGeometry(e192R*1.08,40,32),new TH
 const e192Halo=new THREE.Mesh(new THREE.SphereGeometry(e192R*1.22,40,32),new THREE.MeshBasicMaterial({color:0x6b83c9,wireframe:true,transparent:true,opacity:.035}));e192Nucleus.add(e192Halo);
 const e192Contours=new THREE.MeshBasicMaterial({color:0x8cebea,wireframe:true,transparent:true,opacity:.075});
 [.48,.72,.94].forEach((fraction,index)=>{const mesh=new THREE.Mesh(new THREE.SphereGeometry(e192R*fraction,28,20),e192Contours);mesh.rotation.set(index*.31,index*.47,index*.19);e192Nucleus.add(mesh)});
-// Instâncias microscópicas do núcleo E-192 dentro das quatro unidades propulsivas.
+// Instâncias microscópicas do núcleo E-192 dentro das três unidades propulsivas.
 const engineNuclei=[];
 for(const [y,z] of [[0,-20],[0,0],[0,20]]){
  const instance=e192Nucleus.clone(true);instance.name='e192_engine_nucleus_'+y+'_'+z;
@@ -497,7 +497,7 @@ function setScale(mode){
  $('scaleHelp').textContent=mode==='atom'?'VISTA MICROSCÓPICA · ESCALA ATÔMICA · NÚCLEO EM PROPORÇÃO':mode==='engine'?'CONJUNTO PROPULSIVO · VISTA LOCAL':'NAVE COMPLETA · 160 × 96 × 48 m · 50 TRIPULANTES';
  $('selectionLabel').textContent=mode==='atom'?'MODELO ATÔMICO ESQUEMÁTICO':mode==='engine'?'CONJUNTO PROPULSIVO':'VISÃO GERAL';
  if(mode==='atom'){atomCamera();$('selectionInfo').innerHTML='<strong>Visualização atômica de referência</strong>Diâmetro atômico típico da ordem de 10⁻¹⁰ m. O núcleo está desenhado em proporção muito menor e quase não é visível. A distribuição eletrônica é esquemática; não representa configuração confirmada do elemento 192.'}
- else if(mode==='engine'){engineCamera();$('selectionInfo').innerHTML='<strong>Conjunto propulsivo — escala local</strong>Vista aproximada das quatro unidades ilustrativas na extremidade traseira. A representação não especifica nem demonstra um motor funcional; EGAS permanece uma hipótese separada.'}
+ else if(mode==='engine'){engineCamera();$('selectionInfo').innerHTML='<strong>Conjunto propulsivo — escala local</strong>Vista aproximada das três unidades ilustrativas na extremidade traseira. A representação não especifica nem demonstra um motor funcional; EGAS permanece uma hipótese separada.'}
  else{cameraPreset('iso');$('selectionInfo').innerHTML='<strong>Nenhum componente selecionado</strong>Clique em um componente da nave para inspecionar sua função visual.'}
  log('Escala alterada: '+mode.toUpperCase())
 }
