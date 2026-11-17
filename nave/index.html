@@ -211,8 +211,8 @@ function hullSurfacePoint(x,theta,offset=0){
  const t=Math.max(0,Math.min(1,x/160+.5)),p=axisHullProfile(t);
  const cs=Math.cos(theta),sn=Math.sin(theta);
  const y=18.75*p*Math.sign(cs)*Math.pow(Math.abs(cs),1.04);
- const z=48*p*Math.sign(sn)*Math.pow(Math.abs(sn),1.04);
- const n=new THREE.Vector3(0,cs/18.75,sn/48).normalize();
+ const z=45*p*Math.sign(sn)*Math.pow(Math.abs(sn),1.04);
+ const n=new THREE.Vector3(0,cs/18.75,sn/45).normalize();
  return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
 }
 function hullArmorPatch(x0,x1,a0,a1){
@@ -231,16 +231,16 @@ function hullSeamCurve(x0,x1,angle){
 }
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
- const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,18.75,48),M.hull,[0,0,0]);
+ const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,18.75,45),M.hull,[0,0,0]);
  // Naceles laterais externas, longas e baixas: silhueta de pods integrados da prancha oficial.
  for(const side of [-1,1]){
-  add('axis_side_pod_'+side,'Nacele lateral de ombro integrada ao monocoque','hull',axisHullGeometry(70,2.7,4.6,112,56),M.armor,[27,-.6,side*40.2]);
+  add('axis_side_pod_'+side,'Nacele lateral de ombro integrada ao monocoque','hull',axisHullGeometry(70,2.7,4.6,112,56),M.armor,[27,-.6,side*43.4]);
   // A transição da nacele é feita pela própria sobreposição controlada ao ombro do casco; sem aro circular externo.
   for(let i=0;i<9;i++){
    const x=8+i*5.6;
-   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.3,.14,.16,M.cyan,[x,.85,side*44.4]);
+   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.3,.14,.16,M.cyan,[x,.85,side*47.0]);
   }
-  for(const x of [12,27,42,57])box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso da nacele lateral','hull',5,.14,2.1,M.dark,[x,1.55,side*40.8]);
+  for(const x of [12,27,42,57])box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso da nacele lateral','hull',5,.14,2.1,M.dark,[x,1.55,side*44.0]);
  }
 
  // Serviços e proteção ventral embutidos na pele do casco, sem cápsulas longitudinais sobrepostas.
@@ -303,7 +303,7 @@ function hullSurface(){
  }
  // Berços e escoras unem as naceles ao casco.
  for(const side of [-1,1])for(const x of [8,27,46]){
-  const z=side*34,podZ=side*40.2;
+  const z=side*34,podZ=side*43.4;
   rod('side_pod_mount_'+side+'_'+x,'Berço estrutural de conexão da nacele lateral','hull',[x,0,z],[x,-1.8,podZ],.72,M.edge);
   rod('side_pod_mount_diag_'+side+'_'+x,'Escora diagonal da nacele lateral','hull',[x-4,-3,z+side*1.5],[x+4,-1.8,podZ-side*1.5],.34,M.dark);
  }
@@ -391,23 +391,24 @@ function hullSurface(){
  // A popa continua o monocoque: três alojamentos curtos entram na
  // contração traseira e terminam em bocais discretos, sem cápsula sobreposta,
  // disco de fechamento ou armação circular externa.
- for(const [y,z] of [[0,-12],[0,0],[0,12]]){
-  cyl('aft_engine_'+y+'_'+z,'Alojamento integrado de unidade propulsiva conceitual','propulsion',3.8,4.2,13,M.dark,[62,y,z],[0,0,Math.PI/2]);
-  add('engine_nozzle_'+y+'_'+z,'Bocal integrado de unidade propulsiva conceitual','propulsion',new THREE.CylinderGeometry(2.8,4.35,5.2,48,1,true),M.armor,[71,y,z],[0,0,Math.PI/2]);
-  tor('engine_casing_collar_'+y+'_'+z,'Junta curta entre casco e alojamento propulsivo','propulsion',4.25,.22,M.edge,[56.2,y,z],[0,Math.PI/2,0]);
+ for(const [y,z] of [[0,-26],[0,0],[0,26]]){
+  cyl('aft_engine_'+y+'_'+z,'Alojamento integrado de unidade propulsiva conceitual','propulsion',3.8,4.2,13,M.dark,[69,y,z],[0,0,Math.PI/2]);
+  add('engine_nozzle_'+y+'_'+z,'Bocal integrado de unidade propulsiva conceitual','propulsion',new THREE.CylinderGeometry(2.8,4.35,5.2,48,1,true),M.armor,[77.5,y,z],[0,0,Math.PI/2]);
+  tor('engine_casing_collar_'+y+'_'+z,'Junta curta entre casco e alojamento propulsivo','propulsion',4.25,.22,M.edge,[63.2,y,z],[0,Math.PI/2,0]);
+  tor('engine_exit_glow_'+y+'_'+z,'Anel luminoso embutido na saída propulsiva','propulsion',4.0,.24,M.cyan,[79.7,y,z],[0,Math.PI/2,0]);
   // A abertura central permanece sem pino luminoso saliente na saída do bocal.
  }
  // Sem convés saliente: manutenção distribuída em painéis embutidos no casco.
- label3D('CONJUNTOS PROPULSIVOS',[73,9,0],2.4);
+ label3D('CONJUNTOS PROPULSIVOS',[80,13,0],2.4);
  // Representação do núcleo E-192 reutiliza a linguagem visual do simulador nuclear:
  // 192 prótons ciano + 250 nêutrons violeta, distribuição ilustrativa e sem escala física.
  // Um núcleo compacto por unidade propulsiva; escala visual reduzida para não sugerir um bloco macroscópico.
  const nucleusProtonMat=new THREE.MeshStandardMaterial({color:0x55e0e5,emissive:0x0b555d,emissiveIntensity:.35,roughness:.24,metalness:.18});
  const nucleusNeutronMat=new THREE.MeshStandardMaterial({color:0x9b8cff,emissive:0x34266f,emissiveIntensity:.3,roughness:.27,metalness:.14});
  const nucleusContourMat=new THREE.MeshBasicMaterial({color:0x8cebea,wireframe:true,transparent:true,opacity:.075});
- for(const [y,z] of [[0,-12],[0,0],[0,12]]){
+ for(const [y,z] of [[0,-26],[0,0],[0,26]]){
   const id='integrated_power_'+y+'_'+z;
-  cyl(id+'_thermal_chamber','Câmara termoelétrica integrada ao conjunto propulsivo','propulsion',1.82,1.82,7.2,M.armor,[61.5,y,z],[0,0,Math.PI/2],56);
+  cyl(id+'_thermal_chamber','Câmara termoelétrica integrada ao conjunto propulsivo','propulsion',1.82,1.82,7.2,M.armor,[68.5,y,z],[0,0,Math.PI/2],56);
   const coreGroup=new THREE.Group();coreGroup.name=id+'_e192_nucleus';coreGroup.userData={label:'Núcleo E-192 · 192 prótons + 250 nêutrons · representação do simulador nuclear',group:'propulsion'};
   coreGroup.position.set(61.5,y,z);coreGroup.scale.setScalar(.135);groups.propulsion.add(coreGroup);
   const A=442,rad=1.72,dummy=new THREE.Object3D();
@@ -430,18 +431,21 @@ function hullSurface(){
   }
   const glow=new THREE.Mesh(new THREE.SphereGeometry(rad*1.08,40,32),new THREE.MeshBasicMaterial({color:0x54dce2,wireframe:true,transparent:true,opacity:.055}));coreGroup.add(glow);
   coreGroup.traverse(o=>{if(o.isMesh){o.userData={...coreGroup.userData};pickables.push(o)}});
-  for(const x of [62.7,69.7])tor(id+'_containment_'+x,'Anel de contenção térmica interno','propulsion',1.76,.18,M.edge,[x,y,z],[0,Math.PI/2,0]);
+  for(const x of [69.7,76.7])tor(id+'_containment_'+x,'Anel de contenção térmica interno','propulsion',1.76,.18,M.edge,[x,y,z],[0,Math.PI/2,0]);
   for(let k=0;k<12;k++){const a=k*Math.PI/6;rod(id+'_thermoelectric_fin_'+k,'Aleta de transferência térmica interna','propulsion',[61.5,y+Math.cos(a)*1.15,z+Math.sin(a)*1.15],[61.5,y+Math.cos(a)*2.35,z+Math.sin(a)*2.35],.12,M.cyan);}
-  cyl(id+'_converter','Conversor termoelétrico integrado','propulsion',1.42,1.42,1.5,M.dark,[71.1,y,z],[0,0,Math.PI/2],48);
-  tor(id+'_converter_ring','Aro do conversor termoelétrico','propulsion',1.42,.16,M.cyan,[71.9,y,z],[0,Math.PI/2,0]);
+  cyl(id+'_converter','Conversor termoelétrico integrado','propulsion',1.42,1.42,1.5,M.dark,[77.6,y,z],[0,0,Math.PI/2],48);
+  tor(id+'_converter_ring','Aro do conversor termoelétrico','propulsion',1.42,.16,M.cyan,[78.4,y,z],[0,Math.PI/2,0]);
  }
- box('integrated_power_bus','Barramento de condicionamento elétrico integrado à seção propulsiva','propulsion',8,2.4,13,M.dark,[56,0,0]);
- for(const y of [-5,5])for(const z of [-8,8])rod('integrated_power_link_'+y+'_'+z,'Conexão elétrica blindada entre conversor e barramento','propulsion',[57,y*.55,z*.55],[62,y,z],.16,M.gold);
+ box('integrated_power_bus','Barramento de condicionamento elétrico integrado à seção propulsiva','propulsion',8,2.4,13,M.dark,[63,0,0]);
+ for(const y of [-5,5])for(const z of [-8,8])rod('integrated_power_link_'+y+'_'+z,'Conexão elétrica blindada entre conversor e barramento','propulsion',[57,y*.55,z*.55],[69,y,z],.16,M.gold);
  label3D('NÚCLEOS E-192 · SISTEMA TERMOELÉTRICO',[62,12,0],2.4);
  // Antena de comunicação e sensores externos.
  rod('sensor_mast','Mastro de instrumentação','antenna',[-45,7,0],[-45,20,0],.2,M.edge);
  tor('sensor_dish','Antena de comunicação','antenna',3,.16,M.gold,[-45,20,0],[Math.PI/2,0,0]);
  for(const side of [-1,1])sphere('nav_sensor_'+side,'Sensor de navegação externo','antenna',.65,M.cyan,[-76,0,side*10]);
+ // Sensor óptico frontal central, encaixado na ponta da proa.
+ tor('forward_axis_sensor_ring','Aro do sensor frontal axial','antenna',1.55,.22,M.cyan,[-78.8,0,0]);
+ sphere('forward_axis_sensor_lens','Lente central do sensor frontal','antenna',.72,M.cyan,[-79.35,0,0],32);
  // Apoios retráteis de manutenção, sem pernas expostas dominando a silhueta.
  for(const x of [-40,0,40])for(const side of [-1,1]){
   rod('service_strut_'+x+'_'+side,'Suporte de serviço inferior','landing',[x,-7,side*5],[x,-13,side*8],.26,M.edge);
