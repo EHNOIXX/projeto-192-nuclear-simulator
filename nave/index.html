@@ -203,7 +203,7 @@ function axisHullSection(t,theta,halfHeight,halfWidth,length){
  const aftLobe=Math.exp(-Math.pow((side-.84)/.14,2));
  const widthFactor=1+.105*shoulder*shoulderGate+.105*aftLobe*aftGate;
  // A popa possui duas extensões laterais; a linha central termina antes delas.
- const x=-length*.5+length*.91*t+length*.09*t+length*.095*aftGate*aftLobe;
+ const x=-length*.5+length*.90625*t+length*.09375*aftGate*aftLobe;
  const py=axisHullProfile(t),pz=axisHullWidthProfile(t);
  const y0=halfHeight*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.48);
  const dorsal=Math.pow(Math.max(0,cs),10)*Math.exp(-Math.pow((t-.535)/.085,2))*Math.exp(-Math.pow(sn/.24,2));
@@ -250,7 +250,7 @@ function hullSurfacePoint(x,theta,offset=0){
  const tangent=new THREE.Vector3(pB.x-pA.x,pB.y-pA.y,pB.z-pA.z);
  const angular=axisHullSection(t,theta+.001,25.6,38.4,160);
  const around=new THREE.Vector3(angular.x-p.x,angular.y-p.y,angular.z-p.z);
- const n=tangent.cross(around).normalize();
+ const n=around.cross(tangent).normalize();
  return new THREE.Vector3(p.x,p.y,p.z).addScaledVector(n,offset);
 }
 function hullArmorPatch(x0,x1,a0,a1){
