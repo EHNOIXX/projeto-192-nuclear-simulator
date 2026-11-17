@@ -135,7 +135,7 @@ function rod(id,label,g,a,b,r,mat){const A=new THREE.Vector3(...a),B=new THREE.V
 function sphere(id,label,g,r,mat,p,seg=24){const heightSegments=Math.max(12,Math.floor(seg*.65)),key=[r,seg,heightSegments].join('|');return add(id,label,g,cachedGeometry(geometryCache.sphere,key,()=>new THREE.SphereGeometry(r,seg,heightSegments)),mat,p)}
 
 // REV 09.0 — arquitetura modular dimensionada para missão de 50 tripulantes.
-// Coordenadas do modelo em metros: X longitudinal, Y vertical, Z transversal.
+// Coordenadas locais normalizadas: X longitudinal, Y vertical, Z transversal. O envelope físico em metros é aplicado pelo setDims().
 const labelsGroup=new THREE.Group();root.add(labelsGroup);labelsGroup.visible=false;
 function label3D(text,pos,size=3){
  const cv=document.createElement('canvas');cv.width=512;cv.height=128;
