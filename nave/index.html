@@ -176,11 +176,11 @@ function axisHullProfile(t){
  // Perfil recuperado da base visual mais esguia: proa longa, ombros contidos,
  // seção central estável e contração progressiva na popa.
  const smooth=u=>{u=THREE.MathUtils.clamp(u,0,1);return u*u*(3-2*u)};
- // Perfil de prancha: proa longa e baixa, corpo elipsoidal largo e contração curta na popa.
+ // Perfil reconstruído para a prancha: proa afilada e longa, seção central elipsoidal
+ // de largura máxima e redução contínua da popa, sem degraus na superfície.
  if(t<.38)return Math.pow(Math.sin(smooth(t/.38)*Math.PI/2),.92);
- if(t>.88)return .98*Math.pow(1-smooth((t-.88)/.12),.72);
- const rise=smooth((t-.38)/.12),fall=1-smooth((t-.72)/.16);
- return .94+.06*rise*fall;
+ if(t>.88)return .94*Math.pow(1-smooth((t-.88)/.12),.72);
+ return 1-.06*smooth((t-.38)/.50);
 }
 function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
  const positions=[],indices=[];
