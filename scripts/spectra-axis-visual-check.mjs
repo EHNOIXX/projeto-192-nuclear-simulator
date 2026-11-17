@@ -29,7 +29,8 @@ try {
     ['superior', 'top'],
     ['inferior', 'bottom'],
     ['lateral-direita', 'side'],
-    ['lateral-esquerda', 'left']
+    ['lateral-esquerda', 'left'],
+    ['isometrica', 'iso']
   ];
   for (const [name, camera] of views) {
     await page.locator(`[data-camera="${camera}"]`).evaluate(el => el.click());
@@ -68,7 +69,7 @@ try {
     width: await page.locator('#statWid').textContent(),
     height: await page.locator('#statHei').textContent()
   };
-  if (dimensions.length !== '160 m' || dimensions.width !== '96 m' || dimensions.height !== '48 m') {
+  if (dimensions.length !== '2500 m' || dimensions.width !== '1200 m' || dimensions.height !== '800 m') {
     throw new Error(`Envelope dimensional inesperado: ${JSON.stringify(dimensions)}`);
   }
   if (errors.length) throw new Error('Erros de console/runtime: ' + errors.join(' | '));
