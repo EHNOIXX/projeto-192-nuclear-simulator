@@ -16,7 +16,14 @@ async function openVersion(url,label){
  await page.goto(url,{waitUntil:'domcontentloaded',timeout:120000});
  await page.waitForSelector('#viewport canvas',{timeout:90000});
  await page.bringToFront();
- await page.waitForFunction(()=>window.__spectraReady===true,null,{timeout:90000});
+ if(label==='experimental'){
+  await page.waitForFunction(()=>window.__spectraReady===true,null,{timeout:90000});
+ }else{
+  // A baseline histórica pode não expor o marcador de readiness na mesma versão.
+  await page.waitForTimeout(15000);
+  const state=await page.evaluate(()=>({canvas:!!document.querySelector('#viewport canvas'),status:document.querySelector('#renderStatus')?.textContent||null}));
+  if(!state.canvas||errors.some(e=>e.startsWith('baseline:')))throw new Error('Baseline não inicializou corretamente: '+JSON.stringify(state)+' '+errors.join(' | '));
+ }
  return page;
 }
 async function capture(page,camera,path){
