@@ -266,7 +266,8 @@ function hullSurface(){
  window.__spectraHullBuilder='primaryHullGeometry';
  window.__spectraHullMeshName=primary.name;
  // Identificador TEMPORÁRIO de auditoria visual; será removido após a captura independente.
- add('temporary_experimental_hull_marker','IDENTIFICADOR TEMPORÁRIO — CASCO EXPERIMENTAL','hull',new THREE.SphereGeometry(1.15,16,12),M.cyan,[-8,10.5,29]);
+ window.__spectraHullMesh=primary;
+ window.__spectraTemporaryHullMarker=add('temporary_experimental_hull_marker','IDENTIFICADOR TEMPORÁRIO — CASCO EXPERIMENTAL','hull',new THREE.SphereGeometry(1.15,16,12),M.cyan,[-8,10.5,29]);
  // Naceles laterais externas, longas e baixas: silhueta de pods integrados da prancha oficial.
  for(const side of [-1,1]){
   add('axis_side_pod_'+side,'Nacele lateral de ombro integrada ao monocoque','hull',axisHullGeometry(70,2.7,4.6,112,56),M.armor,[27,-.6,side*40.2]);
