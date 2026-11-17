@@ -151,7 +151,7 @@ try {
   if (errors.length) throw new Error('Erros de console/runtime: ' + errors.join(' | '));
 
   await fs.writeFile(`${out}/validation.json`, JSON.stringify({ status: 'passed', startup_ms_from_navigation: startupMs, canvas: canvasSize, views: views.map(([name]) => name), dimensions, measured_rendered_bbox: measured, final_runtime_metrics: runtime, hull_geometry: hull, structure, camera_metrics: await page.evaluate(() => window.__spectraCameraMetrics || null), controls: ['orbit', 'module visibility', 'individual selection', 'hide/restore', 'section cut', 'assembled mode'] }, null, 2));
-  console.log(`SPECTRA-AXIS visual validation passed; startup=${startupMs}ms; canvas=${canvasSize.width}x${canvasSize.height}`);
+  console.log(`SPECTRA-AXIS visual validation passed; startup=${startupMs}ms; canvas=${canvasSize.width}x${canvasSize.height}; measurements=${JSON.stringify({measured,dimensions,hull})}`);
 } catch (error) {
   await fs.writeFile(`${out}/validation-error.txt`, String(error.stack || error));
   throw error;
