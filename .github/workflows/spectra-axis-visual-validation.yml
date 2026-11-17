@@ -1,6 +1,12 @@
 name: SPECTRA-AXIS visual validation
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'nave/**'
+      - 'scripts/spectra-axis-visual-check.mjs'
+      - '.github/workflows/spectra-axis-visual-validation.yml'
   push:
     branches: [main]
     paths:
