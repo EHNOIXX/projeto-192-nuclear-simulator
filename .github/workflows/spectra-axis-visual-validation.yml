@@ -2,10 +2,10 @@ name: SPECTRA-AXIS visual validation
 
 on:
   push:
-    branches: [main]
+    branches: [main, reconstrucao-geometrica-controlada]
     paths:
       - 'nave/**'
-      - 'scripts/spectra-axis-visual-check.mjs'
+      - 'scripts/spectra-axis-visual-check.mjs'\n      - 'scripts/spectra-axis-geometry-compare.mjs'\n      - 'docs/SPECTRA-AXIS-GEOMETRY-PHASE-1.md'
       - '.github/workflows/spectra-axis-visual-validation.yml'
   workflow_dispatch:
 
@@ -27,27 +27,30 @@ jobs:
 
       - name: Install Chromium and Playwright
         run: |
-          npm install --no-save playwright
+          npm install --no-save playwright sharp
           npx playwright install --with-deps chromium
 
-      - name: Serve simulator
+      - name: Prepare immutable baseline and serve both versions
         run: |
-          python3 -m http.server 4173 --directory . > /tmp/spectra-http.log 2>&1 &
-          for attempt in $(seq 1 30); do
-            if curl --fail http://127.0.0.1:4173/nave/ > /dev/null; then exit 0; fi
+          git fetch origin 1e68a74e34e63c7a7c5f2cf7aa608e245e69bdbb
+          git worktree add /tmp/spectra-baseline 1e68a74e34e63c7a7c5f2cf7aa608e245e69bdbb
+          python3 -m http.server 4173 --directory /tmp/spectra-baseline > /tmp/spectra-baseline.log 2>&1 &
+          python3 -m http.server 4174 --directory . > /tmp/spectra-experimental.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail http://127.0.0.1:4173/nave/ > /dev/null && curl --fail http://127.0.0.1:4174/nave/ > /dev/null; then exit 0; fi
             sleep 1
           done
-          cat /tmp/spectra-http.log
+          cat /tmp/spectra-baseline.log /tmp/spectra-experimental.log
           exit 1
 
-      - name: Render six views and test controls
-        run: node scripts/spectra-axis-visual-check.mjs
+      - name: Compare baseline and experimental hull in seven views
+        run: node scripts/spectra-axis-geometry-compare.mjs
 
       - name: Upload real simulator captures
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: spectra-axis-six-views
-          path: artifacts/spectra-axis/
+          name: spectra-axis-phase-1-comparison
+          path: artifacts/spectra-axis-phase-1/
           if-no-files-found: warn
           retention-days: 14
