@@ -89,8 +89,8 @@ import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 const startupStarted=performance.getEntriesByType('navigation')[0]?.startTime??0;
 const $=id=>document.getElementById(id), viewport=$('viewport');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x050a12);scene.fog=new THREE.Fog(0x050a12,190,390);
-const camera=new THREE.PerspectiveCamera(30,1,.01,1000);camera.position.set(-92,104,188);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+const camera=new THREE.PerspectiveCamera(30,1,.01,1000);camera.position.set(-92,104,188);window.__spectraCamera=camera;
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});window.__spectraRenderer=renderer;
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.localClippingEnabled=true;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;viewport.appendChild(renderer.domElement);
 const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(900,600),.08,.28,.92));composer.addPass(new OutputPass());
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.target.set(0,0,0);controls.minDistance=25;controls.maxDistance=520;controls.autoRotateSpeed=.35;
@@ -605,9 +605,12 @@ function cameraPreset(v){
   const depth=corner.dot(direction);
   fitDistance=Math.max(fitDistance,depth+Math.abs(corner.dot(right))/tanH,depth+Math.abs(corner.dot(viewUp))/tanV);
  }
+ // O envelope maior exige ampliar o alcance da névoa para não ocultar a nave nas vistas laterais e isométrica.
+ if(scene.fog){scene.fog.near=Math.max(190,fitDistance*.7);scene.fog.far=Math.max(390,fitDistance*1.7)}
  controls.target.copy(center);
  camera.position.copy(center).addScaledVector(direction,fitDistance*1.24);
- controls.minDistance=Math.max(16,fitDistance*.32);controls.maxDistance=fitDistance*4;controls.update()
+ controls.minDistance=Math.max(16,fitDistance*.32);controls.maxDistance=fitDistance*4;controls.update();
+ window.__spectraCameraMetrics={view:v,fitDistance,cameraDistance:camera.position.distanceTo(center),fogNear:scene.fog?.near??null,fogFar:scene.fog?.far??null};
 }
 function atomCamera(){controls.minDistance=.15;controls.maxDistance=8;camera.position.set(2.5,1.8,3);controls.target.set(0,0,0);controls.update();e192Nucleus.visible=true;e192Cloud.visible=false}
 function setScale(mode){
