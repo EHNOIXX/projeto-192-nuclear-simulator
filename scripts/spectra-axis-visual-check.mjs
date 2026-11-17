@@ -29,7 +29,8 @@ try {
     ['superior', 'top'],
     ['inferior', 'bottom'],
     ['lateral-direita', 'side'],
-    ['lateral-esquerda', 'left']
+    ['lateral-esquerda', 'left'],
+    ['isometrica', 'iso']
   ];
   for (const [name, camera] of views) {
     await page.locator(`[data-camera="${camera}"]`).evaluate(el => el.click());
@@ -63,6 +64,14 @@ try {
   if (!(await page.locator('#modeCut').evaluate(el => el.classList.contains('active')))) throw new Error('Modo de corte não ativou');
   await page.locator('#modeAssembled').evaluate(el => el.click());
 
+  const measured = await page.evaluate(() => {
+    const root = window.__spectraRoot;
+    if (!root) throw new Error('Grupo raiz da nave não foi exposto');
+    root.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(root);
+    const size = box.getSize(new THREE.Vector3());
+    return { min: box.min.toArray(), max: box.max.toArray(), size: { length: size.x, height: size.y, width: size.z }, rootScale: root.scale.toArray() };
+  });
   const dimensions = {
     length: await page.locator('#statLen').textContent(),
     width: await page.locator('#statWid').textContent(),
@@ -73,7 +82,7 @@ try {
   }
   if (errors.length) throw new Error('Erros de console/runtime: ' + errors.join(' | '));
 
-  await fs.writeFile(`${out}/validation.json`, JSON.stringify({ status: 'passed', startup_ms_from_navigation: startupMs, canvas: canvasSize, views: views.map(([name]) => name), dimensions, controls: ['orbit', 'module visibility', 'individual selection', 'hide/restore', 'section cut', 'assembled mode'] }, null, 2));
+  await fs.writeFile(`${out}/validation.json`, JSON.stringify({ status: 'passed', startup_ms_from_navigation: startupMs, canvas: canvasSize, views: views.map(([name]) => name), dimensions, measured_baseline_bbox: measured, controls: ['orbit', 'module visibility', 'individual selection', 'hide/restore', 'section cut', 'assembled mode'] }, null, 2));
   console.log(`SPECTRA-AXIS visual validation passed; startup=${startupMs}ms; canvas=${canvasSize.width}x${canvasSize.height}`);
 } catch (error) {
   await fs.writeFile(`${out}/validation-error.txt`, String(error.stack || error));
