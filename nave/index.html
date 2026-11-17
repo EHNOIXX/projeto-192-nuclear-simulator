@@ -602,7 +602,7 @@ renderer.domElement.addEventListener('pointerdown',e=>{
  const hits=raycaster.intersectObjects(pickables.filter(o=>o.visible&&o.parent.visible&&!o.userData.userHidden),false);choose(hits.length?hits[0].object:null)
 });
 let interiorMode=false;
-function restoreModuleVisibility(){document.querySelectorAll('[data-module]').forEach(ch=>{groups[ch.dataset.module].visible=ch.checked})}
+function restoreModuleVisibility(){if(hullBlockoutMode){for(const group of Object.values(groups)){group.visible=group===groups.hull;for(const object of group.children)object.visible=object===named.primary_pressure_hull}labelsGroup.visible=false;return}document.querySelectorAll('[data-module]').forEach(ch=>{groups[ch.dataset.module].visible=ch.checked})}
 function showInterior(){if(!interiorBuilt){buildInterior();interiorBuilt=true;}interiorMode=true;restoreModuleVisibility();groups.interior.visible=true;labelsGroup.visible=true;groups.hull.visible=false;groups.habitat.visible=false;groups.radiators.visible=false;groups.field.visible=false;groups.bridge.visible=false;groups.antenna.visible=false;groups.landing.visible=false;groups.egas.visible=false;groups.interior.visible=true;
  if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=false;
  for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=false;controls.minDistance=180;controls.maxDistance=7000;camera.position.set(-62.5,2517,225);controls.target.set(-31.25,-21.3,0);controls.update();$('selectionLabel').textContent='PLANTA INTERNA / COMPARTIMENTOS';$('selectionInfo').innerHTML='<strong>Configuração interna conceitual</strong>Planta de corte da arquitetura de 50 tripulantes: 24 cabines duplas, ponte, centro de operações, laboratórios E-192/EGAS, enfermaria, refeitório, suporte ambiental e manutenção propulsiva. Modelo conceitual, não projeto habitável validado.';log('Vista interna ativada: compartimentos e circulação expostos.')}
@@ -614,7 +614,7 @@ function cameraPreset(v){
  controls.minDistance=180;controls.maxDistance=10000;
  const p={iso:[-1.0,.72,1.12],front:[-1,.17,0],side:[0,.22,1],left:[0,.22,-1],top:[0,1,.02],bottom:[0,-1,.02],rear:[1,.17,0],interior:[-.04,.58,.09]}[v]||[-1,.72,1.12];
  camera.up.set(0,(v==='top'||v==='bottom')?0:1,v==='top'?-1:v==='bottom'?1:0);
- if(!cameraBoundsCache){root.updateMatrixWorld(true);cameraBoundsCache=new THREE.Box3().setFromObject(root)}
+ if(!cameraBoundsCache){root.updateMatrixWorld(true);cameraBoundsCache=new THREE.Box3().setFromObject(hullBlockoutMode?named.primary_pressure_hull:root)}
   const bounds=cameraBoundsCache;
  const center=bounds.getCenter(new THREE.Vector3()),direction=new THREE.Vector3(...p).normalize();
  const right=new THREE.Vector3().crossVectors(camera.up,direction).normalize();
@@ -650,7 +650,7 @@ function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;c
 ['len','wid','hei'].forEach(id=>$(id).addEventListener('input',setDims));
 $('resetDims').onclick=()=>{$('len').value=2500;$('wid').value=1200;$('hei').value=800;setDims()};
 function updateCount(){const controls=[...document.querySelectorAll('[data-module]')];const n=controls.filter(ch=>ch.checked).length;$('statMods').textContent=n+' / '+controls.length}
-document.querySelectorAll('[data-module]').forEach(ch=>ch.addEventListener('change',()=>{groups[ch.dataset.module].visible=ch.checked;updateCount();log('Visibilidade atualizada: '+ch.parentElement.textContent.trim())}));
+document.querySelectorAll('[data-module]').forEach(ch=>ch.addEventListener('change',()=>{if(hullBlockoutMode){restoreModuleVisibility()}else{groups[ch.dataset.module].visible=ch.checked}updateCount();log('Visibilidade atualizada: '+ch.parentElement.textContent.trim())}));
 function explode(v){const t=v/100;const dirs={hull:[0,0,0],bridge:[-1,1,0],egas:[0,0,0],propulsion:[1,0,0],radiators:[0,1,1],habitat:[0,-1,1],field:[0,0,-1],antenna:[-1,1,0],landing:[0,-1,0],power:[1,1,0],interior:[0,0,0]};Object.entries(groups).forEach(([k,g])=>g.position.set(dirs[k][0]*t*19,dirs[k][1]*t*15,dirs[k][2]*t*20));cameraBoundsCache=null;$('explodeOut').textContent=Math.round(v)+'%';$('statState').textContent=t?'EXPLODIDA':'MONTADA';exploded=t>0}
 $('explode').addEventListener('input',e=>{explode(+e.target.value);$('modeExploded').classList.toggle('active',+e.target.value>0);$('modeAssembled').classList.toggle('active',+e.target.value===0)});
 $('modeAssembled').onclick=()=>{$('explode').value=0;explode(0);$('modeAssembled').classList.add('active');$('modeExploded').classList.remove('active');$('modeCut').classList.remove('active');cut=false;Object.values(M).forEach(mat=>{mat.clippingPlanes=[]});groups.hull.visible=document.querySelector('[data-module="hull"]').checked};
