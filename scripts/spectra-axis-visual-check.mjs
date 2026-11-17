@@ -87,6 +87,32 @@ try {
   }
   const runtime = await page.evaluate(() => window.__spectraRuntimeMetrics || null);
   if (!runtime || !runtime.envelopeMatches) throw new Error('Envelope medido não corresponde à configuração: ' + JSON.stringify(runtime));
+  const hull = await page.evaluate(() => {
+    const group = window.__spectraGroups?.hull;
+    const matches = [];
+    group?.traverse(object => { if (object.name === 'primary_pressure_hull') matches.push(object); });
+    const metrics = window.__spectraHullMetrics || null;
+    return {
+      primaryHullCount: matches.length,
+      geometryRevision: matches[0]?.geometry?.userData?.architectureRevision || null,
+      geometryVertexCount: matches[0]?.geometry?.getAttribute('position')?.count || 0,
+      geometryIndexCount: matches[0]?.geometry?.index?.count || 0,
+      metrics,
+      metricOverlay: document.querySelector('#scaleReference')?.textContent?.trim() || null
+    };
+  });
+  if (hull.primaryHullCount !== 1 ||
+      hull.geometryRevision !== 'phase-1-integrated-monocoque-v1' ||
+      hull.geometryVertexCount < 18000 ||
+      hull.geometryIndexCount < 100000 ||
+      !hull.metricOverlay?.includes('RÉGUA 50 m')) {
+    throw new Error('Casco experimental ou referência métrica não está ativo na cena: ' + JSON.stringify(hull));
+  }
+  if (hull.metrics?.revision !== hull.geometryRevision ||
+      hull.metrics?.localBounds?.min?.[0] !== -80 ||
+      hull.metrics?.localBounds?.max?.[0] !== 80) {
+    throw new Error('Metadados da superfície do casco divergentes: ' + JSON.stringify(hull));
+  }
   const structure = await page.evaluate(() => {
     const root = window.__spectraRoot;
     const groups = window.__spectraGroups;
@@ -124,7 +150,7 @@ try {
   }
   if (errors.length) throw new Error('Erros de console/runtime: ' + errors.join(' | '));
 
-  await fs.writeFile(`${out}/validation.json`, JSON.stringify({ status: 'passed', startup_ms_from_navigation: startupMs, canvas: canvasSize, views: views.map(([name]) => name), dimensions, measured_rendered_bbox: measured, final_runtime_metrics: runtime, structure, camera_metrics: await page.evaluate(() => window.__spectraCameraMetrics || null), controls: ['orbit', 'module visibility', 'individual selection', 'hide/restore', 'section cut', 'assembled mode'] }, null, 2));
+  await fs.writeFile(`${out}/validation.json`, JSON.stringify({ status: 'passed', startup_ms_from_navigation: startupMs, canvas: canvasSize, views: views.map(([name]) => name), dimensions, measured_rendered_bbox: measured, final_runtime_metrics: runtime, hull_geometry: hull, structure, camera_metrics: await page.evaluate(() => window.__spectraCameraMetrics || null), controls: ['orbit', 'module visibility', 'individual selection', 'hide/restore', 'section cut', 'assembled mode'] }, null, 2));
   console.log(`SPECTRA-AXIS visual validation passed; startup=${startupMs}ms; canvas=${canvasSize.width}x${canvasSize.height}`);
 } catch (error) {
   await fs.writeFile(`${out}/validation-error.txt`, String(error.stack || error));
