@@ -33,7 +33,7 @@ try{
  await baseline.close();
 
  const experimental=await openVersion(experimentalUrl,'experimental');
- const metrics=await experimental.evaluate(()=>({geometry:window.__spectraPrimaryHullMetrics||null,runtime:window.__spectraRuntimeMetrics||null,builder:window.__spectraHullBuilder,meshName:window.__spectraHullMeshName,marker:!!window.named?.temporary_experimental_hull_marker}));
+ const metrics=await experimental.evaluate(()=>({geometry:window.__spectraPrimaryHullMetrics||null,runtime:window.__spectraRuntimeMetrics||null,builder:window.__spectraHullBuilder,meshName:window.__spectraHullMeshName,marker:!!window.__spectraTemporaryHullMarker?.isObject3D}));
  if(!metrics.geometry||!metrics.geometry.finite||!metrics.geometry.normalFinite||metrics.geometry.triangles<10000)throw new Error('Métricas da malha principal inválidas: '+JSON.stringify(metrics));
  if(metrics.builder!=='primaryHullGeometry'||metrics.meshName!=='primary_pressure_hull'||!metrics.marker)throw new Error('A geometria experimental não é a malha identificada na cena: '+JSON.stringify(metrics));
  if(!metrics.runtime||!metrics.runtime.envelopeMatches)throw new Error('Bounding box global não corresponde ao envelope configurado: '+JSON.stringify(metrics.runtime));
