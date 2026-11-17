@@ -464,6 +464,7 @@ if(hullBlockoutMode){
   for(const object of group.children)object.visible=object===named.primary_pressure_hull;
  }
  labelsGroup.visible=false;
+ window.__spectraBlockoutVisible=Object.values(groups).flatMap(group=>group.children.filter(object=>group.visible&&object.visible).map(object=>object.name));
  window.__spectraGeometryVersion='blueprint-blockout-v1';
 }else{
  window.__spectraGeometryVersion='blueprint-v3-monocoque';
