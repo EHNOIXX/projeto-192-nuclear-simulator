@@ -608,7 +608,7 @@ function showInterior(){if(!interiorBuilt){buildInterior();interiorBuilt=true;}i
  for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=false;controls.minDistance=180;controls.maxDistance=7000;camera.position.set(-62.5,2517,225);controls.target.set(-31.25,-21.3,0);controls.update();$('selectionLabel').textContent='PLANTA INTERNA / COMPARTIMENTOS';$('selectionInfo').innerHTML='<strong>Configuração interna conceitual</strong>Planta de corte da arquitetura de 50 tripulantes: 24 cabines duplas, ponte, centro de operações, laboratórios E-192/EGAS, enfermaria, refeitório, suporte ambiental e manutenção propulsiva. Modelo conceitual, não projeto habitável validado.';log('Vista interna ativada: compartimentos e circulação expostos.')}
 let cameraBoundsCache=null;
 function cameraPreset(v){
- interiorMode=false;restoreModuleVisibility();groups.interior.visible=false;labelsGroup.visible=$('labels').classList.contains('active');
+ interiorMode=false;restoreModuleVisibility();groups.interior.visible=false;labelsGroup.visible=!hullBlockoutMode&&$('labels').classList.contains('active');
  if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=true;
  for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=true;
  controls.minDistance=180;controls.maxDistance=10000;
