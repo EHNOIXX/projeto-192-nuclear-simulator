@@ -222,7 +222,9 @@ function primaryHullGeometry(length=160,halfHeight=16,halfWidth=34,segments=224,
  for(let j=0;j<radial;j++)indices.push(cap+j,cap+j+1,center);
  const g=new THREE.BufferGeometry();
  g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
- g.setIndex(indices);g.computeVertexNormals();g.computeBoundingBox();g.computeBoundingSphere();return g;
+ g.setIndex(indices);g.computeVertexNormals();g.computeBoundingBox();g.computeBoundingSphere();
+ window.__spectraPrimaryHullMetrics={vertices:positions.length/3,triangles:indices.length/3,bounds:{min:g.boundingBox.min.toArray(),max:g.boundingBox.max.toArray()},finite:Array.from(g.attributes.position.array).every(Number.isFinite),normalFinite:Array.from(g.attributes.normal.array).every(Number.isFinite)};
+ return g;
 }
 // Mantém as peças de acabamento ancoradas à mesma pele paramétrica do casco principal.
 function hullProfileAtX(x,halfHeight=16,length=160){
