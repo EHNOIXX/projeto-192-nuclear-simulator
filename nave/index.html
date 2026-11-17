@@ -661,7 +661,7 @@ function applySection(){
  sectionPlane.constant=-offset;
  $('sectionOut').textContent=offset+' m';
 }
-Object.values(M).forEach(mat=>{mat.clippingPlanes=[sectionPlane];mat.clipShadows=true});
+Object.values(M).forEach(mat=>{mat.clippingPlanes=hullBlockoutMode?[]:[sectionPlane];mat.clipShadows=!hullBlockoutMode});
 $('sectionAxis').addEventListener('change',applySection);
 $('sectionRange').addEventListener('input',applySection);
 $('modeCut').onclick=()=>{cut=!cut;Object.values(M).forEach(mat=>{mat.clippingPlanes=cut?[sectionPlane]:[]});$('modeCut').classList.toggle('active',cut);$('statState').textContent=cut?'CORTE AJUSTÁVEL':'MONTADA';if(cut)applySection();log(cut?'Plano de corte ajustável ativado.':'Plano de corte desativado.')};
