@@ -5,7 +5,9 @@ on:
     branches: [main, reconstrucao-geometrica-controlada]
     paths:
       - 'nave/**'
-      - 'scripts/spectra-axis-visual-check.mjs'\n      - 'scripts/spectra-axis-geometry-compare.mjs'\n      - 'docs/SPECTRA-AXIS-GEOMETRY-PHASE-1.md'
+      - 'scripts/spectra-axis-visual-check.mjs'
+      - 'scripts/spectra-axis-geometry-compare.mjs'
+      - 'docs/SPECTRA-AXIS-GEOMETRY-PHASE-1.md'
       - '.github/workflows/spectra-axis-visual-validation.yml'
   workflow_dispatch:
 
@@ -17,8 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout main
+      - name: Checkout experimental branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
