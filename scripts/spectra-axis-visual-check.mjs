@@ -23,11 +23,13 @@ try {
   const startupMs = await page.evaluate(() => window.__spectraStartupMs);
   const geometry = await page.evaluate(() => ({
     version: window.__spectraGeometryVersion || null,
+    blockoutVisible: window.__spectraBlockoutVisible || null,
     hull: window.__spectraHullDimensions || null,
     ship: window.__spectraShipDimensions || null
   }));
-  if (requireGeometryVersion && geometry.version !== 'blueprint-blockout-v1') {
-    throw new Error('O navegador não carregou a geometria esperada: ' + JSON.stringify(geometry));
+  if (requireGeometryVersion && (geometry.version !== 'blueprint-blockout-v1' ||
+      JSON.stringify(geometry.blockoutVisible) !== JSON.stringify(['primary_pressure_hull']))) {
+    throw new Error('O navegador não carregou somente o casco monocoque: ' + JSON.stringify(geometry));
   }
   if (requireGeometryVersion && (!geometry.ship || !geometry.hull ||
       Math.abs(geometry.ship.length - 2500) > 1 ||
