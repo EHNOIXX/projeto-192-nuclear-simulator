@@ -38,18 +38,58 @@ jobs:
           npm install --no-save playwright
           npx playwright install --with-deps chromium
 
-      - name: Serve simulator
+      - name: Prepare baseline and serve both revisions
         run: |
-          python3 -m http.server 4173 --directory . > /tmp/spectra-http.log 2>&1 &
+          git fetch origin main
+          git worktree add --detach /tmp/spectra-baseline origin/main
+          python3 -m http.server 4173 --directory . > /tmp/spectra-candidate.log 2>&1 &
+          python3 -m http.server 4174 --directory /tmp/spectra-baseline > /tmp/spectra-baseline.log 2>&1 &
           for attempt in $(seq 1 30); do
-            if curl --fail http://127.0.0.1:4173/nave/ > /dev/null; then exit 0; fi
+            if curl --fail http://127.0.0.1:4173/nave/ > /dev/null && curl --fail http://127.0.0.1:4174/nave/ > /dev/null; then exit 0; fi
             sleep 1
           done
-          cat /tmp/spectra-http.log
+          cat /tmp/spectra-candidate.log /tmp/spectra-baseline.log
           exit 1
 
-      - name: Render six views and test controls
+      - name: Capture baseline seven views
+        env:
+          SPECTRA_URL: http://127.0.0.1:4174/nave/
+          SPECTRA_OUTPUT: artifacts/spectra-axis/baseline
+          SPECTRA_REQUIRE_GEOMETRY_VERSION: '0'
         run: node scripts/spectra-axis-visual-check.mjs
+
+      - name: Capture reconstructed seven views and test controls
+        env:
+          SPECTRA_URL: http://127.0.0.1:4173/nave/
+          SPECTRA_OUTPUT: artifacts/spectra-axis/candidate
+          SPECTRA_REQUIRE_GEOMETRY_VERSION: '1'
+        run: node scripts/spectra-axis-visual-check.mjs
+
+      - name: Compare baseline and reconstructed screenshots
+        run: |
+          python3 - <<'PY'
+          from PIL import Image, ImageChops
+          from pathlib import Path
+          import json
+          root=Path('artifacts/spectra-axis')
+          names=['superior','inferior','frontal','traseira','lateral-direita','lateral-esquerda','isometrica']
+          report={}
+          for name in names:
+              a=Image.open(root/'baseline'/f'spectra-axis-{name}.png').convert('RGB')
+              b=Image.open(root/'candidate'/f'spectra-axis-{name}.png').convert('RGB')
+              if a.size != b.size:
+                  b=b.resize(a.size)
+              diff=ImageChops.difference(a,b)
+              hist=diff.histogram()
+              changed=sum(v for i,v in enumerate(hist) if i%256>12)
+              total=a.width*a.height*3
+              report[name]={'width':a.width,'height':a.height,'changed_channel_fraction':round(changed/total,4)}
+              canvas=Image.new('RGB',(a.width*2,a.height))
+              canvas.paste(a,(0,0));canvas.paste(b,(a.width,0))
+              canvas.save(root/f'comparison-{name}.jpg',quality=88)
+          (root/'comparison.json').write_text(json.dumps(report,indent=2))
+          print(json.dumps(report,indent=2))
+          PY
 
       - name: Upload real simulator captures
         if: always()
