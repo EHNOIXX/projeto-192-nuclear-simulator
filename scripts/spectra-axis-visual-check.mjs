@@ -27,9 +27,10 @@ try {
     hull: window.__spectraHullDimensions || null,
     ship: window.__spectraShipDimensions || null
   }));
-  if (requireGeometryVersion && (geometry.version !== 'blueprint-blockout-v1' ||
-      JSON.stringify(geometry.blockoutVisible) !== JSON.stringify(['primary_pressure_hull']))) {
-    throw new Error('O navegador não carregou somente o casco monocoque: ' + JSON.stringify(geometry));
+  if (requireGeometryVersion && (geometry.version !== 'blueprint-silhouette-v2' ||
+      !geometry.blockoutVisible?.includes('primary_pressure_hull') ||
+      geometry.blockoutVisible.filter(name => /^(aft_engine_|engine_nozzle_|engine_casing_collar_|engine_exit_glow_)/.test(name)).length !== 12)) {
+    throw new Error('O navegador não carregou o casco e os três conjuntos propulsivos do blockout: ' + JSON.stringify(geometry));
   }
   if (requireGeometryVersion && (!geometry.ship || !geometry.hull ||
       Math.abs(geometry.ship.length - 2500) > 1 ||
