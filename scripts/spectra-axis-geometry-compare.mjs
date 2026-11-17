@@ -36,17 +36,9 @@ try {
  for(const [name,camera] of views){
   const a=out+'/baseline-'+name+'.png',b=out+'/experimental-'+name+'.png',o=out+'/overlay-'+name+'.png';
   await capture(baseline,camera,a); await capture(experimental,camera,b);
-  const base=await sharp(a).ensureAlpha().raw().toBuffer({resolveWithObject:true});
-  const exp=await sharp(b).ensureAlpha().raw().toBuffer({resolveWithObject:true});
-  const mixed=Buffer.alloc(base.data.length);
-  for(let i=0;i<base.data.length;i+=4){
-   // Baseline cyan, experimental amber: a mismatch appears as separated contours.
-   mixed[i]=Math.round(base.data[i]*.5+exp.data[i]*.5);
-   mixed[i+1]=Math.round(base.data[i+1]*.5+exp.data[i+1]*.5);
-   mixed[i+2]=Math.round(base.data[i+2]*.5+exp.data[i+2]*.5);
-   mixed[i+3]=255;
-  }
-  await sharp(mixed,{raw:{width:base.info.width,height:base.info.height,channels:4}}).png().toFile(o);
+  const baseTint=await sharp(a).greyscale().tint({r:55,g:190,b:255}).png().toBuffer();
+  const expTint=await sharp(b).greyscale().tint({r:255,g:155,b:55}).png().toBuffer();
+  await sharp(baseTint).composite([{input:expTint,blend:'screen',opacity:.72}]).png().toFile(o);
  }
  // Functional smoke tests on experimental build.
  await experimental.locator('#autoRotate').evaluate(el=>el.click());
