@@ -33,8 +33,12 @@ try{
  await baseline.close();
 
  const experimental=await openVersion(experimentalUrl,'experimental');
- const metrics=await experimental.evaluate(()=>window.__spectraPrimaryHullMetrics||null);
- if(!metrics||!metrics.finite||!metrics.normalFinite||metrics.triangles<10000)throw new Error('Métricas da malha principal inválidas: '+JSON.stringify(metrics));
+ const metrics=await experimental.evaluate(()=>({geometry:window.__spectraPrimaryHullMetrics||null,runtime:window.__spectraRuntimeMetrics||null,builder:window.__spectraHullBuilder,meshName:window.__spectraHullMeshName,marker:!!window.named?.temporary_experimental_hull_marker}));
+ if(!metrics.geometry||!metrics.geometry.finite||!metrics.geometry.normalFinite||metrics.geometry.triangles<10000)throw new Error('Métricas da malha principal inválidas: '+JSON.stringify(metrics));
+ if(metrics.builder!=='primaryHullGeometry'||metrics.meshName!=='primary_pressure_hull'||!metrics.marker)throw new Error('A geometria experimental não é a malha identificada na cena: '+JSON.stringify(metrics));
+ if(!metrics.runtime||!metrics.runtime.envelopeMatches)throw new Error('Bounding box global não corresponde ao envelope configurado: '+JSON.stringify(metrics.runtime));
+ const ui=await experimental.evaluate(()=>({length:document.querySelector('#lenOut').textContent,width:document.querySelector('#widOut').textContent,height:document.querySelector('#heiOut').textContent,statLength:document.querySelector('#statLen').textContent,statWidth:document.querySelector('#statWid').textContent,statHeight:document.querySelector('#statHei').textContent}));
+ if(ui.length!=='2500 m'||ui.width!=='1200 m'||ui.height!=='800 m'||ui.statLength!=='2500 m'||ui.statWidth!=='1200 m'||ui.statHeight!=='800 m')throw new Error('Dimensões da interface divergentes: '+JSON.stringify(ui));
  for(const [name,camera] of views)await capture(experimental,camera,out+'/experimental-'+name+'.png');
 
  await experimental.locator('#autoRotate').evaluate(el=>el.click());
@@ -58,7 +62,7 @@ try{
   await sharp(cyan).composite([{input:amber,blend:'screen',opacity:.72}]).png().toFile(o);
  }
  if(errors.length)throw new Error('Erros de navegador: '+errors.join(' | '));
- const report={status:'passed',baseline_url:baselineUrl,experimental_url:experimentalUrl,views:views.map(v=>v[0]),metrics,controls:['seven camera presets','auto rotation','EGAS visibility','component selection','hide/restore','section cut','assembled mode'],browser_errors:errors};
+ const report={status:'passed',baseline_url:baselineUrl,experimental_url:experimentalUrl,views:views.map(v=>v[0]),metrics,ui_dimensions:{length:'2500 m',width:'1200 m',height:'800 m'},controls:['seven camera presets','auto rotation','EGAS visibility','component selection','hide/restore','section cut','assembled mode'],browser_errors:errors};
  await fs.writeFile(out+'/comparison-report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
 }catch(e){await fs.writeFile(out+'/comparison-error.txt',String(e.stack||e));throw e}
 finally{await browser.close()}
