@@ -231,12 +231,13 @@ function spectraAxisHullGeometry(length,halfHeight,halfWidth,segments=192,radial
  }
  for(let i=0;i<segments;i++)for(let j=0;j<radial;j++){
   const a=i*(radial+1)+j,b=a+radial+1;
-  indices.push(a,b,a+1,b,b+1,a+1);
+  indices.push(a,a+1,b,b,a+1,b+1);
  }
+ const sternCenter=positions.length/3;positions.push(length*.5,0,0);const lastRing=segments*(radial+1);for(let j=0;j<radial;j++)indices.push(sternCenter,lastRing+j,lastRing+j+1);
  const g=new THREE.BufferGeometry();
  g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
  g.setIndex(indices);g.computeVertexNormals();
- g.userData={architectureRevision:'phase-1-integrated-monocoque-v1',longitudinalSections:segments+1,transverseSections:radial+1};
+ g.userData={architectureRevision:'phase-1-integrated-monocoque-v1',longitudinalSections:segments+1,transverseSections:radial+1,sternClosure:'center-fan'};
  return g;
 }
 function hullProfileAtX(x,halfHeight=13.5,length=160){
