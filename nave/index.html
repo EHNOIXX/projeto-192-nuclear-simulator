@@ -661,18 +661,24 @@ document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click'
 $('resetCamera').onclick=()=>scaleMode==='atom'?atomCamera():scaleMode==='engine'?engineCamera():cameraPreset('iso');
 $('fit').onclick=()=>$('resetCamera').click();
 let modelBaseEnvelope=null;
+function measureShipBounds(){
+ const bounds=new THREE.Box3();
+ root.updateMatrixWorld(true);
+ Object.values(groups).forEach(group=>{group.updateWorldMatrix(true,true);bounds.expandByObject(group)});
+ return bounds;
+}
 function setDims(){
  const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;
  // Calibra o envelope uma única vez a partir da bounding box real do conjunto montado.
  if(!modelBaseEnvelope){
   root.scale.set(1,1,1);root.updateMatrixWorld(true);
-  const baseBox=new THREE.Box3().setFromObject(root),baseSize=baseBox.getSize(new THREE.Vector3());
+  const baseBox=measureShipBounds(),baseSize=baseBox.getSize(new THREE.Vector3());
   if(![baseSize.x,baseSize.y,baseSize.z].every(v=>Number.isFinite(v)&&v>0))throw new Error('Envelope-base inválido: '+baseSize.toArray());
   modelBaseEnvelope={length:baseSize.x,height:baseSize.y,width:baseSize.z};
  }
  root.scale.set(L/modelBaseEnvelope.length,H/modelBaseEnvelope.height,W/modelBaseEnvelope.width);
  root.updateMatrixWorld(true);
- const shipBox=new THREE.Box3().setFromObject(root),shipSize=shipBox.getSize(new THREE.Vector3());
+ const shipBox=measureShipBounds(),shipSize=shipBox.getSize(new THREE.Vector3());
  const hull=named.primary_pressure_hull;hull.updateWorldMatrix(true,false);
  const hullBox=new THREE.Box3().setFromObject(hull),hullSize=hullBox.getSize(new THREE.Vector3());
  window.__spectraRuntimeMetrics={
