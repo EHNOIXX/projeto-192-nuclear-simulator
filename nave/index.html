@@ -26,9 +26,9 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <section class="workspace">
 <aside class="stack leftstack">
 <div class="panel"><div class="paneltitle">01 / GEOMETRIA GLOBAL</div><div class="panelbody">
-<label class="field">Comprimento de referência <output id="lenOut">160 m</output></label><input id="len" type="range" min="120" max="200" value="160">
-<label class="field">Largura máxima <output id="widOut">96 m</output></label><input id="wid" type="range" min="50" max="120" value="96">
-<label class="field">Altura máxima <output id="heiOut">48 m</output></label><input id="hei" type="range" min="25" max="70" value="48">
+<label class="field">Comprimento de referência <output id="lenOut">2500 m</output></label><input id="len" type="range" min="2500" max="2500" value="2500">
+<label class="field">Largura máxima <output id="widOut">1200 m</output></label><input id="wid" type="range" min="1200" max="1200" value="1200">
+<label class="field">Altura máxima <output id="heiOut">800 m</output></label><input id="hei" type="range" min="800" max="800" value="800">
 <div class="btnrow" style="margin-top:13px"><button class="btn" id="resetDims">RESTAURAR DIMENSÕES</button><button class="btn" id="fit">ENQUADRAR</button></div>
 <p class="hint">Envelope visual do modelo: comprimento, largura e altura do conjunto 3D; valores conceituais, não validados. Ajustes escalam o modelo inteiro; não validam engenharia estrutural.</p></div></div>
 <div class="panel"><div class="paneltitle">02 / MÓDULOS VISÍVEIS</div><div class="panelbody modulelist" id="modules">
@@ -88,20 +88,20 @@ import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 
 const startupStarted=performance.getEntriesByType('navigation')[0]?.startTime??0;
 const $=id=>document.getElementById(id), viewport=$('viewport');
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x050a12);scene.fog=new THREE.Fog(0x050a12,190,390);
-const camera=new THREE.PerspectiveCamera(30,1,.01,1000);camera.position.set(-92,104,188);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x050a12);scene.fog=new THREE.Fog(0x050a12,2500,6500);
+const camera=new THREE.PerspectiveCamera(30,1,.1,12000);camera.position.set(-920,1040,1880);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.localClippingEnabled=true;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;viewport.appendChild(renderer.domElement);
 const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(900,600),.08,.28,.92));composer.addPass(new OutputPass());
-const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.target.set(0,0,0);controls.minDistance=25;controls.maxDistance=520;controls.autoRotateSpeed=.35;
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.target.set(0,0,0);controls.minDistance=180;controls.maxDistance=12000;controls.autoRotateSpeed=.35;
 scene.add(new THREE.HemisphereLight(0xdce8ef,0x26303a,3.2));
-const key=new THREE.DirectionalLight(0xfff1dc,5.2);key.position.set(-65,100,75);key.castShadow=true;key.shadow.mapSize.set(3072,3072);scene.add(key);
-const fill=new THREE.DirectionalLight(0x9abac8,4.6);fill.position.set(75,28,-85);scene.add(fill);
+const key=new THREE.DirectionalLight(0xfff1dc,5.2);key.position.set(-1050,1600,1200);key.castShadow=true;key.shadow.mapSize.set(3072,3072);scene.add(key);
+const fill=new THREE.DirectionalLight(0x9abac8,4.6);fill.position.set(1200,450,-1350);scene.add(fill);
 const rim=new THREE.PointLight(0x8ab9c7,90,300);rim.position.set(-5,30,-100);scene.add(rim);
 const warm=new THREE.PointLight(0x9b8aab,35,190);warm.position.set(45,-8,25);scene.add(warm);
-const grid=new THREE.GridHelper(300,60,0x24445a,0x102438);grid.position.y=-34;grid.material.transparent=true;grid.material.opacity=.42;scene.add(grid);
+const grid=new THREE.GridHelper(3000,60,0x24445a,0x102438);grid.position.y=-680;grid.material.transparent=true;grid.material.opacity=.42;scene.add(grid);
 // Campo estelar discreto para dar profundidade sem competir com a silhueta.
-const starGeo=new THREE.BufferGeometry(),starPos=[];for(let i=0;i<520;i++){const u=Math.random()*Math.PI*2,v=Math.acos(2*Math.random()-1),r=260+Math.random()*100;starPos.push(r*Math.sin(v)*Math.cos(u),r*Math.cos(v),r*Math.sin(v)*Math.sin(u))}starGeo.setAttribute('position',new THREE.Float32BufferAttribute(starPos,3));const stars=new THREE.Points(starGeo,new THREE.PointsMaterial({color:0x91c8dc,size:.65,transparent:true,opacity:.65,sizeAttenuation:true}));scene.add(stars);
+const starGeo=new THREE.BufferGeometry(),starPos=[];for(let i=0;i<520;i++){const u=Math.random()*Math.PI*2,v=Math.acos(2*Math.random()-1),r=2600+Math.random()*1000;starPos.push(r*Math.sin(v)*Math.cos(u),r*Math.cos(v),r*Math.sin(v)*Math.sin(u))}starGeo.setAttribute('position',new THREE.Float32BufferAttribute(starPos,3));const stars=new THREE.Points(starGeo,new THREE.PointsMaterial({color:0x91c8dc,size:.65,transparent:true,opacity:.65,sizeAttenuation:true}));scene.add(stars);
 const root=new THREE.Group();scene.add(root);
 const groups={hull:new THREE.Group(),bridge:new THREE.Group(),egas:new THREE.Group(),propulsion:new THREE.Group(),radiators:new THREE.Group(),habitat:new THREE.Group(),field:new THREE.Group(),antenna:new THREE.Group(),landing:new THREE.Group(),power:new THREE.Group(),interior:new THREE.Group()};
 Object.values(groups).forEach(g=>root.add(g));
@@ -135,7 +135,7 @@ function rod(id,label,g,a,b,r,mat){const A=new THREE.Vector3(...a),B=new THREE.V
 function sphere(id,label,g,r,mat,p,seg=24){const heightSegments=Math.max(12,Math.floor(seg*.65)),key=[r,seg,heightSegments].join('|');return add(id,label,g,cachedGeometry(geometryCache.sphere,key,()=>new THREE.SphereGeometry(r,seg,heightSegments)),mat,p)}
 
 // REV 09.0 — arquitetura modular dimensionada para missão de 50 tripulantes.
-// Coordenadas do modelo em metros: X longitudinal, Y vertical, Z transversal.
+// Coordenadas locais normalizadas: X longitudinal (proa -X / popa +X), Y vertical (+Y dorsal), Z transversal (+Z estibordo / -Z bombordo). Envelope físico em setDims(): 2.500 × 1.200 × 800 m.
 const labelsGroup=new THREE.Group();root.add(labelsGroup);labelsGroup.visible=false;
 function label3D(text,pos,size=3){
  const cv=document.createElement('canvas');cv.width=512;cv.height=128;
@@ -176,10 +176,11 @@ function axisHullProfile(t){
  // Perfil recuperado da base visual mais esguia: proa longa, ombros contidos,
  // seção central estável e contração progressiva na popa.
  const smooth=u=>{u=THREE.MathUtils.clamp(u,0,1);return u*u*(3-2*u)};
- if(t<.29)return Math.pow(Math.sin(smooth(t/.29)*Math.PI/2),.82);
- if(t>.77)return Math.pow(1-smooth((t-.77)/.23),.76);
- const rise=smooth((t-.29)/.13),fall=1-smooth((t-.65)/.12);
- return .88+.12*rise*fall;
+ // Perfil de prancha: proa longa e baixa, corpo elipsoidal largo e contração curta na popa.
+ if(t<.38)return Math.pow(Math.sin(smooth(t/.38)*Math.PI/2),.92);
+ if(t>.88)return .98*Math.pow(1-smooth((t-.88)/.12),.72);
+ const rise=smooth((t-.38)/.12),fall=1-smooth((t-.72)/.16);
+ return .94+.06*rise*fall;
 }
 function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
  const positions=[],indices=[];
@@ -202,16 +203,16 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
  g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
  g.setIndex(indices);g.computeVertexNormals();return g;
 }
-function hullProfileAtX(x,halfHeight=13.5,length=160){
+function hullProfileAtX(x,halfHeight=18.75,length=160){
  const t=Math.max(0,Math.min(1,x/length+.5));
  return halfHeight*axisHullProfile(t);
 }
 function hullSurfacePoint(x,theta,offset=0){
  const t=Math.max(0,Math.min(1,x/160+.5)),p=axisHullProfile(t);
  const cs=Math.cos(theta),sn=Math.sin(theta);
- const y=13.5*p*Math.sign(cs)*Math.pow(Math.abs(cs),1.04);
- const z=28*p*Math.sign(sn)*Math.pow(Math.abs(sn),1.04);
- const n=new THREE.Vector3(0,cs/13.5,sn/28).normalize();
+ const y=18.75*p*Math.sign(cs)*Math.pow(Math.abs(cs),1.04);
+ const z=48*p*Math.sign(sn)*Math.pow(Math.abs(sn),1.04);
+ const n=new THREE.Vector3(0,cs/18.75,sn/48).normalize();
  return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
 }
 function hullArmorPatch(x0,x1,a0,a1){
@@ -230,7 +231,7 @@ function hullSeamCurve(x0,x1,angle){
 }
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
- const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,13.5,28),M.hull,[0,0,0]);
+ const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,18.75,48),M.hull,[0,0,0]);
  // Naceles laterais externas, longas e baixas: silhueta de pods integrados da prancha oficial.
  for(const side of [-1,1]){
   add('axis_side_pod_'+side,'Nacele lateral de ombro integrada ao monocoque','hull',axisHullGeometry(70,2.7,4.6,112,56),M.armor,[27,-.6,side*40.2]);
@@ -315,7 +316,7 @@ function hullSurface(){
  }
  // Anéis de união do casco e painéis de acesso.
  for(const x of [-48,-32,-16,0,16,32,48]){
-  const y=hullProfileAtX(x,13.5,160)-.8;
+  const y=hullProfileAtX(x,18.75,160)-.8;
   box('service_panel_'+x,'Painel de inspeção embutido do casco','hull',5,.14,3.2,M.dark,[x,y,0]);
  }
  // Janelas de observação e iluminação de serviço em faixas laterais.
@@ -331,19 +332,19 @@ function hullSurface(){
   const x=-10+i*6.5;
   box('hub_window_'+side+'_'+x,'Janela do centro de operações','bridge',2.6,1.5,.22,M.glass,[x,1.5,side*10.8]);
  }
- label3D('NÚCLEO DE OPERAÇÕES',[0,11.5,0],2.2);
+ label3D('NÚCLEO DE OPERAÇÕES',[0,15.5,0],2.2);
  // Ponte de comando rebaixada e integrada ao nariz: carenagem metálica, sem cúpula esférica.
  // Ponte em carenagem longitudinal de baixo perfil, usando a mesma
  // continuidade de seção do casco; elimina os volumes esféricos sobrepostos.
- add('bridge_base','Carenagem integrada do módulo de comando','bridge',axisHullGeometry(25,1.8,6.8,96,48),M.armor,[-64,.55,0]);
- add('bridge_lower_keel','Quilha inferior contínua da ponte','bridge',axisHullGeometry(19,.8,5.8,80,40),M.dark,[-64,-.25,0]);
- add('bridge_nose_cowl','Carenagem frontal afilada do comando','bridge',axisHullGeometry(11,1.2,5.8,64,40),M.edge,[-72,.55,0]);
+ add('bridge_base','Carenagem integrada do módulo de comando','bridge',axisHullGeometry(30,2.3,8.2,96,48),M.armor,[-37,13.8,0]);
+ add('bridge_lower_keel','Quilha inferior contínua da ponte','bridge',axisHullGeometry(23,1.0,7.0,80,40),M.dark,[-37,12.8,0]);
+ add('bridge_nose_cowl','Carenagem frontal afilada do comando','bridge',axisHullGeometry(13,1.4,6.4,64,40),M.edge,[-48,13.8,0]);
  for(const side of [-1,1]){
-  for(let i=0;i<3;i++){const x=-71+i*4.2;const pane=box('bridge_glazing_'+side+'_'+i,'Visor estreito blindado da ponte','bridge',2.7,.34,.12,M.glass,[x,2.65,side*(4.4-i*.18)]);pane.rotation.z=-.08;}
-  rod('bridge_window_frame_'+side,'Moldura estrutural do visor de comando','bridge',[-76,2.55,side*4.1],[-62,2.55,side*4.7],.24,M.edge);
-  rod('bridge_side_keel_'+side,'Longarina lateral da ponte integrada ao casco','bridge',[-76,-.1,side*4.8],[-55,-.1,side*4.8],.48,M.dark);
+  for(let i=0;i<3;i++){const x=-45+i*4.2;const pane=box('bridge_glazing_'+side+'_'+i,'Visor estreito blindado da ponte','bridge',3.0,.42,.14,M.glass,[x,16.1,side*(5.2-i*.2)]);pane.rotation.z=-.08;}
+  rod('bridge_window_frame_'+side,'Moldura estrutural do visor de comando','bridge',[-50,16.0,side*4.8],[-31,16.0,side*5.5],.28,M.edge);
+  rod('bridge_side_keel_'+side,'Longarina lateral da ponte integrada ao casco','bridge',[-51,12.7,side*6.0],[-24,12.7,side*6.0],.52,M.dark);
  }
- label3D('PONTE DE COMANDO',[-66,4.6,0],1.8);
+ label3D('PONTE DE COMANDO',[-37,18.2,0],2.0);
  // Módulos habitacionais e laboratórios: cápsulas conectadas por túneis curtos.
  const habs=[
   {id:'hab_nw',name:'HABITAÇÃO A',p:[-27,0,-25]},
@@ -582,13 +583,13 @@ let interiorMode=false;
 function restoreModuleVisibility(){document.querySelectorAll('[data-module]').forEach(ch=>{groups[ch.dataset.module].visible=ch.checked})}
 function showInterior(){if(!interiorBuilt){buildInterior();interiorBuilt=true;}interiorMode=true;restoreModuleVisibility();groups.interior.visible=true;labelsGroup.visible=true;groups.hull.visible=false;groups.habitat.visible=false;groups.radiators.visible=false;groups.field.visible=false;groups.bridge.visible=false;groups.antenna.visible=false;groups.landing.visible=false;groups.egas.visible=false;groups.interior.visible=true;
  if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=false;
- for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=false;controls.minDistance=15;controls.maxDistance=280;camera.position.set(-4,118,18);controls.target.set(-2,-1,0);controls.update();$('selectionLabel').textContent='PLANTA INTERNA / COMPARTIMENTOS';$('selectionInfo').innerHTML='<strong>Configuração interna conceitual</strong>Planta de corte da arquitetura de 50 tripulantes: 24 cabines duplas, ponte, centro de operações, laboratórios E-192/EGAS, enfermaria, refeitório, suporte ambiental e manutenção propulsiva. Modelo conceitual, não projeto habitável validado.';log('Vista interna ativada: compartimentos e circulação expostos.')}
+ for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=false;controls.minDistance=180;controls.maxDistance=7000;camera.position.set(-62.5,2517,225);controls.target.set(-31.25,-21.3,0);controls.update();$('selectionLabel').textContent='PLANTA INTERNA / COMPARTIMENTOS';$('selectionInfo').innerHTML='<strong>Configuração interna conceitual</strong>Planta de corte da arquitetura de 50 tripulantes: 24 cabines duplas, ponte, centro de operações, laboratórios E-192/EGAS, enfermaria, refeitório, suporte ambiental e manutenção propulsiva. Modelo conceitual, não projeto habitável validado.';log('Vista interna ativada: compartimentos e circulação expostos.')}
 let cameraBoundsCache=null;
 function cameraPreset(v){
  interiorMode=false;restoreModuleVisibility();groups.interior.visible=false;labelsGroup.visible=$('labels').classList.contains('active');
  if(named.main_corridor_ceiling)named.main_corridor_ceiling.visible=true;
  for(const s of [-1,1])if(named['hab_ceiling_'+s])named['hab_ceiling_'+s].visible=true;
- controls.minDistance=18;controls.maxDistance=420;
+ controls.minDistance=180;controls.maxDistance=10000;
  const p={iso:[-1.0,.72,1.12],front:[-1,.17,0],side:[0,.22,1],left:[0,.22,-1],top:[0,1,.02],bottom:[0,-1,.02],rear:[1,.17,0],interior:[-.04,.58,.09]}[v]||[-1,.72,1.12];
  camera.up.set(0,(v==='top'||v==='bottom')?0:1,v==='top'?-1:v==='bottom'?1:0);
  if(!cameraBoundsCache){root.updateMatrixWorld(true);cameraBoundsCache=new THREE.Box3().setFromObject(root)}
@@ -597,7 +598,7 @@ function cameraPreset(v){
  const right=new THREE.Vector3().crossVectors(camera.up,direction).normalize();
  const viewUp=new THREE.Vector3().crossVectors(direction,right).normalize();
  const tanV=Math.tan(THREE.MathUtils.degToRad(camera.fov/2)),tanH=tanV*camera.aspect;
- let fitDistance=34;
+ let fitDistance=340;
  for(const ix of [0,1])for(const iy of [0,1])for(const iz of [0,1]){
   const corner=new THREE.Vector3(ix?bounds.max.x:bounds.min.x,iy?bounds.max.y:bounds.min.y,iz?bounds.max.z:bounds.min.z).sub(center);
   const depth=corner.dot(direction);
@@ -605,14 +606,14 @@ function cameraPreset(v){
  }
  controls.target.copy(center);
  camera.position.copy(center).addScaledVector(direction,fitDistance*1.24);
- controls.minDistance=Math.max(16,fitDistance*.32);controls.maxDistance=fitDistance*4;controls.update()
+ controls.minDistance=Math.max(180,fitDistance*.32);controls.maxDistance=fitDistance*5;controls.update()
 }
 function atomCamera(){controls.minDistance=.15;controls.maxDistance=8;camera.position.set(2.5,1.8,3);controls.target.set(0,0,0);controls.update();e192Nucleus.visible=true;e192Cloud.visible=false}
 function setScale(mode){
  scaleMode=mode;root.visible=mode!=='atom';atomGroup.visible=mode==='atom';atomNote.style.display=mode==='atom'?'block':'none';
  document.querySelectorAll('[data-scale]').forEach(b=>b.classList.toggle('active',b.dataset.scale===mode));
- $('scaleTag').textContent=mode==='ship'?'ESCALA 10² m':mode==='engine'?'PROPULSÃO · 10¹ m':'ESCALA 10⁻¹⁰ m';
- $('scaleHelp').textContent=mode==='atom'?'VISTA MICROSCÓPICA · ESCALA ATÔMICA · NÚCLEO EM PROPORÇÃO':mode==='engine'?'CONJUNTO PROPULSIVO · VISTA LOCAL':'NAVE COMPLETA · ENVELOPE CONCEITUAL AJUSTÁVEL · 50 TRIPULANTES';
+ $('scaleTag').textContent=mode==='ship'?'NAVE · 2,5 km':mode==='engine'?'PROPULSÃO · 10¹ m':'ESCALA 10⁻¹⁰ m';
+ $('scaleHelp').textContent=mode==='atom'?'VISTA MICROSCÓPICA · ESCALA ATÔMICA · NÚCLEO EM PROPORÇÃO':mode==='engine'?'CONJUNTO PROPULSIVO · VISTA LOCAL':'NAVE COMPLETA · ENVELOPE 2.500 × 1.200 × 800 m · 50 TRIPULANTES';
  $('selectionLabel').textContent=mode==='atom'?'MODELO ATÔMICO ESQUEMÁTICO':mode==='engine'?'CONJUNTO PROPULSIVO':'VISÃO GERAL';
  if(mode==='atom'){atomCamera();$('selectionInfo').innerHTML='<strong>Visualização atômica de referência</strong>Diâmetro atômico típico da ordem de 10⁻¹⁰ m. O núcleo está desenhado em proporção muito menor e quase não é visível. A distribuição eletrônica é esquemática; não representa configuração confirmada do elemento 192.'}
  else if(mode==='engine'){engineCamera();$('selectionInfo').innerHTML='<strong>Conjunto propulsivo — escala local</strong>Vista aproximada das três unidades ilustrativas na extremidade traseira. A representação não especifica nem demonstra um motor funcional; EGAS permanece uma hipótese separada.'}
@@ -625,7 +626,7 @@ $('resetCamera').onclick=()=>scaleMode==='atom'?atomCamera():scaleMode==='engine
 $('fit').onclick=()=>$('resetCamera').click();
 function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/160,H/37.5,W/96);cameraBoundsCache=null;$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
 ['len','wid','hei'].forEach(id=>$(id).addEventListener('input',setDims));
-$('resetDims').onclick=()=>{$('len').value=160;$('wid').value=96;$('hei').value=48;setDims()};
+$('resetDims').onclick=()=>{$('len').value=2500;$('wid').value=1200;$('hei').value=800;setDims()};
 function updateCount(){const controls=[...document.querySelectorAll('[data-module]')];const n=controls.filter(ch=>ch.checked).length;$('statMods').textContent=n+' / '+controls.length}
 document.querySelectorAll('[data-module]').forEach(ch=>ch.addEventListener('change',()=>{groups[ch.dataset.module].visible=ch.checked;updateCount();log('Visibilidade atualizada: '+ch.parentElement.textContent.trim())}));
 function explode(v){const t=v/100;const dirs={hull:[0,0,0],bridge:[-1,1,0],egas:[0,0,0],propulsion:[1,0,0],radiators:[0,1,1],habitat:[0,-1,1],field:[0,0,-1],antenna:[-1,1,0],landing:[0,-1,0],power:[1,1,0],interior:[0,0,0]};Object.entries(groups).forEach(([k,g])=>g.position.set(dirs[k][0]*t*19,dirs[k][1]*t*15,dirs[k][2]*t*20));cameraBoundsCache=null;$('explodeOut').textContent=Math.round(v)+'%';$('statState').textContent=t?'EXPLODIDA':'MONTADA';exploded=t>0}
