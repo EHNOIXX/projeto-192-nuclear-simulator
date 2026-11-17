@@ -26,13 +26,16 @@ try {
     hull: window.__spectraHullDimensions || null,
     ship: window.__spectraShipDimensions || null
   }));
-  if (requireGeometryVersion && geometry.version !== 'blueprint-v2') {
+  if (requireGeometryVersion && geometry.version !== 'blueprint-blockout-v1') {
     throw new Error('O navegador não carregou a geometria esperada: ' + JSON.stringify(geometry));
   }
-  if (requireGeometryVersion && (!geometry.ship ||
+  if (requireGeometryVersion && (!geometry.ship || !geometry.hull ||
       Math.abs(geometry.ship.length - 2500) > 1 ||
       Math.abs(geometry.ship.width - 1200) > 1 ||
-      Math.abs(geometry.ship.height - 800) > 1)) {
+      Math.abs(geometry.ship.height - 800) > 1 ||
+      Math.abs(geometry.hull.length - 2500) > 1 ||
+      Math.abs(geometry.hull.width - 1200) > 1 ||
+      Math.abs(geometry.hull.height - 800) > 1)) {
     throw new Error('Envelope geométrico real da nave fora da especificação: ' + JSON.stringify(geometry));
   }
   const canvasSize = await page.locator('#viewport canvas').evaluate(el => ({ width: el.width, height: el.height }));
