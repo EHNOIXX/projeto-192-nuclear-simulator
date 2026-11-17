@@ -198,7 +198,7 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64,pro
    const y=halfHeight*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.08);
    const shoulderX=profileMode==='hull'
      ? smoothProfile((t-.22)/.12)*(1-smoothProfile((t-.82)/.15)) : 0;
-   const shoulder=profileMode==='hull'?7.0*shoulderX*Math.pow(Math.abs(sn),5):0;
+   const shoulder=profileMode==='hull'?12.0*shoulderX*Math.pow(Math.abs(sn),5):0;
    const z=(halfWidth*pz+shoulder)*Math.sign(sn)*Math.pow(Math.abs(sn),1.02);
    positions.push(x,y,z);
   }
@@ -220,7 +220,7 @@ function hullSurfacePoint(x,theta,offset=0){
  const cs=Math.cos(theta),sn=Math.sin(theta);
  const y=14.5*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.08);
  const shoulderX=smoothProfile((t-.22)/.12)*(1-smoothProfile((t-.82)/.15));
- const z=(41*pz+7.0*shoulderX*Math.pow(Math.abs(sn),5))*Math.sign(sn)*Math.pow(Math.abs(sn),1.02);
+ const z=(36*pz+12.0*shoulderX*Math.pow(Math.abs(sn),5))*Math.sign(sn)*Math.pow(Math.abs(sn),1.02);
  const n=new THREE.Vector3(0,cs/(14.5*Math.max(py,.001)),sn/(48*Math.max(pz,.001))).normalize();
  return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
 }
@@ -240,7 +240,7 @@ function hullSeamCurve(x0,x1,angle){
 }
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
- const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,14.5,41,160,80,'hull'),M.hull,[0,0,0]);
+ const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,14.5,36,160,80,'hull'),M.hull,[0,0,0]);
  // Módulos laterais integrados por ombros lobados na própria malha do casco.
  // Janelas e painéis ficam conformados à superfície; não existem cápsulas independentes.
  for(const side of [-1,1]){
