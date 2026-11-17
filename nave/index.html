@@ -177,12 +177,12 @@ function smoothProfile(u){u=THREE.MathUtils.clamp(u,0,1);return u*u*(3-2*u)}
 // contração curta na popa (X positivo). Altura e largura têm perfis independentes.
 function axisHullProfile(t){
  if(t<.37)return Math.pow(Math.sin(smoothProfile(t/.37)*Math.PI/2),.82);
- if(t>.90)return .96*Math.pow(1-smoothProfile((t-.90)/.10),.68);
+ if(t>.90)return .96-.48*smoothProfile((t-.90)/.10);
  return .94+.06*smoothProfile((t-.37)/.17);
 }
 function axisHullWidthProfile(t){
  if(t<.39)return Math.pow(Math.sin(smoothProfile(t/.39)*Math.PI/2),.72);
- if(t>.86)return .98*Math.pow(1-smoothProfile((t-.86)/.14),.72);
+ if(t>.86)return .98-.48*smoothProfile((t-.86)/.14);
  if(t<.55)return .94+.06*smoothProfile((t-.39)/.16);
  if(t<.76)return 1;
  return 1-.02*smoothProfile((t-.76)/.10);
@@ -208,16 +208,16 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64,pro
  g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
  g.setIndex(indices);g.computeVertexNormals();g.computeBoundingBox();return g;
 }
-function hullProfileAtX(x,halfHeight=18.75,length=160){
+function hullProfileAtX(x,halfHeight=14.5,length=160){
  const t=Math.max(0,Math.min(1,x/length+.5));
  return halfHeight*axisHullProfile(t);
 }
 function hullSurfacePoint(x,theta,offset=0){
  const t=Math.max(0,Math.min(1,x/160+.5)),py=axisHullProfile(t),pz=axisHullWidthProfile(t);
  const cs=Math.cos(theta),sn=Math.sin(theta);
- const y=18.75*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.08);
- const z=48*pz*Math.sign(sn)*Math.pow(Math.abs(sn),1.02);
- const n=new THREE.Vector3(0,cs/(18.75*Math.max(py,.001)),sn/(48*Math.max(pz,.001))).normalize();
+ const y=14.5*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.08);
+ const z=41*pz*Math.sign(sn)*Math.pow(Math.abs(sn),1.02);
+ const n=new THREE.Vector3(0,cs/(14.5*Math.max(py,.001)),sn/(41*Math.max(pz,.001))).normalize();
  return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
 }
 function hullArmorPatch(x0,x1,a0,a1){
@@ -236,14 +236,14 @@ function hullSeamCurve(x0,x1,angle){
 }
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
- const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,18.75,48,160,80,'hull'),M.hull,[0,0,0]);
+ const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,14.5,41,160,80,'hull'),M.hull,[0,0,0]);
  // Naceles laterais externas, longas e baixas: silhueta de pods integrados da prancha oficial.
  for(const side of [-1,1]){
-  add('axis_side_pod_'+side,'Nacele lateral de ombro integrada ao monocoque','hull',axisHullGeometry(70,2.7,4.6,112,56),M.armor,[27,-.6,side*43.4]);
+  add('axis_side_pod_'+side,'Nacele lateral de ombro integrada ao monocoque','hull',axisHullGeometry(70,3.0,7.0,112,56),M.armor,[27,-.4,side*41.0]);
   // A transição da nacele é feita pela própria sobreposição controlada ao ombro do casco; sem aro circular externo.
   for(let i=0;i<9;i++){
    const x=8+i*5.6;
-   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.3,.14,.16,M.cyan,[x,.85,side*47.0]);
+   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.3,.14,.16,M.cyan,[x,.85,side*47.2]);
   }
   for(const x of [12,27,42,57])box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso da nacele lateral','hull',5,.14,2.1,M.dark,[x,1.55,side*44.0]);
  }
@@ -252,9 +252,9 @@ function hullSurface(){
 
  // AXIS — estrutura central longitudinal integrada à superfície dorsal do casco.
  // AXIS em camadas: carenagem elevada, longarinas e interfaces transversais.
- add('spectra_axis_spine','AXIS — carenagem longitudinal central integrada','hull',axisHullGeometry(112,1.45,3.2,112,48),M.armor,[0,19.2,0]);
- rod('axis_upper_rail_left','AXIS — longarina superior esquerda','hull',[-54,20.1,-2.2],[54,20.1,-2.2],.48,M.edge);
- rod('axis_upper_rail_right','AXIS — longarina superior direita','hull',[-54,20.1,2.2],[54,20.1,2.2],.48,M.edge);
+ add('spectra_axis_spine','AXIS — carenagem longitudinal central integrada','hull',axisHullGeometry(112,1.45,3.2,112,48),M.armor,[0,15.6,0]);
+ rod('axis_upper_rail_left','AXIS — longarina superior esquerda','hull',[-54,16.5,-2.2],[54,16.5,-2.2],.48,M.edge);
+ rod('axis_upper_rail_right','AXIS — longarina superior direita','hull',[-54,16.5,2.2],[54,16.5,2.2],.48,M.edge);
  for(const x of [-52,-39,-26,-13,0,13,26,39,52]){const y=hullProfileAtX(x)+.22;box('axis_interface_'+x,'AXIS — interface modular embutida','hull',2.6,.28,1.8,M.panel,[x,y,0])}
  const axisPoints=[];for(let i=0;i<=48;i++){const x=-67+i*(134/48);axisPoints.push(new THREE.Vector3(x,hullProfileAtX(x)+.22,0))}
  const axisCurve=new THREE.CatmullRomCurve3(axisPoints);
@@ -263,7 +263,7 @@ function hullSurface(){
  for(const x of [-58,-42,-26,-10,6,22,38,54]){
   box('axis_marker_'+x,'Marcador luminoso azul da estrutura AXIS', 'hull',1.1,.22,2.2,M.cyan,[x,hullProfileAtX(x)+.42,0]);
  }
- label3D('SPECTRA · AXIS',[-4,22.0,0],2.2);
+ label3D('SPECTRA · AXIS',[-4,18.1,0],2.2);
  // Revestimento segmentado conformado à superfície: placas seguem a curvatura real do casco.
  const armorMat=new THREE.MeshStandardMaterial({color:0x263541,metalness:.88,roughness:.29,side:THREE.DoubleSide});
  const armorAlt=new THREE.MeshStandardMaterial({color:0x3b4b57,metalness:.84,roughness:.31,side:THREE.DoubleSide});
@@ -308,7 +308,7 @@ function hullSurface(){
  }
  // Berços e escoras unem as naceles ao casco.
  for(const side of [-1,1])for(const x of [8,27,46]){
-  const z=side*37,podZ=side*43.4;
+  const z=side*35,podZ=side*41.0;
   rod('side_pod_mount_'+side+'_'+x,'Berço estrutural de conexão da nacele lateral','hull',[x,0,z],[x,-1.8,podZ],.72,M.edge);
   rod('side_pod_mount_diag_'+side+'_'+x,'Escora diagonal da nacele lateral','hull',[x-4,-3,z+side*1.5],[x+4,-1.8,podZ-side*1.5],.34,M.dark);
  }
@@ -337,19 +337,19 @@ function hullSurface(){
   const x=-10+i*6.5;
   box('hub_window_'+side+'_'+x,'Janela do centro de operações','bridge',2.6,1.5,.22,M.glass,[x,1.5,side*10.8]);
  }
- label3D('NÚCLEO DE OPERAÇÕES',[0,20.8,0],2.2);
+ label3D('NÚCLEO DE OPERAÇÕES',[0,18.7,0],2.2);
  // Ponte de comando rebaixada e integrada ao nariz: carenagem metálica, sem cúpula esférica.
  // Ponte em carenagem longitudinal de baixo perfil, usando a mesma
  // continuidade de seção do casco; elimina os volumes esféricos sobrepostos.
- add('bridge_base','Carenagem integrada do módulo de comando','bridge',axisHullGeometry(30,2.3,8.2,96,48),M.armor,[-37,20.0,0]);
- add('bridge_lower_keel','Quilha inferior contínua da ponte','bridge',axisHullGeometry(23,1.0,7.0,80,40),M.dark,[-37,18.8,0]);
- add('bridge_nose_cowl','Carenagem frontal afilada do comando','bridge',axisHullGeometry(13,1.4,6.4,64,40),M.edge,[-48,20.0,0]);
+ add('bridge_base','Carenagem integrada do módulo de comando','bridge',axisHullGeometry(30,2.3,8.2,96,48),M.armor,[-37,16.2,0]);
+ add('bridge_lower_keel','Quilha inferior contínua da ponte','bridge',axisHullGeometry(23,1.0,7.0,80,40),M.dark,[-37,15.0,0]);
+ add('bridge_nose_cowl','Carenagem frontal afilada do comando','bridge',axisHullGeometry(13,1.4,6.4,64,40),M.edge,[-48,16.2,0]);
  for(const side of [-1,1]){
-  for(let i=0;i<3;i++){const x=-45+i*4.2;const pane=box('bridge_glazing_'+side+'_'+i,'Visor estreito blindado da ponte','bridge',3.0,.42,.14,M.glass,[x,22.2,side*(5.2-i*.2)]);pane.rotation.z=-.08;}
-  rod('bridge_window_frame_'+side,'Moldura estrutural do visor de comando','bridge',[-50,22.1,side*4.8],[-31,22.1,side*5.5],.28,M.edge);
-  rod('bridge_side_keel_'+side,'Longarina lateral da ponte integrada ao casco','bridge',[-51,18.9,side*6.0],[-24,18.9,side*6.0],.52,M.dark);
+  for(let i=0;i<3;i++){const x=-45+i*4.2;const pane=box('bridge_glazing_'+side+'_'+i,'Visor estreito blindado da ponte','bridge',3.0,.42,.14,M.glass,[x,18.4,side*(5.2-i*.2)]);pane.rotation.z=-.08;}
+  rod('bridge_window_frame_'+side,'Moldura estrutural do visor de comando','bridge',[-50,18.3,side*4.8],[-31,18.3,side*5.5],.28,M.edge);
+  rod('bridge_side_keel_'+side,'Longarina lateral da ponte integrada ao casco','bridge',[-51,15.1,side*6.0],[-24,15.1,side*6.0],.52,M.dark);
  }
- label3D('PONTE DE COMANDO',[-37,24.4,0],2.0);
+ label3D('PONTE DE COMANDO',[-37,20.6,0],2.0);
  // Módulos habitacionais e laboratórios: cápsulas conectadas por túneis curtos.
  const habs=[
   {id:'hab_nw',name:'HABITAÇÃO A',p:[-27,0,-25]},
@@ -372,21 +372,21 @@ function hullSurface(){
  // Radiadores segmentados com estrutura de suporte mais discreta.
  for(const side of [-1,1]){
   // A longarina principal começa dentro da zona estrutural do casco e alcança a raiz dos radiadores.
-  rod('radiator_root_mount_'+side,'Encaixe estrutural do radiador no casco','radiators',[8,7.8,side*25],[8,10.2,side*33],.72,M.armor);
+  rod('radiator_root_mount_'+side,'Encaixe estrutural do radiador no casco','radiators',[8,2.0,side*25],[8,4.0,side*33],.72,M.armor);
   // Os radiadores são montados rente às naceles laterais; sem braços longos externos.
   for(const x of [-10,10,30]){
-   rod('radiator_crossbeam_'+side+'_'+x,'Longarina embutida de integração térmica','radiators',[x,6.2,side*39.8],[x,6.2,side*43.2],.18,M.edge);
+   rod('radiator_crossbeam_'+side+'_'+x,'Longarina embutida de integração térmica','radiators',[x,2.0,side*37.8],[x,2.0,side*43.2],.18,M.edge);
   }
   for(let j=0;j<4;j++){
    const x=-10+j*13;
-   box('radiator_panel_'+side+'_'+j,'Painel radiador conformado e integrado','radiators',10,.22,5.2,M.panel,[x,6.42,side*45.4]);
-   for(let k=0;k<5;k++)box('radiator_channel_'+side+'_'+j+'_'+k,'Canal térmico superficial','radiators',8,.05,.10,M.cyan,[x,6.56,side*(43.3+k*.9)]);
-   for(const z of [-1.8,1.8])rod('radiator_panel_standoff_'+side+'_'+j+'_'+z,'Fixação embutida do painel radiador','radiators',[x,6.22,side*35.2],[x,6.42,side*(37.2+z)],.12,M.edge);
+   box('radiator_panel_'+side+'_'+j,'Painel radiador conformado e integrado','radiators',10,.22,5.2,M.panel,[x,2.3,side*45.4]);
+   for(let k=0;k<5;k++)box('radiator_channel_'+side+'_'+j+'_'+k,'Canal térmico superficial','radiators',8,.05,.10,M.cyan,[x,2.44,side*(43.3+k*.9)]);
+   for(const z of [-1.8,1.8])rod('radiator_panel_standoff_'+side+'_'+j+'_'+z,'Fixação embutida do painel radiador','radiators',[x,1.82,side*35.2],[x,2.3,side*(37.2+z)],.12,M.edge);
   }
   // Coletores e bases de articulação tornam explícito o caminho de carga até o casco.
-  box('radiator_root_housing_'+side,'Carcaça de integração térmica lateral','radiators',5,1.2,4,M.armor,[8,6.4,side*40.5]);
+  box('radiator_root_housing_'+side,'Carcaça de integração térmica lateral','radiators',5,1.2,4,M.armor,[8,2.3,side*40.5]);
  }
- label3D('RADIADORES TÉRMICOS',[10,12,40],1.8);
+ label3D('RADIADORES TÉRMICOS',[10,5.5,40],1.8);
  // Compartimento EGAS é mostrado como equipamento científico hipotético, não como motor validado.
  cyl('egas_housing','Compartimento conceitual EGAS','egas',4.5,4.5,18,M.dark,[18,0,0],[0,0,Math.PI/2]);
  for(const x of [9,27])tor('egas_flange_'+x,'Flange estrutural do compartimento EGAS','egas',4.6,.28,M.edge,[x,0,0]);
@@ -636,7 +636,7 @@ document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click',()=>{if(scaleMode==='ship'){if(b.dataset.camera==='interior')showInterior();else cameraPreset(b.dataset.camera)}}));
 $('resetCamera').onclick=()=>scaleMode==='atom'?atomCamera():scaleMode==='engine'?engineCamera():cameraPreset('iso');
 $('fit').onclick=()=>$('resetCamera').click();
-function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/160,H/37.5,W/96);root.updateMatrixWorld(true);cameraBoundsCache=null;const hb=new THREE.Box3().setFromObject(named.primary_pressure_hull);const hs=hb.getSize(new THREE.Vector3());window.__spectraHullDimensions={length:+hs.x.toFixed(2),height:+hs.y.toFixed(2),width:+hs.z.toFixed(2)};$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
+function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(1,1,1);root.updateMatrixWorld(true);const localSize=new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());root.scale.set(L/localSize.x,H/localSize.y,W/localSize.z);root.updateMatrixWorld(true);cameraBoundsCache=null;const shipSize=new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());window.__spectraShipDimensions={length:+shipSize.x.toFixed(2),height:+shipSize.y.toFixed(2),width:+shipSize.z.toFixed(2)};const hb=new THREE.Box3().setFromObject(named.primary_pressure_hull);const hs=hb.getSize(new THREE.Vector3());window.__spectraHullDimensions={length:+hs.x.toFixed(2),height:+hs.y.toFixed(2),width:+hs.z.toFixed(2)};$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
 ['len','wid','hei'].forEach(id=>$(id).addEventListener('input',setDims));
 $('resetDims').onclick=()=>{$('len').value=2500;$('wid').value=1200;$('hei').value=800;setDims()};
 function updateCount(){const controls=[...document.querySelectorAll('[data-module]')];const n=controls.filter(ch=>ch.checked).length;$('statMods').textContent=n+' / '+controls.length}
