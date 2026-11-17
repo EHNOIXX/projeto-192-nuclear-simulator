@@ -181,13 +181,13 @@ function smoothProfile(u){u=THREE.MathUtils.clamp(u,0,1);return u*u*(3-2*u)}
 function axisHullProfile(t){
  const smooth=u=>smoothProfile(u);
  if(t<.39)return Math.pow(Math.sin(smooth(t/.39)*Math.PI/2),.88);
- if(t<.80)return .985+.015*smooth((t-.39)/.18);
- return Math.pow(Math.cos(smooth((t-.80)/.20)*Math.PI/2),.78);
+ if(t<.82)return .985+.015*smooth((t-.39)/.18);
+ return 1-.30*smooth((t-.82)/.18);
 }
 function axisHullWidthProfile(t){
  if(t<.43)return Math.pow(Math.sin(smoothProfile(t/.43)*Math.PI/2),.72);
  if(t<.82)return .985+.015*smoothProfile((t-.43)/.16);
- return Math.pow(Math.cos(smoothProfile((t-.82)/.18)*Math.PI/2),.68);
+ return 1-.24*smoothProfile((t-.82)/.18);
 }
 function axisHullGeometry(length,halfHeight,halfWidth,segments=192,radial=96,profileMode='hull'){
  const positions=[],indices=[];
@@ -206,6 +206,15 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=192,radial=96,pro
   const a=i*(radial+1)+j,b=a+radial+1;
   indices.push(a,a+1,b,b,a+1,b+1);
  }
+ // Fechamento plano da popa: o casco termina em um convés estrutural largo,
+ // não em uma segunda ponta afilada. Vértices duplicados preservam a aresta do cap.
+ const capStart=positions.length/3, tEnd=1, pyEnd=axisHullProfile(tEnd), pzEnd=axisHullWidthProfile(tEnd), xEnd=length/2;
+ for(let j=0;j<=radial;j++){
+  const a=j/radial*Math.PI*2,cs=Math.cos(a),sn=Math.sin(a);
+  positions.push(xEnd,halfHeight*pyEnd*Math.sign(cs)*Math.pow(Math.abs(cs),1.22),halfWidth*pzEnd*Math.sign(sn)*Math.pow(Math.abs(sn),.78));
+ }
+ const capCenter=positions.length/3;positions.push(xEnd,0,0);
+ for(let j=0;j<radial;j++)indices.push(capStart+j,capStart+j+1,capCenter);
  const g=new THREE.BufferGeometry();
  g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
  g.setIndex(indices);g.computeVertexNormals();g.computeBoundingBox();return g;
