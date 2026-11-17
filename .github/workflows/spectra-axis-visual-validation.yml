@@ -1,8 +1,8 @@
-name: SPECTRA-AXIS visual validation
+name: SPECTRA-AXIS Phase 0 dimensional validation
 
 on:
   push:
-    branches: [main]
+    branches: [main, fase-0-consolidacao-dimensional]
     paths:
       - 'nave/**'
       - 'scripts/spectra-axis-visual-check.mjs'
@@ -12,12 +12,16 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: spectra-axis-phase-0-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   six-view-browser-check:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout main
+      - name: Checkout triggering baseline or work branch
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -40,14 +44,14 @@ jobs:
           cat /tmp/spectra-http.log
           exit 1
 
-      - name: Render six views and test controls
+      - name: Render seven views, measure envelope, and test controls
         run: node scripts/spectra-axis-visual-check.mjs
 
       - name: Upload real simulator captures
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: spectra-axis-six-views
+          name: spectra-axis-phase-0-baseline-seven-views
           path: artifacts/spectra-axis/
           if-no-files-found: warn
           retention-days: 14

@@ -26,9 +26,9 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <section class="workspace">
 <aside class="stack leftstack">
 <div class="panel"><div class="paneltitle">01 / GEOMETRIA GLOBAL</div><div class="panelbody">
-<label class="field">Comprimento de referência <output id="lenOut">160 m</output></label><input id="len" type="range" min="120" max="200" value="160">
-<label class="field">Largura máxima <output id="widOut">96 m</output></label><input id="wid" type="range" min="50" max="120" value="96">
-<label class="field">Altura máxima <output id="heiOut">48 m</output></label><input id="hei" type="range" min="25" max="70" value="48">
+<label class="field">Comprimento de referência <output id="lenOut">250 m</output></label><input id="len" type="range" min="200" max="300" step="1" value="250">
+<label class="field">Largura máxima <output id="widOut">120 m</output></label><input id="wid" type="range" min="90" max="150" step="1" value="120">
+<label class="field">Altura máxima <output id="heiOut">80 m</output></label><input id="hei" type="range" min="60" max="100" step="1" value="80">
 <div class="btnrow" style="margin-top:13px"><button class="btn" id="resetDims">RESTAURAR DIMENSÕES</button><button class="btn" id="fit">ENQUADRAR</button></div>
 <p class="hint">Envelope visual do modelo: comprimento, largura e altura do conjunto 3D; valores conceituais, não validados. Ajustes escalam o modelo inteiro; não validam engenharia estrutural.</p></div></div>
 <div class="panel"><div class="paneltitle">02 / MÓDULOS VISÍVEIS</div><div class="panelbody modulelist" id="modules">
@@ -66,8 +66,8 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <aside class="stack rightstack">
 <div class="panel"><div class="paneltitle">06 / INSPEÇÃO DE COMPONENTE</div><div class="panelbody selectedInfo" id="selectionInfo"><strong>Nenhum componente selecionado</strong>Clique em uma parte da nave para consultar sua descrição e categoria.<span class="tag">SELEÇÃO 3D</span></div></div>
 <div class="panel"><div class="paneltitle">07 / TELEMETRIA DO MODELO</div><div class="readout">
-<div class="stat"><span>COMPRIMENTO</span><b id="statLen">160 m</b></div><div class="stat"><span>LARGURA</span><b id="statWid">96 m</b></div>
-<div class="stat"><span>ALTURA</span><b id="statHei">48 m</b></div><div class="stat"><span>MÓDULOS ATIVOS</span><b id="statMods">9 / 10</b></div>
+<div class="stat"><span>COMPRIMENTO</span><b id="statLen">250 m</b></div><div class="stat"><span>LARGURA</span><b id="statWid">120 m</b></div>
+<div class="stat"><span>ALTURA</span><b id="statHei">80 m</b></div><div class="stat"><span>MÓDULOS ATIVOS</span><b id="statMods">9 / 10</b></div>
 <div class="stat"><span>ESTADO DA CENA</span><b id="statState">MONTADA</b></div><div class="stat"><span>MODELO</span><b>CONCEITUAL</b></div>
 </div></div>
 <div class="panel warning"><div class="paneltitle">08 / INTEGRIDADE CIENTÍFICA</div><div class="panelbody">A nave e sua arquitetura de propulsão são hipóteses de pesquisa. A existência do E-192 não foi confirmada e o EGAS não é um motor demonstrado. O simulador não calcula desempenho, sustentação, radiação, proteção, energia ou trajetórias reais.<br><br>Os componentes são formas 3D de comunicação visual, sem tolerâncias ou instruções construtivas.</div></div>
@@ -89,8 +89,8 @@ import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 const startupStarted=performance.getEntriesByType('navigation')[0]?.startTime??0;
 const $=id=>document.getElementById(id), viewport=$('viewport');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x050a12);scene.fog=new THREE.Fog(0x050a12,190,390);
-const camera=new THREE.PerspectiveCamera(30,1,.01,1000);camera.position.set(-92,104,188);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+const camera=new THREE.PerspectiveCamera(30,1,.01,1000);camera.position.set(-92,104,188);window.__spectraCamera=camera;
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});window.__spectraRenderer=renderer;
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.localClippingEnabled=true;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;viewport.appendChild(renderer.domElement);
 const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(900,600),.08,.28,.92));composer.addPass(new OutputPass());
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.055;controls.target.set(0,0,0);controls.minDistance=25;controls.maxDistance=520;controls.autoRotateSpeed=.35;
@@ -105,6 +105,8 @@ const starGeo=new THREE.BufferGeometry(),starPos=[];for(let i=0;i<520;i++){const
 const root=new THREE.Group();scene.add(root);
 const groups={hull:new THREE.Group(),bridge:new THREE.Group(),egas:new THREE.Group(),propulsion:new THREE.Group(),radiators:new THREE.Group(),habitat:new THREE.Group(),field:new THREE.Group(),antenna:new THREE.Group(),landing:new THREE.Group(),power:new THREE.Group(),interior:new THREE.Group()};
 Object.values(groups).forEach(g=>root.add(g));
+// Referências de diagnóstico: não alteram a hierarquia nem a geometria da baseline.
+window.__spectraRoot=root;window.__spectraGroups=groups;window.__spectraTHREE=THREE;
 const M={
  hull:new THREE.MeshStandardMaterial({color:0x536777,metalness:.68,roughness:.34}),
  armor:new THREE.MeshStandardMaterial({color:0x354957,metalness:.72,roughness:.34}),
@@ -603,9 +605,12 @@ function cameraPreset(v){
   const depth=corner.dot(direction);
   fitDistance=Math.max(fitDistance,depth+Math.abs(corner.dot(right))/tanH,depth+Math.abs(corner.dot(viewUp))/tanV);
  }
+ // O envelope maior exige ampliar o alcance da névoa para não ocultar a nave nas vistas laterais e isométrica.
+ if(scene.fog){scene.fog.near=Math.max(190,fitDistance*.7);scene.fog.far=Math.max(390,fitDistance*1.7)}
  controls.target.copy(center);
  camera.position.copy(center).addScaledVector(direction,fitDistance*1.24);
- controls.minDistance=Math.max(16,fitDistance*.32);controls.maxDistance=fitDistance*4;controls.update()
+ controls.minDistance=Math.max(16,fitDistance*.32);controls.maxDistance=fitDistance*4;controls.update();
+ window.__spectraCameraMetrics={view:v,fitDistance,cameraDistance:camera.position.distanceTo(center),fogNear:scene.fog?.near??null,fogFar:scene.fog?.far??null};
 }
 function atomCamera(){controls.minDistance=.15;controls.maxDistance=8;camera.position.set(2.5,1.8,3);controls.target.set(0,0,0);controls.update();e192Nucleus.visible=true;e192Cloud.visible=false}
 function setScale(mode){
@@ -623,9 +628,35 @@ document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click',()=>{if(scaleMode==='ship'){if(b.dataset.camera==='interior')showInterior();else cameraPreset(b.dataset.camera)}}));
 $('resetCamera').onclick=()=>scaleMode==='atom'?atomCamera():scaleMode==='engine'?engineCamera():cameraPreset('iso');
 $('fit').onclick=()=>$('resetCamera').click();
-function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/160,H/37.5,W/96);cameraBoundsCache=null;$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
+// O envelope local é medido uma única vez antes de aplicar a escala física.
+let baselineLocalEnvelope=null;
+function setDims(){
+ const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;
+ if(!baselineLocalEnvelope){
+  root.scale.set(1,1,1);root.updateMatrixWorld(true);
+  const localBox=new THREE.Box3().setFromObject(root),localSize=localBox.getSize(new THREE.Vector3());
+  if(![localSize.x,localSize.y,localSize.z].every(v=>Number.isFinite(v)&&v>0))throw new Error('Bounding box local inválido: '+localSize.toArray());
+  baselineLocalEnvelope={length:localSize.x,height:localSize.y,width:localSize.z};
+ }
+ // Uma transformação única no grupo raiz mantém todas as relações entre componentes.
+ root.scale.set(L/baselineLocalEnvelope.length,H/baselineLocalEnvelope.height,W/baselineLocalEnvelope.width);
+ root.updateMatrixWorld(true);
+ const renderedBox=new THREE.Box3().setFromObject(root),renderedSize=renderedBox.getSize(new THREE.Vector3());
+ window.__spectraRuntimeMetrics={
+  coordinateConvention:{X:'longitudinal',Y:'vertical',Z:'transversal'},
+  localEnvelope:baselineLocalEnvelope,
+  configured:{length:L,width:W,height:H},
+  rootScale:root.scale.toArray(),
+  renderedEnvelope:{length:renderedSize.x,width:renderedSize.z,height:renderedSize.y},
+  boundingBox:{min:renderedBox.min.toArray(),max:renderedBox.max.toArray()},
+  envelopeMatches:Math.abs(renderedSize.x-L)<.01&&Math.abs(renderedSize.z-W)<.01&&Math.abs(renderedSize.y-H)<.01
+ };
+ cameraBoundsCache=null;
+ $('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';
+ $('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m';
+}
 ['len','wid','hei'].forEach(id=>$(id).addEventListener('input',setDims));
-$('resetDims').onclick=()=>{$('len').value=160;$('wid').value=96;$('hei').value=48;setDims()};
+$('resetDims').onclick=()=>{$('len').value=250;$('wid').value=120;$('hei').value=80;setDims();$('resetCamera').click()};
 function updateCount(){const controls=[...document.querySelectorAll('[data-module]')];const n=controls.filter(ch=>ch.checked).length;$('statMods').textContent=n+' / '+controls.length}
 document.querySelectorAll('[data-module]').forEach(ch=>ch.addEventListener('change',()=>{groups[ch.dataset.module].visible=ch.checked;updateCount();log('Visibilidade atualizada: '+ch.parentElement.textContent.trim())}));
 function explode(v){const t=v/100;const dirs={hull:[0,0,0],bridge:[-1,1,0],egas:[0,0,0],propulsion:[1,0,0],radiators:[0,1,1],habitat:[0,-1,1],field:[0,0,-1],antenna:[-1,1,0],landing:[0,-1,0],power:[1,1,0],interior:[0,0,0]};Object.entries(groups).forEach(([k,g])=>g.position.set(dirs[k][0]*t*19,dirs[k][1]*t*15,dirs[k][2]*t*20));cameraBoundsCache=null;$('explodeOut').textContent=Math.round(v)+'%';$('statState').textContent=t?'EXPLODIDA':'MONTADA';exploded=t>0}
