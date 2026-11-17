@@ -61,7 +61,7 @@ jobs:
 
       - name: Capture reconstructed seven views and test controls
         env:
-          SPECTRA_URL: http://127.0.0.1:4173/nave/
+          SPECTRA_URL: http://127.0.0.1:4173/nave/?geometry=blockout
           SPECTRA_OUTPUT: artifacts/spectra-axis/candidate
           SPECTRA_REQUIRE_GEOMETRY_VERSION: '1'
         run: node scripts/spectra-axis-visual-check.mjs
