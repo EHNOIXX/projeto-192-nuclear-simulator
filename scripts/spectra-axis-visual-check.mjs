@@ -35,6 +35,10 @@ try {
   for (const [name, camera] of views) {
     await page.locator(`[data-camera="${camera}"]`).evaluate(el => el.click());
     await page.waitForTimeout(900);
+    const cameraState = await page.evaluate(() => ({ camera: window.__spectraCameraMetrics || null, drawCalls: window.__spectraRenderer?.info?.render?.calls ?? 0 }));
+    if (!cameraState.camera || cameraState.camera.view !== camera || cameraState.camera.fogFar <= cameraState.camera.cameraDistance || cameraState.drawCalls <= 0) {
+      throw new Error(`Câmera ou renderização inválida na vista ${name}: ${JSON.stringify(cameraState)}`);
+    }
     const rect = await page.locator('#viewport').evaluate(el => { const r = el.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; });
     const capture = await cdp.send('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false, clip: { ...rect, scale: 1 } });
     await fs.writeFile(`${out}/spectra-axis-${name}.png`, Buffer.from(capture.data, 'base64'));
@@ -91,7 +95,7 @@ try {
   }
   if (errors.length) throw new Error('Erros de console/runtime: ' + errors.join(' | '));
 
-  await fs.writeFile(`${out}/validation.json`, JSON.stringify({ status: 'passed', startup_ms_from_navigation: startupMs, canvas: canvasSize, views: views.map(([name]) => name), dimensions, measured_rendered_bbox: measured, final_runtime_metrics: runtime, controls: ['orbit', 'module visibility', 'individual selection', 'hide/restore', 'section cut', 'assembled mode'] }, null, 2));
+  await fs.writeFile(`${out}/validation.json`, JSON.stringify({ status: 'passed', startup_ms_from_navigation: startupMs, canvas: canvasSize, views: views.map(([name]) => name), dimensions, measured_rendered_bbox: measured, final_runtime_metrics: runtime, camera_metrics: await page.evaluate(() => window.__spectraCameraMetrics || null), controls: ['orbit', 'module visibility', 'individual selection', 'hide/restore', 'section cut', 'assembled mode'] }, null, 2));
   console.log(`SPECTRA-AXIS visual validation passed; startup=${startupMs}ms; canvas=${canvasSize.width}x${canvasSize.height}`);
 } catch (error) {
   await fs.writeFile(`${out}/validation-error.txt`, String(error.stack || error));
