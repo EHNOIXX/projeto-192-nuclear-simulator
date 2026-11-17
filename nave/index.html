@@ -175,31 +175,30 @@ function modulePod(id,label,center,dims,material=M.hull){
 function smoothProfile(u){u=THREE.MathUtils.clamp(u,0,1);return u*u*(3-2*u)}
 // Planta oficial: proa longa (X negativo), ombros largos no terço central e
 // contração curta na popa (X positivo). Altura e largura têm perfis independentes.
+// Casco monocoque paramétrico de bloco: uma única pele contínua, sem cápsulas sobrepostas.
+// X: proa (-80) -> popa (+80); Y: dorsal (+) / ventral (-); Z: bombordo (-) / estibordo (+).
+// A seção é um superelipsoide achatado; os perfis longitudinais de altura e largura são independentes.
 function axisHullProfile(t){
- if(t<.37)return Math.pow(Math.sin(smoothProfile(t/.37)*Math.PI/2),.82);
- if(t>.90)return .96-.48*smoothProfile((t-.90)/.10);
- return .94+.06*smoothProfile((t-.37)/.17);
+ const smooth=u=>smoothProfile(u);
+ if(t<.39)return Math.pow(Math.sin(smooth(t/.39)*Math.PI/2),.88);
+ if(t<.80)return .985+.015*smooth((t-.39)/.18);
+ return Math.pow(Math.cos(smooth((t-.80)/.20)*Math.PI/2),.78);
 }
 function axisHullWidthProfile(t){
- if(t<.39)return Math.pow(Math.sin(smoothProfile(t/.39)*Math.PI/2),.72);
- if(t>.86)return .98-.48*smoothProfile((t-.86)/.14);
- if(t<.55)return .94+.06*smoothProfile((t-.39)/.16);
- if(t<.76)return 1;
- return 1-.02*smoothProfile((t-.76)/.10);
+ if(t<.43)return Math.pow(Math.sin(smoothProfile(t/.43)*Math.PI/2),.72);
+ if(t<.82)return .985+.015*smoothProfile((t-.43)/.16);
+ return Math.pow(Math.cos(smoothProfile((t-.82)/.18)*Math.PI/2),.68);
 }
-function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64,profileMode='capsule'){
+function axisHullGeometry(length,halfHeight,halfWidth,segments=192,radial=96,profileMode='hull'){
  const positions=[],indices=[];
  for(let i=0;i<=segments;i++){
   const t=i/segments,x=(t-.5)*length;
-  const py=profileMode==='hull'?axisHullProfile(t):Math.pow(Math.max(0,Math.sin(Math.PI*t)),.78);
-  const pz=profileMode==='hull'?axisHullWidthProfile(t):Math.pow(Math.max(0,Math.sin(Math.PI*t)),.78);
+  const py=axisHullProfile(t),pz=axisHullWidthProfile(t);
   for(let j=0;j<=radial;j++){
    const a=j/radial*Math.PI*2,cs=Math.cos(a),sn=Math.sin(a);
-   const shoulderX=profileMode==='hull'
-     ? smoothProfile((t-.22)/.12)*(1-smoothProfile((t-.94)/.06)) : 0;
-   const y=halfHeight*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.08)+(profileMode==='hull'?2.5*shoulderX*Math.pow(Math.abs(sn),5)*Math.sign(cs):0);
-   const shoulder=profileMode==='hull'?18.0*shoulderX*Math.pow(Math.abs(sn),5):0;
-   const z=(halfWidth*pz+shoulder)*Math.sign(sn)*Math.pow(Math.abs(sn),1.02);
+   // Expoente >1 no eixo vertical achata dorso e ventre; expoente <1 alarga os ombros.
+   const y=halfHeight*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.22);
+   const z=halfWidth*pz*Math.sign(sn)*Math.pow(Math.abs(sn),.78);
    positions.push(x,y,z);
   }
  }
@@ -211,17 +210,16 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64,pro
  g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
  g.setIndex(indices);g.computeVertexNormals();g.computeBoundingBox();return g;
 }
-function hullProfileAtX(x,halfHeight=14.5,length=160){
+function hullProfileAtX(x,halfHeight=15,length=160){
  const t=Math.max(0,Math.min(1,x/length+.5));
  return halfHeight*axisHullProfile(t);
 }
 function hullSurfacePoint(x,theta,offset=0){
  const t=Math.max(0,Math.min(1,x/160+.5)),py=axisHullProfile(t),pz=axisHullWidthProfile(t);
  const cs=Math.cos(theta),sn=Math.sin(theta);
- const shoulderX=smoothProfile((t-.22)/.12)*(1-smoothProfile((t-.94)/.06));
- const y=14.5*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.08)+2.5*shoulderX*Math.pow(Math.abs(sn),5)*Math.sign(cs);
- const z=(30*pz+18.0*shoulderX*Math.pow(Math.abs(sn),5))*Math.sign(sn)*Math.pow(Math.abs(sn),1.02);
- const n=new THREE.Vector3(0,cs/(14.5*Math.max(py,.001)),sn/(48*Math.max(pz,.001))).normalize();
+ const y=15*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.22);
+ const z=48*pz*Math.sign(sn)*Math.pow(Math.abs(sn),.78);
+ const n=new THREE.Vector3(0,cs/(15*Math.max(py,.001)),sn/(48*Math.max(pz,.001))).normalize();
  return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
 }
 function hullArmorPatch(x0,x1,a0,a1){
@@ -240,7 +238,7 @@ function hullSeamCurve(x0,x1,angle){
 }
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
- const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,14.5,30,160,80,'hull'),M.hull,[0,0,0]);
+ const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,15,48,192,96,'hull'),M.hull,[0,0,0]);
  // Módulos laterais integrados por ombros lobados na própria malha do casco.
  // Janelas e painéis ficam conformados à superfície; não existem cápsulas independentes.
  for(const side of [-1,1]){
@@ -458,7 +456,18 @@ function hullSurface(){
  }
 }
 hullSurface();
-window.__spectraGeometryVersion='blueprint-v2';
+const hullBlockoutMode=new URLSearchParams(location.search).get('geometry')==='blockout';
+if(hullBlockoutMode){
+ // Estágio de aprovação da silhueta: somente a superfície monocoque permanece visível.
+ for(const group of Object.values(groups)){
+  group.visible=group===groups.hull;
+  for(const object of group.children)object.visible=object===named.primary_pressure_hull;
+ }
+ labelsGroup.visible=false;
+ window.__spectraGeometryVersion='blueprint-blockout-v1';
+}else{
+ window.__spectraGeometryVersion='blueprint-v3-monocoque';
+}
 // Compensação da escala transversal para manter os três bocais circulares no plano Y–Z.
 for(const o of groups.propulsion.children){if(/^(aft_engine_|engine_nozzle_|engine_casing_collar_|engine_exit_glow_)/.test(o.name))o.scale.z=1.706;}
 
@@ -636,7 +645,7 @@ document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click',()=>{if(scaleMode==='ship'){if(b.dataset.camera==='interior')showInterior();else cameraPreset(b.dataset.camera)}}));
 $('resetCamera').onclick=()=>scaleMode==='atom'?atomCamera():scaleMode==='engine'?engineCamera():cameraPreset('iso');
 $('fit').onclick=()=>$('resetCamera').click();
-function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(1,1,1);root.updateMatrixWorld(true);const localSize=new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());root.scale.set(L/localSize.x,H/localSize.y,W/localSize.z);root.updateMatrixWorld(true);cameraBoundsCache=null;const shipSize=new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());window.__spectraShipDimensions={length:+shipSize.x.toFixed(2),height:+shipSize.y.toFixed(2),width:+shipSize.z.toFixed(2)};const hb=new THREE.Box3().setFromObject(named.primary_pressure_hull);const hs=hb.getSize(new THREE.Vector3());window.__spectraHullDimensions={length:+hs.x.toFixed(2),height:+hs.y.toFixed(2),width:+hs.z.toFixed(2)};$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
+function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;const dimensionSource=hullBlockoutMode?named.primary_pressure_hull:root;root.scale.set(1,1,1);root.updateMatrixWorld(true);const localSize=new THREE.Box3().setFromObject(dimensionSource).getSize(new THREE.Vector3());root.scale.set(L/localSize.x,H/localSize.y,W/localSize.z);root.updateMatrixWorld(true);cameraBoundsCache=null;const shipSize=new THREE.Box3().setFromObject(dimensionSource).getSize(new THREE.Vector3());window.__spectraShipDimensions={length:+shipSize.x.toFixed(2),height:+shipSize.y.toFixed(2),width:+shipSize.z.toFixed(2)};const hb=new THREE.Box3().setFromObject(named.primary_pressure_hull);const hs=hb.getSize(new THREE.Vector3());window.__spectraHullDimensions={length:+hs.x.toFixed(2),height:+hs.y.toFixed(2),width:+hs.z.toFixed(2)};$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
 ['len','wid','hei'].forEach(id=>$(id).addEventListener('input',setDims));
 $('resetDims').onclick=()=>{$('len').value=2500;$('wid').value=1200;$('hei').value=800;setDims()};
 function updateCount(){const controls=[...document.querySelectorAll('[data-module]')];const n=controls.filter(ch=>ch.checked).length;$('statMods').textContent=n+' / '+controls.length}
