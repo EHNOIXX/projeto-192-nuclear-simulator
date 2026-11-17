@@ -78,12 +78,20 @@ try {
     width: await page.locator('#statWid').textContent(),
     height: await page.locator('#statHei').textContent()
   };
-  if (dimensions.length !== '160 m' || dimensions.width !== '96 m' || dimensions.height !== '48 m') {
+  if (dimensions.length !== '250 m' || dimensions.width !== '120 m' || dimensions.height !== '80 m') {
     throw new Error(`Envelope dimensional inesperado: ${JSON.stringify(dimensions)}`);
+  }
+  const runtime = await page.evaluate(() => window.__spectraRuntimeMetrics || null);
+  if (!runtime || !runtime.envelopeMatches) throw new Error('Envelope medido não corresponde à configuração: ' + JSON.stringify(runtime));
+  const expected = { length: 250, width: 120, height: 80 };
+  for (const key of Object.keys(expected)) {
+    if (Math.abs(runtime.renderedEnvelope[key] - expected[key]) > 0.01) {
+      throw new Error(`Bounding box ${key} divergente: ${runtime.renderedEnvelope[key]} vs ${expected[key]}`);
+    }
   }
   if (errors.length) throw new Error('Erros de console/runtime: ' + errors.join(' | '));
 
-  await fs.writeFile(`${out}/validation.json`, JSON.stringify({ status: 'passed', startup_ms_from_navigation: startupMs, canvas: canvasSize, views: views.map(([name]) => name), dimensions, measured_baseline_bbox: measured, controls: ['orbit', 'module visibility', 'individual selection', 'hide/restore', 'section cut', 'assembled mode'] }, null, 2));
+  await fs.writeFile(`${out}/validation.json`, JSON.stringify({ status: 'passed', startup_ms_from_navigation: startupMs, canvas: canvasSize, views: views.map(([name]) => name), dimensions, baseline_actual_bbox: measured, final_runtime_metrics: runtime, controls: ['orbit', 'module visibility', 'individual selection', 'hide/restore', 'section cut', 'assembled mode'] }, null, 2));
   console.log(`SPECTRA-AXIS visual validation passed; startup=${startupMs}ms; canvas=${canvasSize.width}x${canvasSize.height}`);
 } catch (error) {
   await fs.writeFile(`${out}/validation-error.txt`, String(error.stack || error));
