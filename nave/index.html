@@ -178,58 +178,80 @@ function smoothProfile(u){u=THREE.MathUtils.clamp(u,0,1);return u*u*(3-2*u)}
 // Casco monocoque paramétrico de bloco: uma única pele contínua, sem cápsulas sobrepostas.
 // X: proa (-80) -> popa (+80); Y: dorsal (+) / ventral (-); Z: bombordo (-) / estibordo (+).
 // A seção é um superelipsoide achatado; os perfis longitudinais de altura e largura são independentes.
-function axisHullProfile(t){
- const smooth=u=>smoothProfile(u);
- if(t<.39)return Math.pow(Math.sin(smooth(t/.39)*Math.PI/2),.88);
- if(t<.82)return 1;
- return 1-.30*smooth((t-.82)/.18);
+// Estações extraídas da leitura conjunta das seis vistas da prancha:
+// proa longa; ombros laterais integrados; corpo central cheio; popa recuada no centro
+// e prolongada em dois lóbulos laterais. X negativo = proa; X positivo = popa.
+const AXIS_HULL_STATIONS=[
+ [0,.002,.002],[.035,.075,.09],[.08,.19,.20],[.15,.37,.36],
+ [.24,.61,.56],[.34,.80,.75],[.45,.93,.88],[.56,1,.96],
+ [.66,.99,.94],[.75,.94,.87],[.84,.86,.78],[.92,.77,.69],[1,.68,.58]
+];
+function axisStationValue(t,column){
+ const q=Math.max(0,Math.min(1,t));
+ let i=0;while(i<AXIS_HULL_STATIONS.length-2&&q>AXIS_HULL_STATIONS[i+1][0])i++;
+ const a=AXIS_HULL_STATIONS[i],b=AXIS_HULL_STATIONS[i+1];
+ const u=smoothProfile((q-a[0])/(b[0]-a[0]));
+ return a[column]+(b[column]-a[column])*u;
 }
-function axisHullWidthProfile(t){
- if(t<.43)return Math.pow(Math.sin(smoothProfile(t/.43)*Math.PI/2),.72);
- if(t<.82)return 1;
- return 1-.24*smoothProfile((t-.82)/.18);
+function axisHullProfile(t){return axisStationValue(t,2)}
+function axisHullWidthProfile(t){return axisStationValue(t,1)}
+function axisHullSection(t,theta,halfHeight,halfWidth,length){
+ const cs=Math.cos(theta),sn=Math.sin(theta),side=Math.abs(sn);
+ const shoulder=Math.exp(-Math.pow((side-.79)/.17,2));
+ const shoulderGate=smoothProfile((t-.16)/.20)*(1-smoothProfile((t-.96)/.04));
+ const aftGate=smoothProfile((t-.69)/.20);
+ const aftLobe=Math.exp(-Math.pow((side-.84)/.14,2));
+ const widthFactor=1+.105*shoulder*shoulderGate+.105*aftLobe*aftGate;
+ // A popa possui duas extensões laterais; a linha central termina antes delas.
+ const x=-length*.5+length*.91*t+length*.09*t+length*.095*aftGate*aftLobe;
+ const py=axisHullProfile(t),pz=axisHullWidthProfile(t);
+ const y0=halfHeight*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.48);
+ const dorsal=Math.pow(Math.max(0,cs),10)*Math.exp(-Math.pow((t-.535)/.085,2))*Math.exp(-Math.pow(sn/.24,2));
+ const y=y0+halfHeight*.105*dorsal;
+ const z=halfWidth*pz*widthFactor*Math.sign(sn)*Math.pow(Math.abs(sn),.76);
+ return {x,y,z};
 }
-function axisHullGeometry(length,halfHeight,halfWidth,segments=192,radial=96,profileMode='hull'){
+function axisHullGeometry(length,halfHeight,halfWidth,segments=240,radial=128,profileMode='hull'){
  const positions=[],indices=[];
  for(let i=0;i<=segments;i++){
-  const t=i/segments,x=(t-.5)*length;
-  const py=axisHullProfile(t),pz=axisHullWidthProfile(t);
+  const t=i/segments;
   for(let j=0;j<=radial;j++){
-   const a=j/radial*Math.PI*2,cs=Math.cos(a),sn=Math.sin(a);
-   // Expoente >1 no eixo vertical achata dorso e ventre; expoente <1 alarga os ombros.
-   const y=halfHeight*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.22);
-   const z=halfWidth*pz*Math.sign(sn)*Math.pow(Math.abs(sn),.78);
-   positions.push(x,y,z);
+   const p=axisHullSection(t,j/radial*Math.PI*2,halfHeight,halfWidth,length);
+   positions.push(p.x,p.y,p.z);
   }
  }
  for(let i=0;i<segments;i++)for(let j=0;j<radial;j++){
   const a=i*(radial+1)+j,b=a+radial+1;
   indices.push(a,a+1,b,b,a+1,b+1);
  }
- // Fechamento plano da popa: o casco termina em um convés estrutural largo,
- // não em uma segunda ponta afilada. Vértices duplicados preservam a aresta do cap.
- const capStart=positions.length/3, tEnd=1, pyEnd=axisHullProfile(tEnd), pzEnd=axisHullWidthProfile(tEnd), xEnd=length/2;
+ // Tampa curva de popa, seguindo os dois prolongamentos laterais da planta.
+ const capStart=positions.length/3;
  for(let j=0;j<=radial;j++){
-  const a=j/radial*Math.PI*2,cs=Math.cos(a),sn=Math.sin(a);
-  positions.push(xEnd,halfHeight*pyEnd*Math.sign(cs)*Math.pow(Math.abs(cs),1.22),halfWidth*pzEnd*Math.sign(sn)*Math.pow(Math.abs(sn),.78));
+  const p=axisHullSection(1,j/radial*Math.PI*2,halfHeight,halfWidth,length);
+  positions.push(p.x,p.y,p.z);
  }
- const capCenter=positions.length/3;positions.push(xEnd,0,0);
+ const capCenter=positions.length/3;
+ positions.push(length*.5,0,0);
  for(let j=0;j<radial;j++)indices.push(capStart+j,capStart+j+1,capCenter);
  const g=new THREE.BufferGeometry();
  g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
  g.setIndex(indices);g.computeVertexNormals();g.computeBoundingBox();return g;
 }
-function hullProfileAtX(x,halfHeight=15,length=160){
+function hullProfileAtX(x,halfHeight=25.6,length=160){
  const t=Math.max(0,Math.min(1,x/length+.5));
  return halfHeight*axisHullProfile(t);
 }
 function hullSurfacePoint(x,theta,offset=0){
- const t=Math.max(0,Math.min(1,x/160+.5)),py=axisHullProfile(t),pz=axisHullWidthProfile(t);
- const cs=Math.cos(theta),sn=Math.sin(theta);
- const y=15*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.22);
- const z=48*pz*Math.sign(sn)*Math.pow(Math.abs(sn),.78);
- const n=new THREE.Vector3(0,cs/(15*Math.max(py,.001)),sn/(48*Math.max(pz,.001))).normalize();
- return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
+ const t=Math.max(0,Math.min(1,x/160+.5));
+ const p=axisHullSection(t,theta,25.6,38.4,160);
+ const eps=.001;
+ const pA=axisHullSection(Math.max(0,t-eps),theta,25.6,38.4,160);
+ const pB=axisHullSection(Math.min(1,t+eps),theta,25.6,38.4,160);
+ const tangent=new THREE.Vector3(pB.x-pA.x,pB.y-pA.y,pB.z-pA.z);
+ const angular=axisHullSection(t,theta+.001,25.6,38.4,160);
+ const around=new THREE.Vector3(angular.x-p.x,angular.y-p.y,angular.z-p.z);
+ const n=tangent.cross(around).normalize();
+ return new THREE.Vector3(p.x,p.y,p.z).addScaledVector(n,offset);
 }
 function hullArmorPatch(x0,x1,a0,a1){
  const nx=16,na=10,positions=[],indices=[],stride=(nx+1)*(na+1),idx=(i,j)=>i*(na+1)+j;
@@ -247,7 +269,7 @@ function hullSeamCurve(x0,x1,angle){
 }
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
- const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,15,48,192,96,'hull'),M.hull,[0,0,0]);
+ const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,25.6,38.4,240,128,'hull'),M.hull,[0,0,0]);
  // Módulos laterais integrados por ombros lobados na própria malha do casco.
  // Janelas e painéis ficam conformados à superfície; não existem cápsulas independentes.
  for(const side of [-1,1]){
@@ -467,16 +489,20 @@ function hullSurface(){
 hullSurface();
 const hullBlockoutMode=new URLSearchParams(location.search).get('geometry')==='blockout';
 if(hullBlockoutMode){
- // Estágio de aprovação da silhueta: somente a superfície monocoque permanece visível.
+ // Blockout de arquitetura: casco deformado, ombros laterais e três bocais de popa.
+ // Só entram os elementos que alteram a silhueta oficial; todo o acabamento segue oculto.
  for(const group of Object.values(groups)){
-  group.visible=group===groups.hull;
-  for(const object of group.children)object.visible=object===named.primary_pressure_hull;
+  group.visible=group===groups.hull||group===groups.propulsion;
+  for(const object of group.children){
+   const enginePart=/^(aft_engine_|engine_nozzle_|engine_casing_collar_|engine_exit_glow_)/.test(object.name);
+   object.visible=group===groups.hull?object===named.primary_pressure_hull:enginePart;
+  }
  }
  labelsGroup.visible=false;
  window.__spectraBlockoutVisible=Object.values(groups).flatMap(group=>group.children.filter(object=>group.visible&&object.visible).map(object=>object.name));
- window.__spectraGeometryVersion='blueprint-blockout-v1';
+ window.__spectraGeometryVersion='blueprint-silhouette-v2';
 }else{
- window.__spectraGeometryVersion='blueprint-v3-monocoque';
+ window.__spectraGeometryVersion='blueprint-v4-plantform';
 }
 // Compensação da escala transversal para manter os três bocais circulares no plano Y–Z.
 for(const o of groups.propulsion.children){if(/^(aft_engine_|engine_nozzle_|engine_casing_collar_|engine_exit_glow_)/.test(o.name))o.scale.z=1.706;}
