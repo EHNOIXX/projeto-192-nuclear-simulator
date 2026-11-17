@@ -172,25 +172,38 @@ function modulePod(id,label,center,dims,material=M.hull){
  tor(id+'_hatch_rim',label+' — aro da escotilha','habitat',1.3,.12,M.edge,[x,y,z-Math.sign(z)*(d*.5)],[Math.PI/2,0,0]);
  label3D(label,[x,y+h/2+3,z],2.1);
 }
-function axisHullProfile(t){
- // Perfil recuperado da base visual mais esguia: proa longa, ombros contidos,
- // seção central estável e contração progressiva na popa.
- const smooth=u=>{u=THREE.MathUtils.clamp(u,0,1);return u*u*(3-2*u)};
- if(t<.29)return Math.pow(Math.sin(smooth(t/.29)*Math.PI/2),.82);
- if(t>.77)return Math.pow(1-smooth((t-.77)/.23),.76);
- const rise=smooth((t-.29)/.13),fall=1-smooth((t-.65)/.12);
- return .88+.12*rise*fall;
+// Perfil experimental do CASCO PRINCIPAL (não altera pods, propulsores ou demais grupos).
+// Estações normalizadas lidas da prancha: proa longa e estreita, ombros que abrem
+// gradualmente, corpo central largo/achatado e popa que fecha sem virar uma ponta.
+const PRIMARY_HULL_STATIONS=[
+ [0,0,0],[.055,.055,.10],[.12,.16,.25],[.20,.34,.48],
+ [.30,.57,.72],[.40,.79,.89],[.51,.94,.98],[.62,1,1],
+ [.72,.98,.96],[.81,.91,.87],[.89,.82,.76],[.96,.73,.66],[1,.68,.60]
+];
+function primaryHullSectionValue(t,column){
+ const q=THREE.MathUtils.clamp(t,0,1);
+ let i=0;while(i<PRIMARY_HULL_STATIONS.length-2&&q>PRIMARY_HULL_STATIONS[i+1][0])i++;
+ const a=PRIMARY_HULL_STATIONS[i],b=PRIMARY_HULL_STATIONS[i+1];
+ const p=PRIMARY_HULL_STATIONS[Math.max(0,i-1)],n=PRIMARY_HULL_STATIONS[Math.min(PRIMARY_HULL_STATIONS.length-1,i+2)];
+ const dx=b[0]-a[0],u=(q-a[0])/dx;
+ const d0=(a[column]-p[column])/(a[0]-p[0]||dx);
+ const d1=(n[column]-b[column])/(n[0]-b[0]||dx);
+ const m0=(a[column]===p[column]||a[column]===b[column])?0:d0;
+ const m1=(n[column]===b[column]||n[column]===a[column])?0:d1;
+ const u2=u*u,u3=u2*u;
+ return (2*u3-3*u2+1)*a[column]+(u3-2*u2+u)*dx*m0+(-2*u3+3*u2)*b[column]+(u3-u2)*dx*m1;
 }
-function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
+function primaryHullProfile(t){return primaryHullSectionValue(t,2)}
+function primaryHullWidthProfile(t){return primaryHullSectionValue(t,1)}
+function primaryHullGeometry(length=160,halfHeight=16,halfWidth=34,segments=224,radial=112){
  const positions=[],indices=[];
  for(let i=0;i<=segments;i++){
-  const t=i/segments,x=(t-.5)*length;
-  const profile=axisHullProfile(t);
+  const t=i/segments,x=(t-.5)*length,h=primaryHullProfile(t),w=primaryHullWidthProfile(t);
   for(let j=0;j<=radial;j++){
-   const a=j/radial*Math.PI*2;
-   const cs=Math.cos(a),sn=Math.sin(a);
-   const y=halfHeight*profile*Math.sign(cs)*Math.pow(Math.abs(cs),1.04);
-   const z=halfWidth*profile*Math.sign(sn)*Math.pow(Math.abs(sn),1.04);
+   const a=j/radial*Math.PI*2,cs=Math.cos(a),sn=Math.sin(a);
+   // Expoente vertical maior achata o casco; o lateral menor cria ombros largos e suaves.
+   const y=halfHeight*h*Math.sign(cs)*Math.pow(Math.abs(cs),1.34);
+   const z=halfWidth*w*Math.sign(sn)*Math.pow(Math.abs(sn),.82);
    positions.push(x,y,z);
   }
  }
@@ -198,21 +211,37 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
   const a=i*(radial+1)+j,b=a+radial+1;
   indices.push(a,a+1,b,b,a+1,b+1);
  }
+ // Fecha a popa com um disco na seção terminal, preservando a terminação larga da prancha.
+ const cap=positions.length/3;
+ for(let j=0;j<=radial;j++){
+  const a=j/radial*Math.PI*2,cs=Math.cos(a),sn=Math.sin(a);
+  positions.push(length/2,halfHeight*primaryHullProfile(1)*Math.sign(cs)*Math.pow(Math.abs(cs),1.34),
+   halfWidth*primaryHullWidthProfile(1)*Math.sign(sn)*Math.pow(Math.abs(sn),.82));
+ }
+ const center=positions.length/3;positions.push(length/2,0,0);
+ for(let j=0;j<radial;j++)indices.push(cap+j,cap+j+1,center);
  const g=new THREE.BufferGeometry();
  g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
- g.setIndex(indices);g.computeVertexNormals();return g;
+ g.setIndex(indices);g.computeVertexNormals();g.computeBoundingBox();g.computeBoundingSphere();return g;
 }
-function hullProfileAtX(x,halfHeight=13.5,length=160){
- const t=Math.max(0,Math.min(1,x/length+.5));
- return halfHeight*axisHullProfile(t);
+// Mantém as peças de acabamento ancoradas à mesma pele paramétrica do casco principal.
+function hullProfileAtX(x,halfHeight=16,length=160){
+ const t=THREE.MathUtils.clamp(x/length+.5,0,1);return halfHeight*primaryHullProfile(t);
 }
 function hullSurfacePoint(x,theta,offset=0){
- const t=Math.max(0,Math.min(1,x/160+.5)),p=axisHullProfile(t);
+ const t=THREE.MathUtils.clamp(x/160+.5,0,1),h=primaryHullProfile(t),w=primaryHullWidthProfile(t);
  const cs=Math.cos(theta),sn=Math.sin(theta);
- const y=13.5*p*Math.sign(cs)*Math.pow(Math.abs(cs),1.04);
- const z=28*p*Math.sign(sn)*Math.pow(Math.abs(sn),1.04);
- const n=new THREE.Vector3(0,cs/13.5,sn/28).normalize();
- return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
+ const y=16*h*Math.sign(cs)*Math.pow(Math.abs(cs),1.34);
+ const z=34*w*Math.sign(sn)*Math.pow(Math.abs(sn),.82);
+ const e=.0005,ta=primaryHullGeometryPoint(Math.min(1,t+e),theta),tb=primaryHullGeometryPoint(Math.max(0,t-e),theta);
+ const tangent=ta.sub(tb),around=primaryHullGeometryPoint(t,theta+.0005).sub(primaryHullGeometryPoint(t,theta));
+ const normal=around.cross(tangent).normalize();
+ return new THREE.Vector3(x,y,z).addScaledVector(normal,offset);
+}
+function primaryHullGeometryPoint(t,theta){
+ const cs=Math.cos(theta),sn=Math.sin(theta);
+ return new THREE.Vector3((t-.5)*160,16*primaryHullProfile(t)*Math.sign(cs)*Math.pow(Math.abs(cs),1.34),
+ 34*primaryHullWidthProfile(t)*Math.sign(sn)*Math.pow(Math.abs(sn),.82));
 }
 function hullArmorPatch(x0,x1,a0,a1){
  const nx=16,na=10,positions=[],indices=[],stride=(nx+1)*(na+1),idx=(i,j)=>i*(na+1)+j;
@@ -230,7 +259,7 @@ function hullSeamCurve(x0,x1,angle){
 }
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
- const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,13.5,28),M.hull,[0,0,0]);
+ const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',primaryHullGeometry(160,16,34,224,112),M.hull,[0,0,0]);
  // Naceles laterais externas, longas e baixas: silhueta de pods integrados da prancha oficial.
  for(const side of [-1,1]){
   add('axis_side_pod_'+side,'Nacele lateral de ombro integrada ao monocoque','hull',axisHullGeometry(70,2.7,4.6,112,56),M.armor,[27,-.6,side*40.2]);
