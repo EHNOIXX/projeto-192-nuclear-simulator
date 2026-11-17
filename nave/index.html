@@ -196,7 +196,7 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64,pro
   for(let j=0;j<=radial;j++){
    const a=j/radial*Math.PI*2,cs=Math.cos(a),sn=Math.sin(a);
    const shoulderX=profileMode==='hull'
-     ? smoothProfile((t-.22)/.12)*(1-smoothProfile((t-.82)/.15)) : 0;
+     ? smoothProfile((t-.22)/.12)*(1-smoothProfile((t-.94)/.06)) : 0;
    const y=halfHeight*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.08)+(profileMode==='hull'?2.5*shoulderX*Math.pow(Math.abs(sn),5)*Math.sign(cs):0);
    const shoulder=profileMode==='hull'?18.0*shoulderX*Math.pow(Math.abs(sn),5):0;
    const z=(halfWidth*pz+shoulder)*Math.sign(sn)*Math.pow(Math.abs(sn),1.02);
@@ -218,7 +218,7 @@ function hullProfileAtX(x,halfHeight=14.5,length=160){
 function hullSurfacePoint(x,theta,offset=0){
  const t=Math.max(0,Math.min(1,x/160+.5)),py=axisHullProfile(t),pz=axisHullWidthProfile(t);
  const cs=Math.cos(theta),sn=Math.sin(theta);
- const shoulderX=smoothProfile((t-.22)/.12)*(1-smoothProfile((t-.82)/.15));
+ const shoulderX=smoothProfile((t-.22)/.12)*(1-smoothProfile((t-.94)/.06));
  const y=14.5*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.08)+2.5*shoulderX*Math.pow(Math.abs(sn),5)*Math.sign(cs);
  const z=(30*pz+18.0*shoulderX*Math.pow(Math.abs(sn),5))*Math.sign(sn)*Math.pow(Math.abs(sn),1.02);
  const n=new THREE.Vector3(0,cs/(14.5*Math.max(py,.001)),sn/(48*Math.max(pz,.001))).normalize();
