@@ -26,9 +26,9 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <section class="workspace">
 <aside class="stack leftstack">
 <div class="panel"><div class="paneltitle">01 / GEOMETRIA GLOBAL</div><div class="panelbody">
-<label class="field">Comprimento de referência <output id="lenOut">160 m</output></label><input id="len" type="range" min="120" max="200" value="160">
-<label class="field">Largura máxima <output id="widOut">96 m</output></label><input id="wid" type="range" min="50" max="120" value="96">
-<label class="field">Altura máxima <output id="heiOut">48 m</output></label><input id="hei" type="range" min="25" max="70" value="48">
+<label class="field">Comprimento de referência <output id="lenOut">2500 m</output></label><input id="len" type="range" min="2000" max="3000" step="10" value="2500">
+<label class="field">Largura máxima <output id="widOut">1200 m</output></label><input id="wid" type="range" min="900" max="1500" step="10" value="1200">
+<label class="field">Altura máxima <output id="heiOut">800 m</output></label><input id="hei" type="range" min="600" max="1000" step="10" value="800">
 <div class="btnrow" style="margin-top:13px"><button class="btn" id="resetDims">RESTAURAR DIMENSÕES</button><button class="btn" id="fit">ENQUADRAR</button></div>
 <p class="hint">Envelope visual do modelo: comprimento, largura e altura do conjunto 3D; valores conceituais, não validados. Ajustes escalam o modelo inteiro; não validam engenharia estrutural.</p></div></div>
 <div class="panel"><div class="paneltitle">02 / MÓDULOS VISÍVEIS</div><div class="panelbody modulelist" id="modules">
@@ -66,8 +66,8 @@ main{max-width:1800px;margin:auto;padding:22px 24px 36px}.intro{display:flex;ali
 <aside class="stack rightstack">
 <div class="panel"><div class="paneltitle">06 / INSPEÇÃO DE COMPONENTE</div><div class="panelbody selectedInfo" id="selectionInfo"><strong>Nenhum componente selecionado</strong>Clique em uma parte da nave para consultar sua descrição e categoria.<span class="tag">SELEÇÃO 3D</span></div></div>
 <div class="panel"><div class="paneltitle">07 / TELEMETRIA DO MODELO</div><div class="readout">
-<div class="stat"><span>COMPRIMENTO</span><b id="statLen">160 m</b></div><div class="stat"><span>LARGURA</span><b id="statWid">96 m</b></div>
-<div class="stat"><span>ALTURA</span><b id="statHei">48 m</b></div><div class="stat"><span>MÓDULOS ATIVOS</span><b id="statMods">9 / 10</b></div>
+<div class="stat"><span>COMPRIMENTO</span><b id="statLen">2500 m</b></div><div class="stat"><span>LARGURA</span><b id="statWid">1200 m</b></div>
+<div class="stat"><span>ALTURA</span><b id="statHei">800 m</b></div><div class="stat"><span>MÓDULOS ATIVOS</span><b id="statMods">9 / 10</b></div>
 <div class="stat"><span>ESTADO DA CENA</span><b id="statState">MONTADA</b></div><div class="stat"><span>MODELO</span><b>CONCEITUAL</b></div>
 </div></div>
 <div class="panel warning"><div class="paneltitle">08 / INTEGRIDADE CIENTÍFICA</div><div class="panelbody">A nave e sua arquitetura de propulsão são hipóteses de pesquisa. A existência do E-192 não foi confirmada e o EGAS não é um motor demonstrado. O simulador não calcula desempenho, sustentação, radiação, proteção, energia ou trajetórias reais.<br><br>Os componentes são formas 3D de comunicação visual, sem tolerâncias ou instruções construtivas.</div></div>
@@ -262,6 +262,11 @@ function hullSeamCurve(x0,x1,angle){
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
  const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',primaryHullGeometry(160,16,34,224,112),M.hull,[0,0,0]);
+ primary.userData.geometryBuilder='primaryHullGeometry';
+ window.__spectraHullBuilder='primaryHullGeometry';
+ window.__spectraHullMeshName=primary.name;
+ // Identificador TEMPORÁRIO de auditoria visual; será removido após a captura independente.
+ add('temporary_experimental_hull_marker','IDENTIFICADOR TEMPORÁRIO — CASCO EXPERIMENTAL','hull',new THREE.SphereGeometry(1.15,16,12),M.cyan,[-8,10.5,29]);
  // Naceles laterais externas, longas e baixas: silhueta de pods integrados da prancha oficial.
  for(const side of [-1,1]){
   add('axis_side_pod_'+side,'Nacele lateral de ombro integrada ao monocoque','hull',axisHullGeometry(70,2.7,4.6,112,56),M.armor,[27,-.6,side*40.2]);
@@ -654,9 +659,36 @@ document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click',()=>{if(scaleMode==='ship'){if(b.dataset.camera==='interior')showInterior();else cameraPreset(b.dataset.camera)}}));
 $('resetCamera').onclick=()=>scaleMode==='atom'?atomCamera():scaleMode==='engine'?engineCamera():cameraPreset('iso');
 $('fit').onclick=()=>$('resetCamera').click();
-function setDims(){const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;root.scale.set(L/160,H/37.5,W/96);cameraBoundsCache=null;$('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';$('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m'}
+let modelBaseEnvelope=null;
+function setDims(){
+ const L=+$('len').value,W=+$('wid').value,H=+$('hei').value;
+ // Calibra o envelope uma única vez a partir da bounding box real do conjunto montado.
+ if(!modelBaseEnvelope){
+  root.scale.set(1,1,1);root.updateMatrixWorld(true);
+  const baseBox=new THREE.Box3().setFromObject(root),baseSize=baseBox.getSize(new THREE.Vector3());
+  if(![baseSize.x,baseSize.y,baseSize.z].every(v=>Number.isFinite(v)&&v>0))throw new Error('Envelope-base inválido: '+baseSize.toArray());
+  modelBaseEnvelope={length:baseSize.x,height:baseSize.y,width:baseSize.z};
+ }
+ root.scale.set(L/modelBaseEnvelope.length,H/modelBaseEnvelope.height,W/modelBaseEnvelope.width);
+ root.updateMatrixWorld(true);
+ const shipBox=new THREE.Box3().setFromObject(root),shipSize=shipBox.getSize(new THREE.Vector3());
+ const hull=named.primary_pressure_hull;hull.updateWorldMatrix(true,false);
+ const hullBox=new THREE.Box3().setFromObject(hull),hullSize=hullBox.getSize(new THREE.Vector3());
+ window.__spectraRuntimeMetrics={
+  builder:window.__spectraHullBuilder,meshName:window.__spectraHullMeshName,
+  configured:{length:L,width:W,height:H},
+  baseEnvelope:modelBaseEnvelope,
+  renderedEnvelope:{length:shipSize.x,width:shipSize.z,height:shipSize.y},
+  primaryHullWorldBounds:{min:hullBox.min.toArray(),max:hullBox.max.toArray()},
+  primaryHullWorldSize:{length:hullSize.x,width:hullSize.z,height:hullSize.y},
+  envelopeMatches:Math.abs(shipSize.x-L)<.05&&Math.abs(shipSize.z-W)<.05&&Math.abs(shipSize.y-H)<.05
+ };
+ cameraBoundsCache=null;
+ $('lenOut').textContent=L+' m';$('widOut').textContent=W+' m';$('heiOut').textContent=H+' m';
+ $('statLen').textContent=L+' m';$('statWid').textContent=W+' m';$('statHei').textContent=H+' m';
+}
 ['len','wid','hei'].forEach(id=>$(id).addEventListener('input',setDims));
-$('resetDims').onclick=()=>{$('len').value=160;$('wid').value=96;$('hei').value=48;setDims()};
+$('resetDims').onclick=()=>{$('len').value=2500;$('wid').value=1200;$('hei').value=800;setDims()};
 function updateCount(){const controls=[...document.querySelectorAll('[data-module]')];const n=controls.filter(ch=>ch.checked).length;$('statMods').textContent=n+' / '+controls.length}
 document.querySelectorAll('[data-module]').forEach(ch=>ch.addEventListener('change',()=>{groups[ch.dataset.module].visible=ch.checked;updateCount();log('Visibilidade atualizada: '+ch.parentElement.textContent.trim())}));
 function explode(v){const t=v/100;const dirs={hull:[0,0,0],bridge:[-1,1,0],egas:[0,0,0],propulsion:[1,0,0],radiators:[0,1,1],habitat:[0,-1,1],field:[0,0,-1],antenna:[-1,1,0],landing:[0,-1,0],power:[1,1,0],interior:[0,0,0]};Object.entries(groups).forEach(([k,g])=>g.position.set(dirs[k][0]*t*19,dirs[k][1]*t*15,dirs[k][2]*t*20));cameraBoundsCache=null;$('explodeOut').textContent=Math.round(v)+'%';$('statState').textContent=t?'EXPLODIDA':'MONTADA';exploded=t>0}
