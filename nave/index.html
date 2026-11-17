@@ -105,6 +105,8 @@ const starGeo=new THREE.BufferGeometry(),starPos=[];for(let i=0;i<520;i++){const
 const root=new THREE.Group();scene.add(root);
 const groups={hull:new THREE.Group(),bridge:new THREE.Group(),egas:new THREE.Group(),propulsion:new THREE.Group(),radiators:new THREE.Group(),habitat:new THREE.Group(),field:new THREE.Group(),antenna:new THREE.Group(),landing:new THREE.Group(),power:new THREE.Group(),interior:new THREE.Group()};
 Object.values(groups).forEach(g=>root.add(g));
+// Referências de diagnóstico: não alteram a hierarquia nem a geometria da baseline.
+window.__spectraRoot=root;window.__spectraGroups=groups;
 const M={
  hull:new THREE.MeshStandardMaterial({color:0x536777,metalness:.68,roughness:.34}),
  armor:new THREE.MeshStandardMaterial({color:0x354957,metalness:.72,roughness:.34}),
