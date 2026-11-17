@@ -33,9 +33,10 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Chromium and Playwright
+      - name: Install Chromium, Playwright and image comparison dependency
         run: |
           npm install --no-save playwright
+          python3 -m pip install --user pillow
           npx playwright install --with-deps chromium
 
       - name: Prepare baseline and serve both revisions
