@@ -195,9 +195,9 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64,pro
   const pz=profileMode==='hull'?axisHullWidthProfile(t):Math.pow(Math.max(0,Math.sin(Math.PI*t)),.78);
   for(let j=0;j<=radial;j++){
    const a=j/radial*Math.PI*2,cs=Math.cos(a),sn=Math.sin(a);
-   const y=halfHeight*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.08)+(profileMode==='hull'?2.5*shoulderX*Math.pow(Math.abs(sn),5)*Math.sign(cs):0);
    const shoulderX=profileMode==='hull'
      ? smoothProfile((t-.22)/.12)*(1-smoothProfile((t-.82)/.15)) : 0;
+   const y=halfHeight*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.08)+(profileMode==='hull'?2.5*shoulderX*Math.pow(Math.abs(sn),5)*Math.sign(cs):0);
    const shoulder=profileMode==='hull'?18.0*shoulderX*Math.pow(Math.abs(sn),5):0;
    const z=(halfWidth*pz+shoulder)*Math.sign(sn)*Math.pow(Math.abs(sn),1.02);
    positions.push(x,y,z);
