@@ -88,9 +88,7 @@ try {
     width: await page.locator('#statWid').textContent(),
     height: await page.locator('#statHei').textContent()
   };
-  const expectedDimensions = requireGeometryVersion
-    ? { length: '2500 m', width: '1200 m', height: '800 m' }
-    : { length: '160 m', width: '96 m', height: '48 m' };
+  const expectedDimensions = { length: '2500 m', width: '1200 m', height: '800 m' };
   if (dimensions.length !== expectedDimensions.length || dimensions.width !== expectedDimensions.width || dimensions.height !== expectedDimensions.height) {
     throw new Error(`Envelope dimensional inesperado: ${JSON.stringify(dimensions)}; esperado: ${JSON.stringify(expectedDimensions)}`);
   }
