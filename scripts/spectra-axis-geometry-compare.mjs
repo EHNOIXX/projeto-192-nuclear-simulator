@@ -16,7 +16,7 @@ async function openVersion(url,label){
  await page.goto(url,{waitUntil:'domcontentloaded',timeout:120000});
  await page.waitForSelector('#viewport canvas',{timeout:90000});
  await page.bringToFront();
- await page.waitForFunction(()=>window.__spectraReady===true,{timeout:90000});
+ await page.waitForFunction(()=>window.__spectraReady===true,null,{timeout:90000});
  return page;
 }
 async function capture(page,camera,path){
