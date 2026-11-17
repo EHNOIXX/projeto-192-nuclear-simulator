@@ -23,16 +23,17 @@ try {
   const startupMs = await page.evaluate(() => window.__spectraStartupMs);
   const geometry = await page.evaluate(() => ({
     version: window.__spectraGeometryVersion || null,
-    hull: window.__spectraHullDimensions || null
+    hull: window.__spectraHullDimensions || null,
+    ship: window.__spectraShipDimensions || null
   }));
   if (requireGeometryVersion && geometry.version !== 'blueprint-v2') {
     throw new Error('O navegador não carregou a geometria esperada: ' + JSON.stringify(geometry));
   }
-  if (requireGeometryVersion && (!geometry.hull ||
-      Math.abs(geometry.hull.length - 2500) > 1 ||
-      Math.abs(geometry.hull.width - 1200) > 1 ||
-      Math.abs(geometry.hull.height - 800) > 1)) {
-    throw new Error('Envelope geométrico real do casco fora da especificação: ' + JSON.stringify(geometry));
+  if (requireGeometryVersion && (!geometry.ship ||
+      Math.abs(geometry.ship.length - 2500) > 1 ||
+      Math.abs(geometry.ship.width - 1200) > 1 ||
+      Math.abs(geometry.ship.height - 800) > 1)) {
+    throw new Error('Envelope geométrico real da nave fora da especificação: ' + JSON.stringify(geometry));
   }
   const canvasSize = await page.locator('#viewport canvas').evaluate(el => ({ width: el.width, height: el.height }));
   if (!canvasSize.width || !canvasSize.height) throw new Error('Canvas WebGL sem dimensões após inicialização');
