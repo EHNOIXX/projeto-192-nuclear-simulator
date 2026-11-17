@@ -87,6 +87,35 @@ try {
   }
   const runtime = await page.evaluate(() => window.__spectraRuntimeMetrics || null);
   if (!runtime || !runtime.envelopeMatches) throw new Error('Envelope medido não corresponde à configuração: ' + JSON.stringify(runtime));
+  const structure = await page.evaluate(() => {
+    const root = window.__spectraRoot;
+    const groups = window.__spectraGroups;
+    const propulsion = groups?.propulsion;
+    const engines = propulsion?.children.filter(object => object.name.startsWith('aft_engine_')) || [];
+    const world = engines.map(object => {
+      const position = new window.__spectraTHREE.Vector3();
+      object.getWorldPosition(position);
+      return { name: object.name, x: position.x, y: position.y, z: position.z };
+    }).sort((a, b) => a.z - b.z);
+    return {
+      rootContainsSubsystems: Object.values(groups || {}).every(group => group.parent === root),
+      subsystemCount: Object.keys(groups || {}).length,
+      engines: world
+    };
+  });
+  if (!structure.rootContainsSubsystems || structure.subsystemCount !== 11) {
+    throw new Error('Hierarquia principal de subsistemas alterada: ' + JSON.stringify(structure));
+  }
+  if (structure.engines.length !== 3) throw new Error('Quantidade de propulsores traseiros divergente: ' + JSON.stringify(structure.engines));
+  const engineYs = structure.engines.map(engine => engine.y);
+  const engineXs = structure.engines.map(engine => engine.x);
+  const engineZs = structure.engines.map(engine => engine.z);
+  if (Math.max(...engineYs) - Math.min(...engineYs) > 0.01 ||
+      Math.max(...engineXs) - Math.min(...engineXs) > 0.01 ||
+      Math.abs(engineZs[1]) > 0.01 ||
+      Math.abs(engineZs[0] + engineZs[2]) > 0.01) {
+    throw new Error('Os três propulsores não estão alinhados/simétricos no eixo longitudinal: ' + JSON.stringify(structure.engines));
+  }
   const expected = { length: 250, width: 120, height: 80 };
   for (const key of Object.keys(expected)) {
     if (Math.abs(runtime.renderedEnvelope[key] - expected[key]) > 0.01) {
@@ -95,7 +124,7 @@ try {
   }
   if (errors.length) throw new Error('Erros de console/runtime: ' + errors.join(' | '));
 
-  await fs.writeFile(`${out}/validation.json`, JSON.stringify({ status: 'passed', startup_ms_from_navigation: startupMs, canvas: canvasSize, views: views.map(([name]) => name), dimensions, measured_rendered_bbox: measured, final_runtime_metrics: runtime, camera_metrics: await page.evaluate(() => window.__spectraCameraMetrics || null), controls: ['orbit', 'module visibility', 'individual selection', 'hide/restore', 'section cut', 'assembled mode'] }, null, 2));
+  await fs.writeFile(`${out}/validation.json`, JSON.stringify({ status: 'passed', startup_ms_from_navigation: startupMs, canvas: canvasSize, views: views.map(([name]) => name), dimensions, measured_rendered_bbox: measured, final_runtime_metrics: runtime, structure, camera_metrics: await page.evaluate(() => window.__spectraCameraMetrics || null), controls: ['orbit', 'module visibility', 'individual selection', 'hide/restore', 'section cut', 'assembled mode'] }, null, 2));
   console.log(`SPECTRA-AXIS visual validation passed; startup=${startupMs}ms; canvas=${canvasSize.width}x${canvasSize.height}`);
 } catch (error) {
   await fs.writeFile(`${out}/validation-error.txt`, String(error.stack || error));
