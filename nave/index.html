@@ -196,7 +196,10 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64,pro
   for(let j=0;j<=radial;j++){
    const a=j/radial*Math.PI*2,cs=Math.cos(a),sn=Math.sin(a);
    const y=halfHeight*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.08);
-   const z=halfWidth*pz*Math.sign(sn)*Math.pow(Math.abs(sn),1.02);
+   const shoulderX=profileMode==='hull'
+     ? smoothProfile((t-.22)/.12)*(1-smoothProfile((t-.82)/.15)) : 0;
+   const shoulder=profileMode==='hull'?7.0*shoulderX*Math.pow(Math.abs(sn),5):0;
+   const z=(halfWidth*pz+shoulder)*Math.sign(sn)*Math.pow(Math.abs(sn),1.02);
    positions.push(x,y,z);
   }
  }
@@ -216,8 +219,9 @@ function hullSurfacePoint(x,theta,offset=0){
  const t=Math.max(0,Math.min(1,x/160+.5)),py=axisHullProfile(t),pz=axisHullWidthProfile(t);
  const cs=Math.cos(theta),sn=Math.sin(theta);
  const y=14.5*py*Math.sign(cs)*Math.pow(Math.abs(cs),1.08);
- const z=41*pz*Math.sign(sn)*Math.pow(Math.abs(sn),1.02);
- const n=new THREE.Vector3(0,cs/(14.5*Math.max(py,.001)),sn/(41*Math.max(pz,.001))).normalize();
+ const shoulderX=smoothProfile((t-.22)/.12)*(1-smoothProfile((t-.82)/.15));
+ const z=(41*pz+7.0*shoulderX*Math.pow(Math.abs(sn),5))*Math.sign(sn)*Math.pow(Math.abs(sn),1.02);
+ const n=new THREE.Vector3(0,cs/(14.5*Math.max(py,.001)),sn/(48*Math.max(pz,.001))).normalize();
  return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
 }
 function hullArmorPatch(x0,x1,a0,a1){
@@ -237,15 +241,16 @@ function hullSeamCurve(x0,x1,angle){
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
  const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,14.5,41,160,80,'hull'),M.hull,[0,0,0]);
- // Naceles laterais externas, longas e baixas: silhueta de pods integrados da prancha oficial.
+ // Módulos laterais integrados por ombros lobados na própria malha do casco.
+ // Janelas e painéis ficam conformados à superfície; não existem cápsulas independentes.
  for(const side of [-1,1]){
-  add('axis_side_pod_'+side,'Nacele lateral de ombro integrada ao monocoque','hull',axisHullGeometry(70,3.0,7.0,112,56),M.armor,[27,-.4,side*41.0]);
-  // A transição da nacele é feita pela própria sobreposição controlada ao ombro do casco; sem aro circular externo.
   for(let i=0;i<9;i++){
    const x=8+i*5.6;
-   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.3,.14,.16,M.cyan,[x,.85,side*47.2]);
+   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida no ombro lateral','hull',2.3,.14,.16,M.cyan,[x,3.1,side*47.0]);
   }
-  for(const x of [12,27,42,57])box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso da nacele lateral','hull',5,.14,2.1,M.dark,[x,1.55,side*44.0]);
+  for(const x of [12,27,42,57]){
+   box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso integrado ao ombro lateral','hull',5,.14,2.1,M.dark,[x,5.5,side*44.0]);
+  }
  }
 
  // Serviços e proteção ventral embutidos na pele do casco, sem cápsulas longitudinais sobrepostas.
@@ -306,12 +311,7 @@ function hullSurface(){
    rod('hull_vent_louver_'+side+'_'+i+'_'+k,'Aleta de veneziana técnica','hull',p.toArray(),q.toArray(),.11,M.dark);
   }
  }
- // Berços e escoras unem as naceles ao casco.
- for(const side of [-1,1])for(const x of [8,27,46]){
-  const z=side*35,podZ=side*41.0;
-  rod('side_pod_mount_'+side+'_'+x,'Berço estrutural de conexão da nacele lateral','hull',[x,0,z],[x,-1.8,podZ],.72,M.edge);
-  rod('side_pod_mount_diag_'+side+'_'+x,'Escora diagonal da nacele lateral','hull',[x-4,-3,z+side*1.5],[x+4,-1.8,podZ-side*1.5],.34,M.dark);
- }
+ // Ombros laterais são parte contínua da malha monocoque; sem montantes de cápsulas externas.
  // Sensores distribuídos em carenagens simétricas.
  for(const side of [-1,1])for(const x of [-52,-35,43,58]){
   const p=hullSurfacePoint(x,side*1.48,.75);
@@ -372,19 +372,19 @@ function hullSurface(){
  // Radiadores segmentados com estrutura de suporte mais discreta.
  for(const side of [-1,1]){
   // A longarina principal começa dentro da zona estrutural do casco e alcança a raiz dos radiadores.
-  rod('radiator_root_mount_'+side,'Encaixe estrutural do radiador no casco','radiators',[8,2.0,side*25],[8,4.0,side*33],.72,M.armor);
+  rod('radiator_root_mount_'+side,'Encaixe estrutural do radiador no casco','radiators',[8,4.7,side*25],[8,6.0,side*33],.72,M.armor);
   // Os radiadores são montados rente às naceles laterais; sem braços longos externos.
   for(const x of [-10,10,30]){
-   rod('radiator_crossbeam_'+side+'_'+x,'Longarina embutida de integração térmica','radiators',[x,2.0,side*37.8],[x,2.0,side*43.2],.18,M.edge);
+   rod('radiator_crossbeam_'+side+'_'+x,'Longarina embutida de integração térmica','radiators',[x,4.7,side*39.8],[x,4.7,side*43.2],.18,M.edge);
   }
   for(let j=0;j<4;j++){
    const x=-10+j*13;
-   box('radiator_panel_'+side+'_'+j,'Painel radiador conformado e integrado','radiators',10,.22,5.2,M.panel,[x,2.3,side*45.4]);
-   for(let k=0;k<5;k++)box('radiator_channel_'+side+'_'+j+'_'+k,'Canal térmico superficial','radiators',8,.05,.10,M.cyan,[x,2.44,side*(43.3+k*.9)]);
-   for(const z of [-1.8,1.8])rod('radiator_panel_standoff_'+side+'_'+j+'_'+z,'Fixação embutida do painel radiador','radiators',[x,1.82,side*35.2],[x,2.3,side*(37.2+z)],.12,M.edge);
+   box('radiator_panel_'+side+'_'+j,'Painel radiador conformado e integrado','radiators',10,.22,5.2,M.panel,[x,5.0,side*45.4]);
+   for(let k=0;k<5;k++)box('radiator_channel_'+side+'_'+j+'_'+k,'Canal térmico superficial','radiators',8,.05,.10,M.cyan,[x,5.14,side*(43.3+k*.9)]);
+   for(const z of [-1.8,1.8])rod('radiator_panel_standoff_'+side+'_'+j+'_'+z,'Fixação embutida do painel radiador','radiators',[x,4.5,side*39.8],[x,5.0,side*(41.2+z)],.12,M.edge);
   }
   // Coletores e bases de articulação tornam explícito o caminho de carga até o casco.
-  box('radiator_root_housing_'+side,'Carcaça de integração térmica lateral','radiators',5,1.2,4,M.armor,[8,2.3,side*40.5]);
+  box('radiator_root_housing_'+side,'Carcaça de integração térmica lateral','radiators',5,1.2,4,M.armor,[8,5.0,side*40.5]);
  }
  label3D('RADIADORES TÉRMICOS',[10,5.5,40],1.8);
  // Compartimento EGAS é mostrado como equipamento científico hipotético, não como motor validado.
