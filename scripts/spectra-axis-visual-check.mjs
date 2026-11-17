@@ -68,6 +68,7 @@ try {
     const root = window.__spectraRoot;
     if (!root) throw new Error('Grupo raiz da nave não foi exposto');
     root.updateMatrixWorld(true);
+    const THREE = window.__spectraTHREE;
     const box = new THREE.Box3().setFromObject(root);
     const size = box.getSize(new THREE.Vector3());
     return { min: box.min.toArray(), max: box.max.toArray(), size: { length: size.x, height: size.y, width: size.z }, rootScale: root.scale.toArray() };
