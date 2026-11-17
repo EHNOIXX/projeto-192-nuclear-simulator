@@ -175,22 +175,38 @@ function modulePod(id,label,center,dims,material=M.hull){
  label3D(label,[x,y+h/2+3,z],2.1);
 }
 function axisHullProfile(t){
- // Perfil recuperado da base visual mais esguia: proa longa, ombros contidos,
- // seção central estável e contração progressiva na popa.
+ // Perfil genérico usado pelos módulos secundários; mantido para não deformá-los.
  const smooth=u=>{u=THREE.MathUtils.clamp(u,0,1);return u*u*(3-2*u)};
  if(t<.29)return Math.pow(Math.sin(smooth(t/.29)*Math.PI/2),.82);
  if(t>.77)return Math.pow(1-smooth((t-.77)/.23),.76);
  const rise=smooth((t-.29)/.13),fall=1-smooth((t-.65)/.12);
  return .88+.12*rise*fall;
 }
-function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
+function spectraHullProfile(t){
+ // Perfil longitudinal assimétrico: proa longa e fina em -X; popa larga,
+ // com transição curta para a face de integração dos três propulsores em +X.
+ const smooth=u=>{u=THREE.MathUtils.clamp(u,0,1);return u*u*(3-2*u)};
+ if(t<.34)return Math.pow(Math.sin(smooth(t/.34)*Math.PI/2),.86);
+ if(t<.79){
+  const rise=smooth((t-.34)/.12),fall=1-.045*smooth((t-.66)/.13);
+  return .955+.045*rise*fall;
+ }
+ return .52+.48*Math.pow(1-smooth((t-.79)/.21),.72);
+}
+function axisHullSection(t,a,halfHeight,halfWidth){
+ const cs=Math.cos(a),sn=Math.sin(a),profile=spectraHullProfile(t);
+ // Topo e ventre mais planos; ombros laterais crescem suavemente na região central.
+ const shoulder=Math.exp(-Math.pow((Math.abs(sn)-.78)/.17,2))*Math.exp(-Math.pow((t-.62)/.24,2));
+ const y=halfHeight*profile*Math.sign(cs)*Math.pow(Math.abs(cs),1.38);
+ const z=halfWidth*profile*Math.sign(sn)*Math.pow(Math.abs(sn),.88)*(1+.17*shoulder);
+ return {y,z};
+}
+function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64,profileFn=axisHullProfile){
  const positions=[],indices=[];
  for(let i=0;i<=segments;i++){
-  const t=i/segments,x=(t-.5)*length;
-  const profile=axisHullProfile(t);
+  const t=i/segments,x=(t-.5)*length,profile=profileFn(t);
   for(let j=0;j<=radial;j++){
-   const a=j/radial*Math.PI*2;
-   const cs=Math.cos(a),sn=Math.sin(a);
+   const a=j/radial*Math.PI*2,cs=Math.cos(a),sn=Math.sin(a);
    const y=halfHeight*profile*Math.sign(cs)*Math.pow(Math.abs(cs),1.04);
    const z=halfWidth*profile*Math.sign(sn)*Math.pow(Math.abs(sn),1.04);
    positions.push(x,y,z);
@@ -204,17 +220,33 @@ function axisHullGeometry(length,halfHeight,halfWidth,segments=128,radial=64){
  g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
  g.setIndex(indices);g.computeVertexNormals();return g;
 }
+function spectraAxisHullGeometry(length,halfHeight,halfWidth,segments=192,radial=96){
+ const positions=[],indices=[];
+ for(let i=0;i<=segments;i++){
+  const t=i/segments,x=(t-.5)*length;
+  for(let j=0;j<=radial;j++){
+   const a=j/radial*Math.PI*2,p=axisHullSection(t,a,halfHeight,halfWidth);
+   positions.push(x,p.y,p.z);
+  }
+ }
+ for(let i=0;i<segments;i++)for(let j=0;j<radial;j++){
+  const a=i*(radial+1)+j,b=a+radial+1;
+  indices.push(a,b,a+1,b,b+1,a+1);
+ }
+ const g=new THREE.BufferGeometry();
+ g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+ g.setIndex(indices);g.computeVertexNormals();
+ g.userData={architectureRevision:'phase-1-integrated-monocoque-v1',longitudinalSections:segments+1,transverseSections:radial+1};
+ return g;
+}
 function hullProfileAtX(x,halfHeight=13.5,length=160){
  const t=Math.max(0,Math.min(1,x/length+.5));
- return halfHeight*axisHullProfile(t);
+ return halfHeight*spectraHullProfile(t);
 }
 function hullSurfacePoint(x,theta,offset=0){
- const t=Math.max(0,Math.min(1,x/160+.5)),p=axisHullProfile(t);
- const cs=Math.cos(theta),sn=Math.sin(theta);
- const y=13.5*p*Math.sign(cs)*Math.pow(Math.abs(cs),1.04);
- const z=28*p*Math.sign(sn)*Math.pow(Math.abs(sn),1.04);
- const n=new THREE.Vector3(0,cs/13.5,sn/28).normalize();
- return new THREE.Vector3(x,y,z).addScaledVector(n,offset);
+ const t=Math.max(0,Math.min(1,x/160+.5)),p=axisHullSection(t,theta,13.5,28);
+ const normal=new THREE.Vector3(0,p.y/(13.5*13.5),p.z/(28*28)).normalize();
+ return new THREE.Vector3(x,p.y,p.z).addScaledVector(normal,offset);
 }
 function hullArmorPatch(x0,x1,a0,a1){
  const nx=16,na=10,positions=[],indices=[],stride=(nx+1)*(na+1),idx=(i,j)=>i*(na+1)+j;
@@ -232,16 +264,16 @@ function hullSeamCurve(x0,x1,angle){
 }
 function hullSurface(){
  // Casco principal pressurizado, contínuo e aerodinâmico: a espinha deixa de ser uma treliça exposta.
- const primary=add('primary_pressure_hull','Casco monocoque de planta alongada e seção transversal composta — SPECTRA-AXIS','hull',axisHullGeometry(160,13.5,28),M.hull,[0,0,0]);
+ const primary=add('primary_pressure_hull','Casco monocoque integrado de proa longa, ombros laterais e popa larga — SPECTRA-AXIS','hull',spectraAxisHullGeometry(160,13.5,28),M.hull,[0,0,0]);primary.userData.architectureRevision='phase-1-integrated-monocoque-v1';
  // Naceles laterais externas, longas e baixas: silhueta de pods integrados da prancha oficial.
  for(const side of [-1,1]){
-  add('axis_side_pod_'+side,'Nacele lateral de ombro integrada ao monocoque','hull',axisHullGeometry(70,2.7,4.6,112,56),M.armor,[27,-.6,side*40.2]);
+  add('axis_side_pod_'+side,'Nacele lateral de ombro integrada ao monocoque','hull',axisHullGeometry(70,2.7,6.2,112,56),M.armor,[27,-.6,side*31.5]);
   // A transição da nacele é feita pela própria sobreposição controlada ao ombro do casco; sem aro circular externo.
   for(let i=0;i<9;i++){
    const x=8+i*5.6;
-   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.3,.14,.16,M.cyan,[x,.85,side*44.4]);
+   box('axis_side_pod_window_'+side+'_'+i,'Janela técnica azul embutida na nacele lateral','hull',2.3,.14,.16,M.cyan,[x,.85,side*37.6]);
   }
-  for(const x of [12,27,42,57])box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso da nacele lateral','hull',5,.14,2.1,M.dark,[x,1.55,side*40.8]);
+  for(const x of [12,27,42,57])box('axis_side_pod_access_'+side+'_'+x,'Painel de acesso da nacele lateral','hull',5,.14,2.1,M.dark,[x,1.55,side*34.5]);
  }
 
  // Serviços e proteção ventral embutidos na pele do casco, sem cápsulas longitudinais sobrepostas.
@@ -304,7 +336,7 @@ function hullSurface(){
  }
  // Berços e escoras unem as naceles ao casco.
  for(const side of [-1,1])for(const x of [8,27,46]){
-  const z=side*34,podZ=side*40.2;
+  const z=side*27,podZ=side*31.5;
   rod('side_pod_mount_'+side+'_'+x,'Berço estrutural de conexão da nacele lateral','hull',[x,0,z],[x,-1.8,podZ],.72,M.edge);
   rod('side_pod_mount_diag_'+side+'_'+x,'Escora diagonal da nacele lateral','hull',[x-4,-3,z+side*1.5],[x+4,-1.8,podZ-side*1.5],.34,M.dark);
  }
