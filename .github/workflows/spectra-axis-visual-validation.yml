@@ -1,8 +1,8 @@
-name: SPECTRA-AXIS visual validation
+name: SPECTRA-AXIS Phase 0 dimensional validation
 
 on:
   push:
-    branches: [main]
+    branches: [main, fase-0-consolidacao-dimensional]
     paths:
       - 'nave/**'
       - 'scripts/spectra-axis-visual-check.mjs'
@@ -47,7 +47,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: spectra-axis-six-views
+          name: spectra-axis-phase-0-baseline-seven-views
           path: artifacts/spectra-axis/
           if-no-files-found: warn
           retention-days: 14
