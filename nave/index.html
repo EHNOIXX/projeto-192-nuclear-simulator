@@ -303,7 +303,7 @@ function hullSurface(){
  }
  // Berços e escoras unem as naceles ao casco.
  for(const side of [-1,1])for(const x of [8,27,46]){
-  const z=side*34,podZ=side*43.4;
+  const z=side*37,podZ=side*43.4;
   rod('side_pod_mount_'+side+'_'+x,'Berço estrutural de conexão da nacele lateral','hull',[x,0,z],[x,-1.8,podZ],.72,M.edge);
   rod('side_pod_mount_diag_'+side+'_'+x,'Escora diagonal da nacele lateral','hull',[x-4,-3,z+side*1.5],[x+4,-1.8,podZ-side*1.5],.34,M.dark);
  }
@@ -410,7 +410,7 @@ function hullSurface(){
   const id='integrated_power_'+y+'_'+z;
   cyl(id+'_thermal_chamber','Câmara termoelétrica integrada ao conjunto propulsivo','propulsion',1.82,1.82,7.2,M.armor,[68.5,y,z],[0,0,Math.PI/2],56);
   const coreGroup=new THREE.Group();coreGroup.name=id+'_e192_nucleus';coreGroup.userData={label:'Núcleo E-192 · 192 prótons + 250 nêutrons · representação do simulador nuclear',group:'propulsion'};
-  coreGroup.position.set(61.5,y,z);coreGroup.scale.setScalar(.135);groups.propulsion.add(coreGroup);
+  coreGroup.position.set(68.5,y,z);coreGroup.scale.set(.135,.135,.23);groups.propulsion.add(coreGroup);
   const A=442,rad=1.72,dummy=new THREE.Object3D();
   const protonInstances=new THREE.InstancedMesh(new THREE.SphereGeometry(.073,16,14),nucleusProtonMat,192);
   const neutronInstances=new THREE.InstancedMesh(new THREE.SphereGeometry(.069,16,14),nucleusNeutronMat,250);
@@ -432,13 +432,13 @@ function hullSurface(){
   const glow=new THREE.Mesh(new THREE.SphereGeometry(rad*1.08,40,32),new THREE.MeshBasicMaterial({color:0x54dce2,wireframe:true,transparent:true,opacity:.055}));coreGroup.add(glow);
   coreGroup.traverse(o=>{if(o.isMesh){o.userData={...coreGroup.userData};pickables.push(o)}});
   for(const x of [69.7,76.7])tor(id+'_containment_'+x,'Anel de contenção térmica interno','propulsion',1.76,.18,M.edge,[x,y,z],[0,Math.PI/2,0]);
-  for(let k=0;k<12;k++){const a=k*Math.PI/6;rod(id+'_thermoelectric_fin_'+k,'Aleta de transferência térmica interna','propulsion',[61.5,y+Math.cos(a)*1.15,z+Math.sin(a)*1.15],[61.5,y+Math.cos(a)*2.35,z+Math.sin(a)*2.35],.12,M.cyan);}
+  for(let k=0;k<12;k++){const a=k*Math.PI/6;rod(id+'_thermoelectric_fin_'+k,'Aleta de transferência térmica interna','propulsion',[68.5,y+Math.cos(a)*1.15,z+Math.sin(a)*1.15],[68.5,y+Math.cos(a)*2.35,z+Math.sin(a)*2.35],.12,M.cyan);}
   cyl(id+'_converter','Conversor termoelétrico integrado','propulsion',1.42,1.42,1.5,M.dark,[77.6,y,z],[0,0,Math.PI/2],48);
   tor(id+'_converter_ring','Aro do conversor termoelétrico','propulsion',1.42,.16,M.cyan,[78.4,y,z],[0,Math.PI/2,0]);
  }
  box('integrated_power_bus','Barramento de condicionamento elétrico integrado à seção propulsiva','propulsion',8,2.4,13,M.dark,[63,0,0]);
- for(const y of [-5,5])for(const z of [-8,8])rod('integrated_power_link_'+y+'_'+z,'Conexão elétrica blindada entre conversor e barramento','propulsion',[57,y*.55,z*.55],[69,y,z],.16,M.gold);
- label3D('NÚCLEOS E-192 · SISTEMA TERMOELÉTRICO',[62,12,0],2.4);
+ for(const y of [-5,5])for(const z of [-8,8])rod('integrated_power_link_'+y+'_'+z,'Conexão elétrica blindada entre conversor e barramento','propulsion',[64,y*.55,z*.55],[69,y,z],.16,M.gold);
+ label3D('NÚCLEOS E-192 · SISTEMA TERMOELÉTRICO',[70,15,0],2.4);
  // Antena de comunicação e sensores externos.
  rod('sensor_mast','Mastro de instrumentação','antenna',[-45,7,0],[-45,20,0],.2,M.edge);
  tor('sensor_dish','Antena de comunicação','antenna',3,.16,M.gold,[-45,20,0],[Math.PI/2,0,0]);
@@ -453,6 +453,8 @@ function hullSurface(){
  }
 }
 hullSurface();
+// Compensação da escala transversal para manter os três bocais circulares no plano Y–Z.
+for(const o of groups.propulsion.children){if(/^(aft_engine_|engine_nozzle_|engine_casing_collar_|engine_exit_glow_)/.test(o.name))o.scale.z=1.706;}
 
 function buildInterior(){
 // Planta interna dimensionalmente associada aos módulos externos.
