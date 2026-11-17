@@ -63,4 +63,18 @@ A execução pré-alteração no Chromium (run `44161643425`) produziu sete capt
 
 Artefato: [baseline — sete perspectivas](https://github.com/EHNOIXX/projeto-192-nuclear-simulator/actions/runs/44161643425/artifacts/14364030802)
 
-A validação pós-alteração será anexada a esta documentação após a execução do workflow.
+## Validação pós-alteração
+
+Workflow concluído com sucesso no Chromium:
+- Run: https://github.com/EHNOIXX/projeto-192-nuclear-simulator/actions/runs/44162677745
+- Commit validado: 91e84124a5772324bcd34f483e2091d6caa555f9
+- Inicialização: 1.149 ms (baseline: 744 ms; diferença observada: +405 ms, sem atribuir causalidade exclusiva à escala)
+- Canvas: 1018 × 740
+- Bounding box mundial final: X = 250 m, Y = 80,000000 m, Z = 120 m
+- Escala raiz: [1,562500; 2,340551; 1,250000]
+- Sete perspectivas capturadas; verificações de câmera, névoa e chamadas de desenho aprovadas
+- Controles de órbita, visibilidade EGAS, seleção de componentes, ocultação/restauração e modo de corte: aprovados
+
+Artefato final: https://github.com/EHNOIXX/projeto-192-nuclear-simulator/actions/runs/44162677745/artifacts/14364061631
+
+A geometria, os materiais e as posições locais dos componentes não foram alterados. A escala aplicada no grupo raiz preserva as relações posicionais entre propulsores, módulos e demais subsistemas. A câmera continua calculando o enquadramento pelo bounding box atual. A faixa de névoa foi ajustada dinamicamente pelo enquadramento para evitar que a nave ampliada desapareça nas vistas de maior distância.
